@@ -1,7 +1,7 @@
 {
   "auth": {
     "username": "carlos",
-    "passwordHash": "<SHA256_DE_SAL+CONTRASEÑA>"
+    "passwordHash": "fdde8412bc6a358138968e92ea01f5db12d3941db894c57c5384491e54700a07"
   },
   "exercises": {
     "abductores": {

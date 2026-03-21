@@ -1,7 +1,7 @@
-﻿const defaultDBData = {
+const defaultDBData = {
   "auth": {
     "username": "carlos",
-    "passwordHash": "<SHA256_DE_SAL+CONTRASEÃ‘A>"
+    "passwordHash": "fdde8412bc6a358138968e92ea01f5db12d3941db894c57c5384491e54700a07"
   },
   "exercises": {
     "abductores": {
@@ -18,7 +18,7 @@
     },
     "apertura_maquina": {
       "id": "apertura_maquina",
-      "name": "Apertura en MÃ¡quina"
+      "name": "Apertura en Máquina"
     },
     "aperturas_mancuernas": {
       "id": "aperturas_mancuernas",
@@ -34,11 +34,11 @@
     },
     "curl_de_biceps_con_barra": {
       "id": "curl_de_biceps_con_barra",
-      "name": "Curl de BÃ­ceps con Barra"
+      "name": "Curl de Bíceps con Barra"
     },
     "curl_de_biceps_mancuerna": {
       "id": "curl_de_biceps_mancuerna",
-      "name": "Curl de BÃ­ceps con Mancuerna"
+      "name": "Curl de Bíceps con Mancuerna"
     },
     "curl_femoral_sentado": {
       "id": "curl_femoral_sentado",
@@ -46,7 +46,7 @@
     },
     "elevacion_rodillas": {
       "id": "elevacion_rodillas",
-      "name": "ElevaciÃ³n de Rodillas"
+      "name": "Elevación de Rodillas"
     },
     "elevaciones_gemelos": {
       "id": "elevaciones_gemelos",
@@ -66,7 +66,7 @@
     },
     "extension_de_cuadriceps": {
       "id": "extension_de_cuadriceps",
-      "name": "ExtensiÃ³n de CuÃ¡driceps"
+      "name": "Extensión de Cuádriceps"
     },
     "extensiones_de_espalda": {
       "id": "extensiones_de_espalda",
@@ -94,7 +94,7 @@
     },
     "jalon_al_pecho": {
       "id": "jalon_al_pecho",
-      "name": "JalÃ³n al Pecho"
+      "name": "Jalón al Pecho"
     },
     "landmine_press": {
       "id": "landmine_press",
@@ -106,7 +106,7 @@
     },
     "overhead_extension_triceps": {
       "id": "overhead_extension_triceps",
-      "name": "Overhead Extension TrÃ­ceps"
+      "name": "Overhead Extension Tríceps"
     },
     "peso_muerto_barra": {
       "id": "peso_muerto_barra",
@@ -138,7 +138,7 @@
     },
     "press_de_hombros_maquina": {
       "id": "press_de_hombros_maquina",
-      "name": "Press de Hombros en MÃ¡quina"
+      "name": "Press de Hombros en Máquina"
     },
     "press_inclinado_mancuernas": {
       "id": "press_inclinado_mancuernas",
@@ -146,7 +146,7 @@
     },
     "press_inclinado_maquina": {
       "id": "press_inclinado_maquina",
-      "name": "Press Inclinado en MÃ¡quina"
+      "name": "Press Inclinado en Máquina"
     },
     "press_inclinado_palanca": {
       "id": "press_inclinado_palanca",
@@ -178,7 +178,7 @@
     },
     "remo_en_maquina": {
       "id": "remo_en_maquina",
-      "name": "Remo en MÃ¡quina"
+      "name": "Remo en Máquina"
     },
     "reverse_delt_fly": {
       "id": "reverse_delt_fly",
@@ -186,7 +186,7 @@
     },
     "reverse_delt_maquina": {
       "id": "reverse_delt_maquina",
-      "name": "Reverse Delt en MÃ¡quina"
+      "name": "Reverse Delt en Máquina"
     },
     "russian_twists": {
       "id": "russian_twists",
@@ -198,7 +198,7 @@
     },
     "sentadilla_bulgara": {
       "id": "sentadilla_bulgara",
-      "name": "Sentadilla BÃºlgara"
+      "name": "Sentadilla Búlgara"
     },
     "sentadilla_frontal": {
       "id": "sentadilla_frontal",
@@ -214,7 +214,7 @@
     },
     "triceps_polea": {
       "id": "triceps_polea",
-      "name": "TrÃ­ceps en Polea"
+      "name": "Tríceps en Polea"
     },
     "zancadas_con_mancuernas": {
       "id": "zancadas_con_mancuernas",
@@ -355,7 +355,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 6,
@@ -385,7 +385,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -586,7 +586,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 6,
@@ -596,7 +596,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 8,
@@ -616,7 +616,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -817,7 +817,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 6,
@@ -827,7 +827,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 8,
@@ -847,7 +847,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -1048,7 +1048,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 6,
@@ -1058,7 +1058,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 9,
@@ -1078,7 +1078,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -1289,7 +1289,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 9,
@@ -1309,7 +1309,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -1520,7 +1520,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 9,
@@ -1540,7 +1540,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -1751,7 +1751,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 9,
@@ -1771,7 +1771,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -1972,7 +1972,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -1982,7 +1982,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -2002,7 +2002,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -2203,7 +2203,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -2213,7 +2213,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -2233,7 +2233,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -2434,7 +2434,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -2444,7 +2444,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -2464,7 +2464,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -2665,7 +2665,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -2675,7 +2675,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -2695,7 +2695,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -2896,7 +2896,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -2906,7 +2906,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -2926,7 +2926,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -3127,7 +3127,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -3137,7 +3137,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -3157,7 +3157,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -3358,7 +3358,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -3368,7 +3368,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -3388,7 +3388,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -3475,7 +3475,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -3589,7 +3589,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -3599,7 +3599,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -3619,7 +3619,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -3706,7 +3706,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -3820,7 +3820,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -3830,7 +3830,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -3850,7 +3850,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -3937,7 +3937,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -4051,7 +4051,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -4061,7 +4061,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -4081,7 +4081,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -4168,7 +4168,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -4282,7 +4282,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -4292,7 +4292,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -4312,7 +4312,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -4399,7 +4399,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -4513,7 +4513,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -4523,7 +4523,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -4543,7 +4543,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -4630,7 +4630,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -4744,7 +4744,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -4754,7 +4754,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -4774,7 +4774,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -4861,7 +4861,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -4975,7 +4975,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -4985,7 +4985,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -5005,7 +5005,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -5092,7 +5092,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -5206,7 +5206,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -5216,7 +5216,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -5236,7 +5236,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -5323,7 +5323,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -5437,7 +5437,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -5447,7 +5447,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -5467,7 +5467,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -5554,7 +5554,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -5668,7 +5668,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -5678,7 +5678,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -5698,7 +5698,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -5785,7 +5785,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -5899,7 +5899,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -5909,7 +5909,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -5929,7 +5929,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -6016,7 +6016,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -6130,7 +6130,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -6140,7 +6140,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -6160,7 +6160,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -6247,7 +6247,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -6361,7 +6361,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -6381,7 +6381,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -6418,7 +6418,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -6478,7 +6478,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 19,
@@ -6592,7 +6592,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -6612,7 +6612,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -6649,7 +6649,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -6709,7 +6709,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 19,
@@ -6786,7 +6786,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 19,
@@ -6823,7 +6823,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -6843,7 +6843,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -6880,7 +6880,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -6900,7 +6900,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -6957,7 +6957,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -7054,7 +7054,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -7064,7 +7064,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -7084,7 +7084,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -7141,7 +7141,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -7171,7 +7171,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 19,
@@ -7188,7 +7188,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -7285,7 +7285,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -7295,7 +7295,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -7315,7 +7315,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -7372,7 +7372,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -7402,7 +7402,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 19,
@@ -7419,7 +7419,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -7516,7 +7516,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -7526,7 +7526,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -7546,7 +7546,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -7603,7 +7603,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -7633,7 +7633,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 19,
@@ -7650,7 +7650,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -7747,7 +7747,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -7757,7 +7757,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -7777,7 +7777,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -7834,7 +7834,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -7864,7 +7864,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 19,
@@ -7881,7 +7881,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -7978,7 +7978,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -7988,7 +7988,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -8008,7 +8008,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -8065,7 +8065,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -8095,7 +8095,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 19,
@@ -8112,7 +8112,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -8209,7 +8209,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -8219,7 +8219,7 @@
         },
         {
           "exercise_id": "press_de_hombros_maquina",
-          "name": "Press de Hombros en MÃ¡quina",
+          "name": "Press de Hombros en Máquina",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -8239,7 +8239,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -8296,7 +8296,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -8326,7 +8326,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 19,
@@ -8405,7 +8405,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 17,
@@ -8447,7 +8447,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -8467,7 +8467,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_con_barra",
-          "name": "Curl de BÃ­ceps con Barra",
+          "name": "Curl de Bíceps con Barra",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -8508,7 +8508,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -8533,7 +8533,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -8657,7 +8657,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 18,
@@ -8699,7 +8699,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -8719,7 +8719,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -8760,7 +8760,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -8785,7 +8785,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -8918,7 +8918,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 18,
@@ -8960,7 +8960,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -8980,7 +8980,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -9025,7 +9025,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -9050,7 +9050,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -9187,7 +9187,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 18,
@@ -9229,7 +9229,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -9249,7 +9249,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 13,
@@ -9294,7 +9294,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -9319,7 +9319,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -9458,7 +9458,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 18,
@@ -9500,7 +9500,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -9520,7 +9520,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 13,
@@ -9565,7 +9565,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -9590,7 +9590,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -9729,7 +9729,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 18,
@@ -9766,7 +9766,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -9786,7 +9786,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 13,
@@ -9831,7 +9831,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -9856,7 +9856,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -9985,7 +9985,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 18,
@@ -10022,7 +10022,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -10042,7 +10042,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -10087,7 +10087,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -10112,7 +10112,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -10241,7 +10241,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 18,
@@ -10283,7 +10283,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -10303,7 +10303,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -10348,7 +10348,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -10373,7 +10373,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -10502,7 +10502,7 @@
         },
         {
           "exercise_id": "elevacion_rodillas",
-          "name": "ElevaciÃ³n de Rodillas",
+          "name": "Elevación de Rodillas",
           "series": 3,
           "reps": {
             "expected": 18,
@@ -10544,7 +10544,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -10564,7 +10564,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -10609,7 +10609,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -10634,7 +10634,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -10791,7 +10791,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -10811,7 +10811,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -10831,7 +10831,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -10872,7 +10872,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -10892,7 +10892,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -10936,7 +10936,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -11059,7 +11059,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -11084,7 +11084,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -11104,7 +11104,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -11145,7 +11145,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -11165,7 +11165,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -11209,7 +11209,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -11317,7 +11317,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -11337,7 +11337,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -11357,7 +11357,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -11398,7 +11398,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -11428,7 +11428,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -11477,7 +11477,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -11593,7 +11593,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -11618,7 +11618,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -11638,7 +11638,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -11679,7 +11679,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -11699,7 +11699,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -11739,7 +11739,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -11861,7 +11861,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -11886,7 +11886,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -11906,7 +11906,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -11947,7 +11947,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -11972,7 +11972,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -12020,7 +12020,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -12132,7 +12132,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -12152,7 +12152,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -12172,7 +12172,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -12213,7 +12213,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -12238,7 +12238,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -12286,7 +12286,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -12371,7 +12371,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -12406,7 +12406,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -12431,7 +12431,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 8,
@@ -12488,7 +12488,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -12513,7 +12513,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -12561,7 +12561,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -12656,7 +12656,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 15,
@@ -12687,7 +12687,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -12712,7 +12712,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 8,
@@ -12769,7 +12769,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -12799,7 +12799,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -12843,7 +12843,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -12928,7 +12928,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -12959,7 +12959,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -12984,7 +12984,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 8,
@@ -13045,7 +13045,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -13075,7 +13075,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -13119,7 +13119,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -13209,7 +13209,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 16,
@@ -13240,7 +13240,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -13265,7 +13265,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 8,
@@ -13326,7 +13326,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -13356,7 +13356,7 @@
         },
         {
           "exercise_id": "remo_en_maquina",
-          "name": "Remo en MÃ¡quina",
+          "name": "Remo en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -13401,7 +13401,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -13482,7 +13482,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -13538,7 +13538,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -13599,7 +13599,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -13614,7 +13614,7 @@
         },
         {
           "exercise_id": "apertura_maquina",
-          "name": "Apertura en MÃ¡quina",
+          "name": "Apertura en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -13673,7 +13673,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -13759,7 +13759,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -13810,7 +13810,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -13876,7 +13876,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -13891,7 +13891,7 @@
         },
         {
           "exercise_id": "apertura_maquina",
-          "name": "Apertura en MÃ¡quina",
+          "name": "Apertura en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -13958,7 +13958,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -14014,7 +14014,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -14044,7 +14044,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -14071,7 +14071,7 @@
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
-          "name": "Sentadilla BÃºlgara",
+          "name": "Sentadilla Búlgara",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -14106,7 +14106,7 @@
         },
         {
           "exercise_id": "reverse_delt_maquina",
-          "name": "Reverse Delt en MÃ¡quina",
+          "name": "Reverse Delt en Máquina",
           "series": 3,
           "reps": {
             "expected": 14,
@@ -14157,7 +14157,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -14172,7 +14172,7 @@
         },
         {
           "exercise_id": "apertura_maquina",
-          "name": "Apertura en MÃ¡quina",
+          "name": "Apertura en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -14231,7 +14231,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -14277,7 +14277,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -14316,7 +14316,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -14383,7 +14383,7 @@
         },
         {
           "exercise_id": "reverse_delt_maquina",
-          "name": "Reverse Delt en MÃ¡quina",
+          "name": "Reverse Delt en Máquina",
           "series": 3,
           "reps": {
             "expected": 15,
@@ -14413,7 +14413,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -14430,7 +14430,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -14440,7 +14440,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -14503,7 +14503,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -14549,7 +14549,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -14588,7 +14588,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -14655,7 +14655,7 @@
         },
         {
           "exercise_id": "reverse_delt_maquina",
-          "name": "Reverse Delt en MÃ¡quina",
+          "name": "Reverse Delt en Máquina",
           "series": 3,
           "reps": {
             "expected": 15,
@@ -14685,7 +14685,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -14702,7 +14702,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -14712,7 +14712,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -14766,7 +14766,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -14847,7 +14847,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -14909,7 +14909,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -14953,7 +14953,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -14970,7 +14970,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -14980,7 +14980,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -15034,7 +15034,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -15111,7 +15111,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -15168,7 +15168,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -15212,7 +15212,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -15229,7 +15229,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -15239,7 +15239,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -15293,7 +15293,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -15370,7 +15370,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -15432,7 +15432,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -15480,7 +15480,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -15497,7 +15497,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -15507,7 +15507,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -15561,7 +15561,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -15633,7 +15633,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -15695,7 +15695,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -15739,7 +15739,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -15760,7 +15760,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 8,
@@ -15770,7 +15770,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -15820,7 +15820,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 15,
@@ -15892,7 +15892,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -15954,7 +15954,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -16003,7 +16003,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 11,
@@ -16020,7 +16020,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -16030,7 +16030,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -16080,7 +16080,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 15,
@@ -16152,7 +16152,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -16209,7 +16209,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -16249,7 +16249,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -16266,7 +16266,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -16276,7 +16276,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -16335,7 +16335,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -16402,7 +16402,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -16464,7 +16464,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 8,
@@ -16504,7 +16504,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -16525,7 +16525,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -16540,7 +16540,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -16599,7 +16599,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -16666,7 +16666,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -16728,7 +16728,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -16768,7 +16768,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -16789,7 +16789,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -16799,7 +16799,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -16849,7 +16849,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -16921,7 +16921,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -16983,7 +16983,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -17023,7 +17023,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -17044,7 +17044,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -17054,7 +17054,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -17104,7 +17104,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -17176,7 +17176,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -17238,7 +17238,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -17278,7 +17278,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -17299,7 +17299,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -17309,7 +17309,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -17363,7 +17363,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -17440,7 +17440,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -17502,7 +17502,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -17542,7 +17542,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -17563,7 +17563,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -17573,7 +17573,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -17632,7 +17632,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -17709,7 +17709,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -17771,7 +17771,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -17811,7 +17811,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -17832,7 +17832,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -17842,7 +17842,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -17901,7 +17901,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
@@ -17973,7 +17973,7 @@
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
-          "name": "Curl de BÃ­ceps con Mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -18035,7 +18035,7 @@
         },
         {
           "exercise_id": "jalon_al_pecho",
-          "name": "JalÃ³n al Pecho",
+          "name": "Jalón al Pecho",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -18077,7 +18077,7 @@
         },
         {
           "exercise_id": "triceps_polea",
-          "name": "TrÃ­ceps en Polea",
+          "name": "Tríceps en Polea",
           "series": 3,
           "reps": {
             "expected": 12,
@@ -18098,7 +18098,7 @@
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
-          "name": "ExtensiÃ³n de CuÃ¡driceps",
+          "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -18108,7 +18108,7 @@
         },
         {
           "exercise_id": "press_inclinado_maquina",
-          "name": "Press Inclinado en MÃ¡quina",
+          "name": "Press Inclinado en Máquina",
           "series": 4,
           "reps": {
             "expected": 12,
@@ -18167,7 +18167,7 @@
         },
         {
           "exercise_id": "overhead_extension_triceps",
-          "name": "Overhead Extension TrÃ­ceps",
+          "name": "Overhead Extension Tríceps",
           "series": 3,
           "reps": {
             "expected": 10,
