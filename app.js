@@ -18,6 +18,7 @@
   let DB = null;
   let githubSha = null;
   let currentChart = null;
+  let currentWeightChart = null;
   let saveTimeout = null;
   let currentPassword = '';
 
@@ -904,6 +905,7 @@
 
     if (selectedExercises.length === 0) {
       if (currentChart) { currentChart.destroy(); currentChart = null; }
+      if (currentWeightChart) { currentWeightChart.destroy(); currentWeightChart = null; }
       return;
     }
 
@@ -911,11 +913,13 @@
 
     const colors = ['#6c5ce7', '#00cec9', '#fdcb6e', '#e17055', '#00b894', '#a29bfe', '#74b9ff', '#fd79a8'];
     const datasets = [];
+    const weightDatasets = [];
 
     selectedExercises.forEach((exerciseId, idx) => {
       const color = colors[idx % colors.length];
       const volData = [];
       const e1rmData = [];
+      const weightData = [];
 
       entries.forEach(entry => {
         const log = entry.logs.find(l => l.exercise_id === exerciseId);
@@ -924,6 +928,7 @@
           const e1rm = computeE1RM(log);
           volData.push({ x: entry.date, y: Math.round(vol * 10) / 10 });
           if (e1rm > 0) e1rmData.push({ x: entry.date, y: Math.round(e1rm * 10) / 10 });
+          if (log.weight > 0) weightData.push({ x: entry.date, y: log.weight });
         }
       });
 
@@ -953,30 +958,50 @@
           type: 'line'
         });
       }
+
+      if (weightData.length > 0) {
+        weightDatasets.push({
+          label: `${name} — Peso`,
+          data: weightData,
+          borderColor: color,
+          backgroundColor: color + '33',
+          tension: 0.3,
+          fill: chartType === 'line',
+          yAxisID: 'y',
+          type: chartType
+        });
+      }
     });
 
     if (currentChart) currentChart.destroy();
+    if (currentWeightChart) currentWeightChart.destroy();
 
     const ctx = document.getElementById('chart-canvas').getContext('2d');
+    const ctxWeight = document.getElementById('chart-canvas-weight').getContext('2d');
+
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: true, labels: { color: '#edf0f7', font: { size: 11, family: 'Inter' }, boxWidth: 12 } },
+        tooltip: {
+          backgroundColor: '#161626',
+          titleColor: '#edf0f7',
+          bodyColor: '#edf0f7',
+          borderColor: 'rgba(108,92,231,0.3)',
+          borderWidth: 1,
+          cornerRadius: 8,
+          padding: 10
+        }
+      }
+    };
+
     currentChart = new Chart(ctx, {
       type: chartType,
       data: { datasets },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { intersect: false, mode: 'index' },
-        plugins: {
-          legend: { display: true, labels: { color: '#edf0f7', font: { size: 11, family: 'Inter' }, boxWidth: 12 } },
-          tooltip: {
-            backgroundColor: '#161626',
-            titleColor: '#edf0f7',
-            bodyColor: '#edf0f7',
-            borderColor: 'rgba(108,92,231,0.3)',
-            borderWidth: 1,
-            cornerRadius: 8,
-            padding: 10
-          }
-        },
+        ...commonOptions,
         scales: {
           x: {
             type: 'time',
@@ -994,6 +1019,28 @@
             position: 'right',
             title: { display: true, text: 'e1RM (kg)', color: '#888', font: { size: 11 } },
             grid: { drawOnChartArea: false },
+            ticks: { color: '#888', font: { size: 10 } }
+          }
+        }
+      }
+    });
+
+    currentWeightChart = new Chart(ctxWeight, {
+      type: chartType,
+      data: { datasets: weightDatasets },
+      options: {
+        ...commonOptions,
+        scales: {
+          x: {
+            type: 'time',
+            time: { unit: 'week', tooltipFormat: 'dd MMM yyyy' },
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#888', font: { size: 10 } }
+          },
+          y: {
+            position: 'left',
+            title: { display: true, text: 'Peso (kg)', color: '#888', font: { size: 11 } },
+            grid: { color: 'rgba(255,255,255,0.04)' },
             ticks: { color: '#888', font: { size: 10 } }
           }
         }
