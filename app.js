@@ -572,6 +572,11 @@
     <button class="btn-primary" id="finish-workout-btn">✅ Finalizar entreno</button>
   </div>`;
 
+    const openIndices = new Set();
+    container.querySelectorAll('.card-body.open').forEach(body => {
+      openIndices.add(body.id.replace('body-', ''));
+    });
+
     container.innerHTML = html;
 
     // Expand/collapse handlers
@@ -583,6 +588,13 @@
         body.classList.toggle('open');
         chevron.classList.toggle('open');
       };
+    });
+
+    openIndices.forEach(idx => {
+      const body = document.getElementById(`body-${idx}`);
+      const chevron = document.getElementById(`chevron-${idx}`);
+      if (body) body.classList.add('open');
+      if (chevron) chevron.classList.add('open');
     });
 
     document.getElementById('finish-workout-btn').onclick = () => finishWorkout();
