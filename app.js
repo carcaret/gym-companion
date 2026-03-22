@@ -796,6 +796,28 @@
       // Don't re-render entire workout, just small update
     },
 
+    deleteHistoryEntry: (date, event) => {
+      event.stopPropagation();
+      const entry = DB.history.find(h => h.date === date);
+      if (!entry) return;
+      showModal(
+        '¿Borrar entreno?',
+        `<p class="text-sm">Se eliminará el entreno del <strong>${formatDate(date)}</strong>. Esta acción no se puede deshacer.</p>`,
+        [
+          { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
+          {
+            label: 'Borrar', className: 'btn-danger btn-sm', action: async () => {
+              DB.history = DB.history.filter(h => h.date !== date);
+              editingHistoryDates.delete(date);
+              await persistDB();
+              renderHistorial();
+              toast('Entreno eliminado');
+            }
+          }
+        ]
+      );
+    },
+
     toggleHistoryEdit: (date, event) => {
       event.stopPropagation();
       if (editingHistoryDates.has(date)) {
@@ -914,6 +936,7 @@
         <div class="flex-center gap-sm">
           <span class="type-badge ${entry.type}">${DAY_LABELS[entry.type] || entry.type}</span>
           <button class="btn-icon" style="font-size:14px;" onclick="GymCompanion.toggleHistoryEdit('${entry.date}',event)">${isEditing ? '✅' : '✏️'}</button>
+          <button class="btn-icon" style="font-size:14px;" onclick="GymCompanion.deleteHistoryEntry('${entry.date}',event)">🗑️</button>
           <span class="card-chevron" id="h-chevron-${idx}">▼</span>
         </div>
       </div>
