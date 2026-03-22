@@ -18186,10 +18186,13 @@
         {
           "exercise_id": "prensa_de_piernas",
           "name": "Prensa de Piernas",
-          "series": 4,
+          "series": 7,
           "reps": {
             "expected": 10,
             "actual": [
+              null,
+              null,
+              null,
               null,
               null,
               null,
