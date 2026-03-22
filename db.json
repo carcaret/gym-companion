@@ -16245,7 +16245,7 @@
             "expected": 10,
             "actual": []
           },
-          "weight": 14
+          "weight": 16.5
         },
         {
           "exercise_id": "triceps_polea",
@@ -16500,7 +16500,7 @@
             "expected": 11,
             "actual": []
           },
-          "weight": 14
+          "weight": 16.5
         },
         {
           "exercise_id": "triceps_polea",
@@ -16764,7 +16764,7 @@
             "expected": 12,
             "actual": []
           },
-          "weight": 14
+          "weight": 16.5
         },
         {
           "exercise_id": "triceps_polea",
@@ -16999,7 +16999,7 @@
             "expected": 10,
             "actual": []
           },
-          "weight": 9.1
+          "weight": 10.35
         },
         {
           "exercise_id": "extensiones_de_espalda",
@@ -17019,7 +17019,7 @@
             "expected": 12,
             "actual": []
           },
-          "weight": 14
+          "weight": 16.5
         },
         {
           "exercise_id": "triceps_polea",
@@ -17254,7 +17254,7 @@
             "expected": 10,
             "actual": []
           },
-          "weight": 9.1
+          "weight": 10.35
         },
         {
           "exercise_id": "extensiones_de_espalda",
@@ -17274,7 +17274,7 @@
             "expected": 12,
             "actual": []
           },
-          "weight": 14
+          "weight": 16.5
         },
         {
           "exercise_id": "triceps_polea",
@@ -17518,7 +17518,7 @@
             "expected": 10,
             "actual": []
           },
-          "weight": 9.1
+          "weight": 10.35
         },
         {
           "exercise_id": "extensiones_de_espalda",
@@ -17538,7 +17538,7 @@
             "expected": 12,
             "actual": []
           },
-          "weight": 14
+          "weight": 16.5
         },
         {
           "exercise_id": "triceps_polea",
@@ -17787,7 +17787,7 @@
             "expected": 10,
             "actual": []
           },
-          "weight": 9.1
+          "weight": 10.35
         },
         {
           "exercise_id": "extensiones_de_espalda",
@@ -17807,7 +17807,7 @@
             "expected": 12,
             "actual": []
           },
-          "weight": 14
+          "weight": 16.5
         },
         {
           "exercise_id": "triceps_polea",
@@ -18053,7 +18053,7 @@
               15
             ]
           },
-          "weight": 9.1
+          "weight": 10.35
         },
         {
           "exercise_id": "extensiones_de_espalda",
@@ -18073,7 +18073,7 @@
             "expected": 12,
             "actual": []
           },
-          "weight": 14
+          "weight": 16.5
         },
         {
           "exercise_id": "triceps_polea",
