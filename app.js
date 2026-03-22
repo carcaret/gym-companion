@@ -142,9 +142,9 @@
     try { return xorDecrypt(enc, currentPassword); } catch { return null; }
   }
 
-  async function loadDBFromGitHub() {
+  async function loadDBFromGitHub(patOverride) {
     const cfg = getGithubConfig();
-    const pat = getDecryptedPat();
+    const pat = patOverride || getDecryptedPat();
     if (!cfg || !pat) return null;
     try {
       const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`, {
@@ -1281,21 +1281,35 @@
     // Restore PAT to field if we can decrypt it
     const pat = getDecryptedPat();
     if (pat) document.getElementById('set-pat').value = pat;
+
+    // Show password confirmation field if session was restored without password
+    document.getElementById('confirm-pass-group').hidden = !!currentPassword;
+    if (!currentPassword) document.getElementById('set-confirm-pass').value = '';
   }
 
   function setupSettings() {
-    document.getElementById('save-github-btn').onclick = () => {
+    async function confirmPasswordIfNeeded() {
+      if (currentPassword) return true;
+      const confirmPass = document.getElementById('set-confirm-pass').value;
+      if (!confirmPass) { toast('⚠️ Introduce tu contraseña para cifrar el PAT'); return false; }
+      const hash = await sha256(SALT + confirmPass);
+      if (hash !== DB.auth.passwordHash) { toast('❌ Contraseña incorrecta'); return false; }
+      currentPassword = confirmPass;
+      document.getElementById('confirm-pass-group').hidden = true;
+      return true;
+    }
+
+    document.getElementById('save-github-btn').onclick = async () => {
       const repo = document.getElementById('set-repo').value.trim();
       const branch = document.getElementById('set-branch').value.trim() || 'main';
       const pat = document.getElementById('set-pat').value.trim();
       const path = document.getElementById('set-path').value.trim() || 'db.json';
 
       if (!repo || !pat) { toast('⚠️ Repo y PAT requeridos'); return; }
+      if (!await confirmPasswordIfNeeded()) return;
 
       localStorage.setItem(GITHUB_KEY, JSON.stringify({ repo, branch, path }));
-      if (currentPassword) {
-        localStorage.setItem(PAT_KEY, xorEncrypt(pat, currentPassword));
-      }
+      localStorage.setItem(PAT_KEY, xorEncrypt(pat, currentPassword));
       toast('✅ Configuración guardada');
     };
 
@@ -1305,7 +1319,14 @@
       statusEl.textContent = 'Probando conexión...';
       statusEl.className = 'status-msg';
 
-      const ok = await loadDBFromGitHub();
+      if (!await confirmPasswordIfNeeded()) {
+        statusEl.textContent = '⚠️ Introduce tu contraseña primero';
+        statusEl.classList.add('error');
+        return;
+      }
+
+      const patInput = document.getElementById('set-pat').value.trim();
+      const ok = await loadDBFromGitHub(patInput || undefined);
       if (ok) {
         statusEl.textContent = '✅ Conexión exitosa. DB cargada.';
         statusEl.classList.add('success');
