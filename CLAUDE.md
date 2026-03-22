@@ -63,6 +63,15 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - Persistencia siempre vía `saveData()` → localStorage + GitHub sync
 - `db` es la variable global con toda la BD en memoria
 
+## Filosofía de cambios
+
+**Antes de modificar código, consultar al usuario** si hay más de una forma razonable de resolver el problema. Preferir la solución correcta sobre la rápida.
+
+- Leer y entender el código afectado antes de proponer cualquier cambio.
+- Si hay dudas sobre el enfoque, exponer las opciones con sus pros/contras y preguntar.
+- No hacer cambios colaterales no pedidos (refactors, limpieza, renombrados) aunque parezcan mejoras.
+- Un fix rápido que no entiende la causa raíz es peor que tardar más en dar la solución correcta.
+
 ## Credenciales por defecto
 
 - Usuario: `carlos`
