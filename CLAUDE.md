@@ -4,16 +4,20 @@
 
 **GymPRO** es una PWA (Progressive Web App) en español para seguimiento personal de gimnasio. Permite registrar entrenamientos, métricas de rendimiento, visualizar progreso y sincronizar datos con GitHub. Sin frameworks — vanilla JS puro.
 
+## Despliegue
+
+- **Producción**: GitHub Pages (HTTPS) — rama `master`, raíz del repo
+- **Local**: requiere servidor HTTP (VS Code Live Server, `npx serve`, `python -m http.server`). Abrir `index.html` directamente con `file://` no funciona — el Service Worker y `fetch('./db.json')` requieren HTTP/HTTPS.
+
 ## Arquitectura
 
 ```
-index.html   → Estructura HTML: vistas (Hoy, Historial, Gráficas, Ajustes) + login
-app.js       → Toda la lógica de la app (~1200 líneas)
-index.css    → Dark theme con glassmorphism, variables CSS, mobile-first
-db.js        → Base de datos embebida: ejercicios (~100), rutinas, credenciales
-db.json      → Misma BD en JSON (para GitHub sync y backup)
+index.html    → Estructura HTML: vistas (Hoy, Historial, Gráficas, Ajustes) + login
+app.js        → Toda la lógica de la app (~1200 líneas)
+index.css     → Dark theme con glassmorphism, variables CSS, mobile-first
+db.json       → BD por defecto: ejercicios (~100), rutinas, credenciales; también archivo de sync con GitHub
 manifest.json → Config PWA
-sw.js        → Service Worker (cache network-first, omite GitHub API)
+sw.js         → Service Worker (cache network-first, omite GitHub API) — versión gympro-v3
 ```
 
 ## Stack técnico
@@ -24,7 +28,7 @@ sw.js        → Service Worker (cache network-first, omite GitHub API)
 - **Hashing**: Web Crypto API (SHA-256) con salt `GYMPRO_SALT_2024`
 - **PWA**: Service Worker + Web Manifest
 
-## Estructura de datos (db.js / db.json)
+## Estructura de datos (db.json)
 
 ```javascript
 {
@@ -62,14 +66,13 @@ sw.js        → Service Worker (cache network-first, omite GitHub API)
 ## Credenciales por defecto
 
 - Usuario: `carlos`
-- Password por defecto en db.js (hash SHA-256)
+- Password por defecto en db.json (hash SHA-256)
 
 ## Seguridad
 
 - **NUNCA** commitear `.env` (contiene API keys)
 - El PAT de GitHub se almacena cifrado con XOR en localStorage
-- Verificar que `.gitignore` incluya `.env` antes de commits
 
 ## Commits automáticos
 
-Al terminar cada sesión de modificación, se hace un commit automático con un resumen de los cambios realizados (hook configurado en settings).
+Al terminar cada sesión de modificación, se hace un commit automático con un resumen de los cambios realizados (hook configurado en `.claude/settings.json`).

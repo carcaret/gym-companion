@@ -1,10 +1,10 @@
-const CACHE_NAME = 'gympro-v2';
+const CACHE_NAME = 'gympro-v3';
 const ASSETS = [
   './',
   './index.html',
   './index.css',
   './app.js',
-  './db.js',
+  './db.json',
   './manifest.json'
 ];
 
