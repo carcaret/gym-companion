@@ -796,6 +796,69 @@
       // Don't re-render entire workout, just small update
     },
 
+    toggleHistoryEdit: (date, event) => {
+      event.stopPropagation();
+      if (editingHistoryDates.has(date)) {
+        editingHistoryDates.delete(date);
+      } else {
+        editingHistoryDates.add(date);
+      }
+      renderHistorial();
+    },
+
+    adjustHistoryParam: async (date, logIdx, param, delta) => {
+      const entry = DB.history.find(h => h.date === date);
+      if (!entry) return;
+      const log = entry.logs[logIdx];
+      if (param === 'weight') {
+        log.weight = Math.max(0, Math.round((log.weight + delta) * 10) / 10);
+      } else if (param === 'series') {
+        const newSeries = Math.max(1, log.series + delta);
+        while (log.reps.actual.length < newSeries) log.reps.actual.push(null);
+        while (log.reps.actual.length > newSeries) log.reps.actual.pop();
+        log.series = newSeries;
+      } else if (param === 'repsExpected') {
+        log.reps.expected = Math.max(1, log.reps.expected + delta);
+      }
+      await persistDB();
+      renderHistorial();
+    },
+
+    setHistoryParam: async (date, logIdx, param, value) => {
+      const entry = DB.history.find(h => h.date === date);
+      if (!entry) return;
+      const log = entry.logs[logIdx];
+      const num = parseFloat(value) || 0;
+      if (param === 'weight') log.weight = Math.max(0, num);
+      else if (param === 'series') {
+        const newSeries = Math.max(1, Math.round(num));
+        while (log.reps.actual.length < newSeries) log.reps.actual.push(null);
+        while (log.reps.actual.length > newSeries) log.reps.actual.pop();
+        log.series = newSeries;
+      } else if (param === 'repsExpected') log.reps.expected = Math.max(1, Math.round(num));
+      await persistDB();
+      renderHistorial();
+    },
+
+    adjustHistoryRep: async (date, logIdx, seriesIdx, delta) => {
+      const entry = DB.history.find(h => h.date === date);
+      if (!entry) return;
+      const log = entry.logs[logIdx];
+      const current = log.reps.actual[seriesIdx] !== null ? log.reps.actual[seriesIdx] : log.reps.expected;
+      log.reps.actual[seriesIdx] = Math.max(0, current + delta);
+      await persistDB();
+      renderHistorial();
+    },
+
+    setHistoryRep: async (date, logIdx, seriesIdx, value) => {
+      const entry = DB.history.find(h => h.date === date);
+      if (!entry) return;
+      const log = entry.logs[logIdx];
+      const num = parseInt(value);
+      log.reps.actual[seriesIdx] = isNaN(num) ? null : Math.max(0, num);
+      await persistDB();
+    },
+
     removeExerciseFromRoutine: (dayType, exerciseId, logIdx) => {
       showModal('¿Quitar ejercicio?', `<p class="text-sm">Se eliminará <strong>${getExerciseName(exerciseId)}</strong> de la rutina de ${DAY_LABELS[dayType]}. Los registros históricos se conservarán.</p>`, [
         { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => { } },
@@ -817,9 +880,16 @@
 
   // ── View: Historial ──
   let historialFilter = 'TODOS';
+  const editingHistoryDates = new Set();
 
   function renderHistorial() {
     const content = document.getElementById('historial-content');
+
+    const openIndices = new Set();
+    content.querySelectorAll('.card-body.open').forEach(body => {
+      openIndices.add(body.id.replace('h-body-', ''));
+    });
+
     const entries = [...DB.history].sort((a, b) => b.date.localeCompare(a.date));
     const filtered = historialFilter === 'TODOS' ? entries : entries.filter(e => e.type === historialFilter);
 
@@ -831,6 +901,7 @@
     let html = '';
     filtered.forEach((entry, idx) => {
       const completed = entry.completed !== false;
+      const isEditing = editingHistoryDates.has(entry.date);
       html += `<div class="card history-card" data-hidx="${idx}">
       <div class="card-header" data-hidx="${idx}">
         <div>
@@ -842,23 +913,64 @@
         </div>
         <div class="flex-center gap-sm">
           <span class="type-badge ${entry.type}">${DAY_LABELS[entry.type] || entry.type}</span>
+          <button class="btn-icon" style="font-size:14px;" onclick="GymCompanion.toggleHistoryEdit('${entry.date}',event)">${isEditing ? '✅' : '✏️'}</button>
           <span class="card-chevron" id="h-chevron-${idx}">▼</span>
         </div>
       </div>
       <div class="card-body" id="h-body-${idx}">`;
 
-      entry.logs.forEach(log => {
-        const reps = log.reps.actual && log.reps.actual.length > 0 && log.reps.actual.some(r => r !== null)
-          ? log.reps.actual.map(r => r !== null ? r : '-').join(', ')
-          : `${log.reps.expected} × ${log.series}`;
-        html += `<div class="exercise-row">
-        <div class="exercise-name">${getExerciseName(log.exercise_id)}</div>
-        <div class="exercise-meta">
-          <span class="meta-pill">📊 <strong>${log.series}</strong>s</span>
-          <span class="meta-pill">🔄 <strong>${reps}</strong></span>
-          ${log.weight > 0 ? `<span class="meta-pill">🏋️ <strong>${log.weight}</strong> kg</span>` : ''}
-        </div>
-      </div>`;
+      entry.logs.forEach((log, logIdx) => {
+        if (isEditing) {
+          html += `<div class="exercise-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+          <div class="exercise-name">${getExerciseName(log.exercise_id)}</div>
+          <div class="param-row">
+            <label>Peso (kg)</label>
+            <div class="flex-center gap-sm">
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'weight',-2.5)">−</button>
+              <input class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setHistoryParam('${entry.date}',${logIdx},'weight',this.value)">
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'weight',2.5)">+</button>
+            </div>
+          </div>
+          <div class="param-row">
+            <label>Series</label>
+            <div class="flex-center gap-sm">
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'series',-1)">−</button>
+              <input class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setHistoryParam('${entry.date}',${logIdx},'series',this.value)">
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'series',1)">+</button>
+            </div>
+          </div>
+          <div class="param-row">
+            <label>Reps obj.</label>
+            <div class="flex-center gap-sm">
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'repsExpected',-1)">−</button>
+              <input class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setHistoryParam('${entry.date}',${logIdx},'repsExpected',this.value)">
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'repsExpected',1)">+</button>
+            </div>
+          </div>
+          <div class="mt-sm"><p class="text-xs text-muted mb-sm">Reps por serie:</p>`;
+          for (let s = 0; s < log.series; s++) {
+            const val = log.reps.actual[s];
+            html += `<div class="series-row">
+            <span class="series-label">S${s + 1}</span>
+            <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${entry.date}',${logIdx},${s},-1)">−</button>
+            <input class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setHistoryRep('${entry.date}',${logIdx},${s},this.value)">
+            <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${entry.date}',${logIdx},${s},1)">+</button>
+          </div>`;
+          }
+          html += `</div></div>`;
+        } else {
+          const reps = log.reps.actual && log.reps.actual.length > 0 && log.reps.actual.some(r => r !== null)
+            ? log.reps.actual.map(r => r !== null ? r : '-').join(', ')
+            : `${log.reps.expected} × ${log.series}`;
+          html += `<div class="exercise-row">
+          <div class="exercise-name">${getExerciseName(log.exercise_id)}</div>
+          <div class="exercise-meta">
+            <span class="meta-pill">📊 <strong>${log.series}</strong>s</span>
+            <span class="meta-pill">🔄 <strong>${reps}</strong></span>
+            ${log.weight > 0 ? `<span class="meta-pill">🏋️ <strong>${log.weight}</strong> kg</span>` : ''}
+          </div>
+        </div>`;
+        }
       });
 
       html += '</div></div>';
@@ -874,6 +986,13 @@
         body.classList.toggle('open');
         chevron.classList.toggle('open');
       };
+    });
+
+    openIndices.forEach(idx => {
+      const body = document.getElementById(`h-body-${idx}`);
+      const chevron = document.getElementById(`h-chevron-${idx}`);
+      if (body) body.classList.add('open');
+      if (chevron) chevron.classList.add('open');
     });
   }
 
