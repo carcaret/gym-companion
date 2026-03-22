@@ -73,6 +73,28 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - **NUNCA** commitear `.env` (contiene API keys)
 - El PAT de GitHub se almacena cifrado con XOR en localStorage
 
-## Commits automáticos
+## Commits al final de sesión
 
-Al terminar cada sesión de modificación, se hace un commit automático con un resumen de los cambios realizados (hook configurado en `.claude/settings.json`).
+**Al terminar cada tarea o sesión de modificación, Claude DEBE crear un commit manualmente** con un mensaje descriptivo que explique qué se cambió y por qué. No basta con listar archivos ni stats de git.
+
+### Formato del mensaje de commit
+
+```
+<verbo en infinitivo>: <qué se hizo> — <por qué o efecto>
+
+Ejemplos correctos:
+  fix: corregir decodificación UTF-8 en loadDBFromGitHub — los tildes se mostraban como Ã³
+  feat: añadir filtro por rango de fechas en vista Gráficas
+  refactor: extraer lógica de PR detection a función propia
+  fix: evitar parpadeo al actualizar series durante entreno activo
+
+Ejemplos incorrectos (no usar):
+  Auto-commit: app.js — 1 file changed, 2 insertions(+)
+  update app.js
+```
+
+### Procedimiento
+
+1. Antes de terminar, revisar `git diff` para confirmar qué cambió.
+2. Crear el commit con `git add` de los archivos relevantes y mensaje descriptivo.
+3. El hook Stop en `.claude/settings.json` es solo una red de seguridad para cambios no commiteados; si ya hay commit, no hace nada.

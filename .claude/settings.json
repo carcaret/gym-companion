@@ -5,9 +5,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd '/c/Users/carca/.gemini/antigravity/scratch' && if [ -n \"$(git status --short)\" ]; then git add -A && CHANGED=$(git diff --cached --name-only | head -5 | tr '\\n' ' ' | sed 's/ $//') && SUMMARY=$(git diff --cached --stat | tail -1) && git commit -m \"Auto-commit: $CHANGED — $SUMMARY\"; fi",
+            "command": "cd '/c/Users/carca/.gemini/antigravity/scratch' && if [ -n \"$(git status --short)\" ]; then git add -A && git commit -m \"chore: cambios sin commitear al finalizar sesión (revisar historial)\"; fi",
             "timeout": 30,
-            "statusMessage": "Guardando cambios en git..."
+            "statusMessage": "Guardando cambios pendientes en git..."
           }
         ]
       }
