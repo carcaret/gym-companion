@@ -153,7 +153,8 @@
       if (!res.ok) return null;
       const data = await res.json();
       githubSha = data.sha;
-      return JSON.parse(atob(data.content.replace(/\n/g, '')));
+      const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, '')), c => c.charCodeAt(0));
+      return JSON.parse(new TextDecoder().decode(bytes));
     } catch { return null; }
   }
 
