@@ -284,6 +284,71 @@
     renderHoy();
   }
 
+  // ── Workout Card In-Place Update ──
+  function buildSeriesRowsHtml(logIdx, log) {
+    let html = '';
+    for (let s = 0; s < log.series; s++) {
+      const val = log.reps.actual[s];
+      html += `<div class="series-row">
+        <span class="series-label">S${s + 1}</span>
+        <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},-1)">−</button>
+        <input id="w-rep-${logIdx}-${s}" class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setRep(${logIdx},${s},this.value)">
+        <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},1)">+</button>
+      </div>`;
+    }
+    return html;
+  }
+
+  function updateWorkoutCardInPlace(logIdx, entry) {
+    const log = entry.logs[logIdx];
+    const name = getExerciseName(log.exercise_id);
+
+    const currentVol = computeVolume(log);
+    const currentE1RM = computeE1RM(log);
+    const prevEntries = DB.history.filter(h => h.date !== entry.date);
+    let prevMaxVol = 0, prevMaxE1RM = 0;
+    prevEntries.forEach(e => {
+      e.logs.filter(l => l.exercise_id === log.exercise_id).forEach(l => {
+        prevMaxVol = Math.max(prevMaxVol, computeVolume(l));
+        prevMaxE1RM = Math.max(prevMaxE1RM, computeE1RM(l));
+      });
+    });
+    const isVolRecord = currentVol > 0 && currentVol > prevMaxVol && log.reps.actual.some(r => r !== null);
+    const isE1RMRecord = currentE1RM > 0 && currentE1RM > prevMaxE1RM && log.reps.actual.some(r => r !== null);
+
+    const title = document.getElementById(`w-title-${logIdx}`);
+    if (title) title.innerHTML = `${name}${isVolRecord ? ' <span class="record-badge">🏆 Volumen</span>' : ''}${isE1RMRecord ? ' <span class="record-badge">🏆 e1RM</span>' : ''}`;
+
+    const subtitle = document.getElementById(`w-subtitle-${logIdx}`);
+    if (subtitle) subtitle.textContent = `${log.series}×${log.reps.expected} · ${log.weight > 0 ? log.weight + ' kg' : 'Sin peso'}`;
+
+    const weightInput = document.getElementById(`w-weight-${logIdx}`);
+    if (weightInput) weightInput.value = log.weight;
+
+    const seriesInput = document.getElementById(`w-series-${logIdx}`);
+    if (seriesInput) seriesInput.value = log.series;
+
+    const repsInput = document.getElementById(`w-reps-${logIdx}`);
+    if (repsInput) repsInput.value = log.reps.expected;
+
+    const seriesRows = document.getElementById(`w-seriesrows-${logIdx}`);
+    if (seriesRows) seriesRows.innerHTML = buildSeriesRowsHtml(logIdx, log);
+
+    const hasRecord = entry.logs.some((l) => {
+      const vol = computeVolume(l);
+      const e1rm = computeE1RM(l);
+      const prev = DB.history.filter(h => h.date !== entry.date);
+      let pVol = 0, pE1rm = 0;
+      prev.forEach(e => e.logs.filter(x => x.exercise_id === l.exercise_id).forEach(x => {
+        pVol = Math.max(pVol, computeVolume(x));
+        pE1rm = Math.max(pE1rm, computeE1RM(x));
+      }));
+      return (vol > 0 && vol > pVol && l.reps.actual.some(r => r !== null)) ||
+             (e1rm > 0 && e1rm > pE1rm && l.reps.actual.some(r => r !== null));
+    });
+    document.getElementById('hoy-badge').hidden = !hasRecord;
+  }
+
   // ── Data Helpers ──
   function getLastValuesForExercise(exerciseId, dayType) {
     const entries = DB.history.filter(h => h.type === dayType);
@@ -507,12 +572,12 @@
       html += `<div class="card" id="exercise-card-${logIdx}">
       <div class="card-header" data-idx="${logIdx}">
         <div>
-          <div class="card-title">
+          <div class="card-title" id="w-title-${logIdx}">
             ${name}
             ${isVolRecord ? '<span class="record-badge">🏆 Volumen</span>' : ''}
             ${isE1RMRecord ? '<span class="record-badge">🏆 e1RM</span>' : ''}
           </div>
-          <div class="card-subtitle">${log.series}×${log.reps.expected} · ${log.weight > 0 ? log.weight + ' kg' : 'Sin peso'}</div>
+          <div class="card-subtitle" id="w-subtitle-${logIdx}">${log.series}×${log.reps.expected} · ${log.weight > 0 ? log.weight + ' kg' : 'Sin peso'}</div>
         </div>
         <span class="card-chevron" id="chevron-${logIdx}">▼</span>
       </div>
@@ -523,7 +588,7 @@
       <label>Peso (kg)</label>
       <div class="flex-center gap-sm">
         <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'weight',-2.5)">−</button>
-        <input class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setParam(${logIdx},'weight',this.value)">
+        <input id="w-weight-${logIdx}" class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setParam(${logIdx},'weight',this.value)">
         <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'weight',2.5)">+</button>
       </div>
     </div>
@@ -531,7 +596,7 @@
       <label>Series</label>
       <div class="flex-center gap-sm">
         <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'series',-1)">−</button>
-        <input class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setParam(${logIdx},'series',this.value)">
+        <input id="w-series-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setParam(${logIdx},'series',this.value)">
         <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'series',1)">+</button>
       </div>
     </div>
@@ -539,23 +604,23 @@
       <label>Reps obj.</label>
       <div class="flex-center gap-sm">
         <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'repsExpected',-1)">−</button>
-        <input class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setParam(${logIdx},'repsExpected',this.value)">
+        <input id="w-reps-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setParam(${logIdx},'repsExpected',this.value)">
         <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'repsExpected',1)">+</button>
       </div>
     </div>`;
 
       // Per-series rep inputs
-      html += '<div class="mt-sm"><p class="text-xs text-muted mb-sm" style="margin-top:8px;">Reps realizadas por serie:</p>';
+      html += `<div class="mt-sm"><p class="text-xs text-muted mb-sm" style="margin-top:8px;">Reps realizadas por serie:</p><div id="w-seriesrows-${logIdx}">`;
       for (let s = 0; s < log.series; s++) {
         const val = log.reps.actual[s];
         html += `<div class="series-row">
         <span class="series-label">S${s + 1}</span>
         <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},-1)">−</button>
-        <input class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setRep(${logIdx},${s},this.value)">
+        <input id="w-rep-${logIdx}-${s}" class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setRep(${logIdx},${s},this.value)">
         <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},1)">+</button>
       </div>`;
       }
-      html += '</div>';
+      html += '</div></div>';
 
       // Remove from routine
       html += `<div class="routine-actions">
@@ -756,7 +821,7 @@
         log.reps.expected = Math.max(1, log.reps.expected + delta);
       }
       await persistDB();
-      renderActiveWorkout(document.getElementById('hoy-content'), entry);
+      updateWorkoutCardInPlace(logIdx, entry);
     },
 
     setParam: async (logIdx, param, value) => {
@@ -773,7 +838,7 @@
       }
       else if (param === 'repsExpected') log.reps.expected = Math.max(1, Math.round(num));
       await persistDB();
-      renderActiveWorkout(document.getElementById('hoy-content'), entry);
+      updateWorkoutCardInPlace(logIdx, entry);
     },
 
     adjustRep: async (logIdx, seriesIdx, delta) => {
@@ -783,7 +848,9 @@
       const current = log.reps.actual[seriesIdx] !== null ? log.reps.actual[seriesIdx] : log.reps.expected;
       log.reps.actual[seriesIdx] = Math.max(0, current + delta);
       await persistDB();
-      renderActiveWorkout(document.getElementById('hoy-content'), entry);
+      const input = document.getElementById(`w-rep-${logIdx}-${seriesIdx}`);
+      if (input) input.value = log.reps.actual[seriesIdx];
+      updateWorkoutCardInPlace(logIdx, entry);
     },
 
     setRep: async (logIdx, seriesIdx, value) => {
@@ -793,7 +860,7 @@
       const num = parseInt(value);
       log.reps.actual[seriesIdx] = isNaN(num) ? null : Math.max(0, num);
       await persistDB();
-      // Don't re-render entire workout, just small update
+      updateWorkoutCardInPlace(logIdx, entry);
     },
 
     deleteHistoryEntry: (date, event) => {
