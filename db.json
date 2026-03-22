@@ -18177,6 +18177,86 @@
         }
       ],
       "completed": true
+    },
+    {
+      "date": "2026-03-22",
+      "type": "LUNES",
+      "completed": false,
+      "logs": [
+        {
+          "exercise_id": "prensa_de_piernas",
+          "name": "Prensa de Piernas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              null,
+              null,
+              null,
+              null
+            ]
+          },
+          "weight": 180
+        },
+        {
+          "exercise_id": "press_banca_mancuernas",
+          "name": "Press de Banca con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              null,
+              null,
+              null,
+              null
+            ]
+          },
+          "weight": 28
+        },
+        {
+          "exercise_id": "hammer_row_neutral",
+          "name": "Hammer Row Neutral",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              null,
+              null,
+              null,
+              null
+            ]
+          },
+          "weight": 27.5
+        },
+        {
+          "exercise_id": "landmine_press",
+          "name": "Landmine Press",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              null,
+              null,
+              null
+            ]
+          },
+          "weight": 10
+        },
+        {
+          "exercise_id": "curl_femoral_sentado",
+          "name": "Curl Femoral Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              null,
+              null,
+              null
+            ]
+          },
+          "weight": 90
+        }
+      ]
     }
   ]
 }
