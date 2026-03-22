@@ -1,8 +1,8 @@
-# GymPRO — CLAUDE.md
+# Gym Companion — CLAUDE.md
 
 ## Descripción del proyecto
 
-**GymPRO** es una PWA (Progressive Web App) en español para seguimiento personal de gimnasio. Permite registrar entrenamientos, métricas de rendimiento, visualizar progreso y sincronizar datos con GitHub. Sin frameworks — vanilla JS puro.
+**Gym Companion** es una PWA (Progressive Web App) en español para seguimiento personal de gimnasio. Permite registrar entrenamientos, métricas de rendimiento, visualizar progreso y sincronizar datos con GitHub. Sin frameworks — vanilla JS puro.
 
 ## Despliegue
 
@@ -17,7 +17,7 @@ app.js        → Toda la lógica de la app (~1200 líneas)
 index.css     → Dark theme con glassmorphism, variables CSS, mobile-first
 db.json       → BD por defecto: ejercicios (~100), rutinas, credenciales; también archivo de sync con GitHub
 manifest.json → Config PWA
-sw.js         → Service Worker (cache network-first, omite GitHub API) — versión gympro-v3
+sw.js         → Service Worker (cache network-first, omite GitHub API) — versión gym-companion-v1
 ```
 
 ## Stack técnico
@@ -25,7 +25,7 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - **Frontend**: Vanilla JS + CSS3 (sin frameworks)
 - **Charts**: Chart.js v4.4.7 + date-fns adapter
 - **Storage**: localStorage (primario) + GitHub REST API v3 (sync opcional)
-- **Hashing**: Web Crypto API (SHA-256) con salt `GYMPRO_SALT_2024`
+- **Hashing**: Web Crypto API (SHA-256) con salt `GYMPRO_SALT_2024 (no cambiar — invalida contraseñas existentes)`
 - **PWA**: Service Worker + Web Manifest
 
 ## Estructura de datos (db.json)

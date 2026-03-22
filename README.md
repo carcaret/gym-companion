@@ -1,4 +1,4 @@
-# GymPRO
+# Gym Companion
 
 PWA para seguimiento personal de entrenos de gimnasio. Registra series, pesos y repeticiones, visualiza tu progreso con gráficas y sincroniza tus datos con GitHub.
 

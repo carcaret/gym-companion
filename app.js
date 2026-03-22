@@ -1,5 +1,5 @@
 /* =========================================
-   GymPRO — Main Application
+   Gym Companion — Main Application
    ========================================= */
 
 (() => {
@@ -10,10 +10,10 @@
   const DAY_MAP = { 1: 'LUNES', 3: 'MIERCOLES', 5: 'VIERNES' };
   const DAY_LABELS = { LUNES: 'Lunes', MIERCOLES: 'Miércoles', VIERNES: 'Viernes' };
   const DAY_ICONS = { LUNES: '🔵', MIERCOLES: '🟢', VIERNES: '🟡' };
-  const SESSION_KEY = 'gympro_session';
-  const GITHUB_KEY = 'gympro_github';
-  const DB_LOCAL_KEY = 'gympro_db';
-  const PAT_KEY = 'gympro_pat_enc';
+  const SESSION_KEY = 'gym_companion_session';
+  const GITHUB_KEY = 'gym_companion_github';
+  const DB_LOCAL_KEY = 'gym_companion_db';
+  const PAT_KEY = 'gym_companion_pat_enc';
 
   let DB = null;
   let githubSha = null;
@@ -164,7 +164,7 @@
     try {
       const content = btoa(unescape(encodeURIComponent(JSON.stringify(DB, null, 2))));
       const body = {
-        message: `GymPRO update ${todayStr()}`,
+        message: `Gym Companion update ${todayStr()}`,
         content,
         branch: cfg.branch
       };
@@ -522,25 +522,25 @@
       html += `<div class="param-row">
       <label>Peso (kg)</label>
       <div class="flex-center gap-sm">
-        <button class="btn-icon" onclick="GymPRO.adjustParam(${logIdx},'weight',-2.5)">−</button>
-        <input class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymPRO.setParam(${logIdx},'weight',this.value)">
-        <button class="btn-icon" onclick="GymPRO.adjustParam(${logIdx},'weight',2.5)">+</button>
+        <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'weight',-2.5)">−</button>
+        <input class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setParam(${logIdx},'weight',this.value)">
+        <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'weight',2.5)">+</button>
       </div>
     </div>
     <div class="param-row">
       <label>Series</label>
       <div class="flex-center gap-sm">
-        <button class="btn-icon" onclick="GymPRO.adjustParam(${logIdx},'series',-1)">−</button>
-        <input class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymPRO.setParam(${logIdx},'series',this.value)">
-        <button class="btn-icon" onclick="GymPRO.adjustParam(${logIdx},'series',1)">+</button>
+        <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'series',-1)">−</button>
+        <input class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setParam(${logIdx},'series',this.value)">
+        <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'series',1)">+</button>
       </div>
     </div>
     <div class="param-row">
       <label>Reps obj.</label>
       <div class="flex-center gap-sm">
-        <button class="btn-icon" onclick="GymPRO.adjustParam(${logIdx},'repsExpected',-1)">−</button>
-        <input class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymPRO.setParam(${logIdx},'repsExpected',this.value)">
-        <button class="btn-icon" onclick="GymPRO.adjustParam(${logIdx},'repsExpected',1)">+</button>
+        <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'repsExpected',-1)">−</button>
+        <input class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setParam(${logIdx},'repsExpected',this.value)">
+        <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'repsExpected',1)">+</button>
       </div>
     </div>`;
 
@@ -550,16 +550,16 @@
         const val = log.reps.actual[s];
         html += `<div class="series-row">
         <span class="series-label">S${s + 1}</span>
-        <button class="btn-icon" onclick="GymPRO.adjustRep(${logIdx},${s},-1)">−</button>
-        <input class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymPRO.setRep(${logIdx},${s},this.value)">
-        <button class="btn-icon" onclick="GymPRO.adjustRep(${logIdx},${s},1)">+</button>
+        <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},-1)">−</button>
+        <input class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setRep(${logIdx},${s},this.value)">
+        <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},1)">+</button>
       </div>`;
       }
       html += '</div>';
 
       // Remove from routine
       html += `<div class="routine-actions">
-      <button class="btn-sm btn-danger" onclick="GymPRO.removeExerciseFromRoutine('${entry.type}','${log.exercise_id}',${logIdx})">Quitar de rutina</button>
+      <button class="btn-sm btn-danger" onclick="GymCompanion.removeExerciseFromRoutine('${entry.type}','${log.exercise_id}',${logIdx})">Quitar de rutina</button>
     </div>`;
 
       html += '</div></div>';
@@ -725,7 +725,7 @@
   }
 
   // ── Param adjustments (exposed globally) ──
-  window.GymPRO = {
+  window.GymCompanion = {
     adjustParam: async (logIdx, param, delta) => {
       const entry = getTodayEntry();
       if (!entry) return;
@@ -1133,7 +1133,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `gympro_backup_${todayStr()}.json`;
+      a.download = `gym_companion_backup_${todayStr()}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast('📦 JSON exportado');

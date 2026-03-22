@@ -1,6 +1,6 @@
 {
-  "name": "GymPRO — Seguimiento de Entreno",
-  "short_name": "GymPRO",
+  "name": "Gym Companion — Seguimiento de Entreno",
+  "short_name": "Gym Companion",
   "description": "App de seguimiento de entrenamiento en el gimnasio",
   "start_url": "./index.html",
   "display": "standalone",
