@@ -1311,7 +1311,8 @@
 
       localStorage.setItem(GITHUB_KEY, JSON.stringify({ repo, branch, path }));
       localStorage.setItem(PAT_KEY, xorEncrypt(pat, currentPassword));
-      toast('✅ Configuración guardada');
+      toast('✅ Configuración guardada — sincronizando...');
+      persistDB();
     };
 
     document.getElementById('test-github-btn').onclick = async () => {
