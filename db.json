@@ -18218,15 +18218,15 @@
           "name": "Hammer Row Neutral",
           "series": 4,
           "reps": {
-            "expected": 10,
+            "expected": 11,
             "actual": [
               null,
               null,
               null,
-              null
+              10
             ]
           },
-          "weight": 27.5
+          "weight": 25
         },
         {
           "exercise_id": "landmine_press",
