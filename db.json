@@ -18266,7 +18266,7 @@
     {
       "date": "2026-03-25",
       "type": "MIERCOLES",
-      "completed": false,
+      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -18276,8 +18276,8 @@
             "expected": 12,
             "actual": [
               12,
-              null,
-              null
+              12,
+              12
             ]
           },
           "weight": 104
@@ -18289,9 +18289,9 @@
           "reps": {
             "expected": 8,
             "actual": [
-              null,
-              null,
-              null
+              8,
+              8,
+              8
             ]
           },
           "weight": 63
@@ -18303,8 +18303,8 @@
           "reps": {
             "expected": 11,
             "actual": [
-              null,
-              null,
+              11,
+              11,
               10,
               9
             ]
@@ -18318,10 +18318,10 @@
           "reps": {
             "expected": 9,
             "actual": [
-              null,
-              null,
-              null,
-              null
+              9,
+              9,
+              9,
+              9
             ]
           },
           "weight": 68
@@ -18333,9 +18333,9 @@
           "reps": {
             "expected": 10,
             "actual": [
-              null,
-              null,
-              null
+              10,
+              10,
+              10
             ]
           },
           "weight": 10.35
@@ -18347,9 +18347,9 @@
           "reps": {
             "expected": 14,
             "actual": [
-              null,
-              null,
-              null
+              14,
+              14,
+              14
             ]
           },
           "weight": 32
@@ -18361,9 +18361,9 @@
           "reps": {
             "expected": 12,
             "actual": [
-              null,
-              null,
-              null
+              12,
+              12,
+              12
             ]
           },
           "weight": 16.5
