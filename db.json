@@ -223,6 +223,10 @@
     "encogimiento_trapecio_barra": {
       "id": "encogimiento_trapecio_barra",
       "name": "Encogimiento de Trapecios con Barra"
+    },
+    "reverse_delt_con_mancuernas": {
+      "id": "reverse_delt_con_mancuernas",
+      "name": "Reverse Delt con Mancuernas"
     }
   },
   "routines": {
@@ -240,7 +244,8 @@
       "jalon_al_pecho",
       "reverse_delt_fly",
       "extensiones_de_espalda",
-      "elevaciones_laterales_con_cable"
+      "elevaciones_laterales_con_cable",
+      "reverse_delt_con_mancuernas"
     ],
     "VIERNES": [
       "extension_de_cuadriceps",
@@ -17470,7 +17475,7 @@
           "name": "Abductores",
           "series": 3,
           "reps": {
-            "expected": 8,
+            "expected": 12,
             "actual": []
           },
           "weight": 104
@@ -17739,7 +17744,7 @@
           "name": "Abductores",
           "series": 3,
           "reps": {
-            "expected": 8,
+            "expected": 12,
             "actual": []
           },
           "weight": 104
