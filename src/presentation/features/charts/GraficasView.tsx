@@ -5,7 +5,9 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   BarElement,
+  BarController,
   TimeScale,
   Tooltip,
   Legend,
@@ -14,7 +16,7 @@ import 'chartjs-adapter-date-fns'
 import type { DB } from '../../../domain/shared/DB'
 import { computeVolume, computeE1RM } from '../../../domain/workout/WorkoutMetrics'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, TimeScale, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, LineController, BarElement, BarController, TimeScale, Tooltip, Legend)
 
 type ChartType = 'line' | 'bar'
 
