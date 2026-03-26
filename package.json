@@ -1,0 +1,13 @@
+{
+  "name": "gym-companion",
+  "private": true,
+  "scripts": {
+    "test": "playwright test --pass-with-no-tests",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "serve": "^14.2.4"
+  }
+}
