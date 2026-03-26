@@ -1008,7 +1008,7 @@
           <span class="card-chevron" id="h-chevron-${idx}">▼</span>
         </div>
       </div>
-      <div class="card-body" id="h-body-${idx}">`;
+      <div class="card-body${isEditing ? ' editing' : ''}" id="h-body-${idx}">`;
 
       entry.logs.forEach((log, logIdx) => {
         if (isEditing) {

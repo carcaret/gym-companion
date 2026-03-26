@@ -324,6 +324,11 @@ body {
   padding-top: 14px;
 }
 
+.card-body.open.editing {
+  max-height: none;
+  overflow: visible;
+}
+
 .card-chevron {
   transition: transform 0.3s var(--ease);
   color: var(--text-muted);
