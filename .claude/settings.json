@@ -1,4 +1,18 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm test:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/ccarboet/git/gym-companion"
+    ]
+  },
   "hooks": {
     "Stop": [
       {
