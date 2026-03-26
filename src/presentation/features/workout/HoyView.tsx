@@ -144,94 +144,109 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
 
   // ── RENDER ──────────────────────────────────────────
   return (
-    <div id="hoy-content">
-      <div id="hoy-title" className="view-title">{getTitle()}</div>
+    <>
+      <div className="view-header">
+        <h2 id="hoy-title">{getTitle()}</h2>
+      </div>
 
-      {/* ── STATUS ── */}
-      {todayEntry && (
-        <div className="workout-status">
-          {todayEntry.completed ? '✓ Entreno completado' : '💪 Entreno en curso'}
-        </div>
-      )}
+      <div className="view-body" id="hoy-content">
 
-      {/* ── DAY SELECTOR (rest days, no selection) ── */}
-      {showSelector && (
-        <div className="day-selector">
-          <p>Hoy es día de descanso. ¿Quieres hacer una rutina?</p>
-          {WORKOUT_DAYS.map((d) => (
-            <button key={d} data-day={d} onClick={() => { setSelectedDay(d); setSelectorOpen(false) }}>
-              {DAY_LABELS[d]}
-            </button>
-          ))}
-        </div>
-      )}
+        {/* ── STATUS ── */}
+        {todayEntry && (
+          <div className="workout-status">
+            <span className="pulse-dot" />
+            {todayEntry.completed ? '✓ Entreno completado' : '💪 Entreno en curso'}
+          </div>
+        )}
 
-      {/* ── PREVIEW (routine day or day selected, no active workout) ── */}
-      {effectiveDay && !todayEntry && (
-        <div className="workout-preview">
-          <button id="back-to-selector-btn" onClick={() => { setSelectedDay(null); setSelectorOpen(true) }}>
-            ← Cambiar día
-          </button>
-          <ul>
-            {previewExercises.map((name, i) => (
-              <li key={i}>{name}</li>
+        {/* ── DAY SELECTOR (rest days, no selection) ── */}
+        {showSelector && (
+          <div className="day-selector">
+            <p className="day-selector-title">Hoy es día de descanso. ¿Quieres hacer una rutina?</p>
+            {WORKOUT_DAYS.map((d) => (
+              <button key={d} data-day={d} className="day-btn" onClick={() => { setSelectedDay(d); setSelectorOpen(false) }}>
+                <span className="day-icon">🗓️</span>
+                <span className="day-info">
+                  <span className="day-name">{DAY_LABELS[d]}</span>
+                  <span className="day-exercises">{(db.routines[d] ?? []).length} ejercicios</span>
+                </span>
+              </button>
             ))}
-          </ul>
-          <button id="add-exercise-btn" onClick={() => onModalRequest({ type: 'add-exercise' })}>
-            + Añadir ejercicio
-          </button>
-          <button id="start-workout-btn" onClick={startWorkout}>
-            Iniciar entreno
-          </button>
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* ── ACTIVE WORKOUT ── */}
-      {todayEntry && !todayEntry.completed && (
-        <div className="active-workout">
-          <button id="add-exercise-mid-btn" onClick={() => onModalRequest({ type: 'add-exercise' })}>
-            + Ejercicio
-          </button>
-          {todayEntry.logs.map((log, i) => (
-            <ExerciseCard
-              key={`${log.exercise_id}-${i}`}
-              log={log}
-              cardIdx={i}
-              expanded={expandedCards.has(i)}
-              onToggle={() => toggleCard(i)}
-              onRepUpdate={(si, reps) => updateSeriesRep(i, si, reps)}
-              onWeightChange={(d) => updateWeight(i, d)}
-              onSeriesChange={(d) => updateSeries(i, d)}
-              onRepsChange={(d) => updateExpectedReps(i, d)}
-              onRemove={() => onModalRequest({ type: 'confirm-remove', exerciseIdx: i })}
-            />
-          ))}
-          <button id="finish-workout-btn" onClick={finishWorkout}>
-            Finalizar entreno
-          </button>
-        </div>
-      )}
+        {/* ── PREVIEW (routine day or day selected, no active workout) ── */}
+        {effectiveDay && !todayEntry && (
+          <div id="workout-preview">
+            <button id="back-to-selector-btn" className="btn-secondary btn-sm" onClick={() => { setSelectedDay(null); setSelectorOpen(true) }}>
+              ← Cambiar día
+            </button>
+            <ul>
+              {previewExercises.map((name, i) => (
+                <li key={i}>{name}</li>
+              ))}
+            </ul>
+            <div className="workout-actions">
+              <button id="add-exercise-btn" className="btn-secondary" onClick={() => onModalRequest({ type: 'add-exercise' })}>
+                + Añadir ejercicio
+              </button>
+              <button id="start-workout-btn" className="btn-primary" onClick={startWorkout}>
+                Iniciar entreno
+              </button>
+            </div>
+          </div>
+        )}
 
-      {/* ── COMPLETED WORKOUT ── */}
-      {todayEntry?.completed && (
-        <div className="completed-workout">
-          {todayEntry.logs.map((log, i) => (
-            <ExerciseCard
-              key={`${log.exercise_id}-${i}`}
-              log={log}
-              cardIdx={i}
-              expanded={expandedCards.has(i)}
-              onToggle={() => toggleCard(i)}
-              onRepUpdate={() => {}}
-              onWeightChange={() => {}}
-              onSeriesChange={() => {}}
-              onRepsChange={() => {}}
-              onRemove={() => {}}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+        {/* ── ACTIVE WORKOUT ── */}
+        {todayEntry && !todayEntry.completed && (
+          <div id="active-workout">
+            {todayEntry.logs.map((log, i) => (
+              <ExerciseCard
+                key={`${log.exercise_id}-${i}`}
+                log={log}
+                cardIdx={i}
+                expanded={expandedCards.has(i)}
+                onToggle={() => toggleCard(i)}
+                onRepUpdate={(si, reps) => updateSeriesRep(i, si, reps)}
+                onWeightChange={(d) => updateWeight(i, d)}
+                onSeriesChange={(d) => updateSeries(i, d)}
+                onRepsChange={(d) => updateExpectedReps(i, d)}
+                onRemove={() => onModalRequest({ type: 'confirm-remove', exerciseIdx: i })}
+              />
+            ))}
+            <div className="workout-actions">
+              <button id="add-exercise-mid-btn" className="btn-secondary" onClick={() => onModalRequest({ type: 'add-exercise' })}>
+                + Ejercicio
+              </button>
+              <button id="finish-workout-btn" className="btn-primary" onClick={finishWorkout}>
+                Finalizar entreno
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── COMPLETED WORKOUT ── */}
+        {todayEntry?.completed && (
+          <div id="completed-workout">
+            {todayEntry.logs.map((log, i) => (
+              <ExerciseCard
+                key={`${log.exercise_id}-${i}`}
+                log={log}
+                cardIdx={i}
+                expanded={expandedCards.has(i)}
+                onToggle={() => toggleCard(i)}
+                onRepUpdate={() => {}}
+                onWeightChange={() => {}}
+                onSeriesChange={() => {}}
+                onRepsChange={() => {}}
+                onRemove={() => {}}
+              />
+            ))}
+          </div>
+        )}
+
+      </div>
+    </>
   )
 }
 
@@ -251,19 +266,21 @@ interface CardProps {
 function ExerciseCard({ log, cardIdx, expanded, onToggle, onRepUpdate, onWeightChange, onSeriesChange, onRepsChange, onRemove }: CardProps) {
   const i = cardIdx
   return (
-    <div id={`exercise-card-${i}`} className="exercise-card">
+    <div id={`exercise-card-${i}`} className="card">
       <div className="card-header" onClick={onToggle}>
-        <span>{log.name}</span>
+        <div className="card-title">{log.name}</div>
         <span className="card-subtitle">{log.series} × {log.reps.expected} @ {log.weight}kg</span>
+        <span className={`card-chevron${expanded ? ' open' : ''}`}>▾</span>
       </div>
       <div id={`body-${i}`} className={`card-body${expanded ? ' open' : ''}`}>
         {/* Series rows */}
         {Array.from({ length: log.series }).map((_, si) => (
           <div key={si} className="series-row">
-            <span>Serie {si + 1}</span>
+            <span className="series-label">{si + 1}</span>
             <button className="btn-icon" onClick={() => onRepUpdate(si, Math.max(0, (log.reps.actual[si] ?? log.reps.expected) - 1))}>−</button>
             <input
               id={`w-rep-${i}-${si}`}
+              className="series-input"
               type="number"
               min={0}
               value={log.reps.actual[si] ?? log.reps.expected}
@@ -274,24 +291,24 @@ function ExerciseCard({ log, cardIdx, expanded, onToggle, onRepUpdate, onWeightC
         ))}
         {/* Param rows */}
         <div className="param-row">
-          <span>Peso</span>
+          <label>Peso</label>
           <button className="btn-icon" onClick={() => onWeightChange(-2.5)}>−</button>
-          <input id={`w-weight-${i}`} type="number" min={0} step={2.5} value={log.weight} readOnly />
+          <input id={`w-weight-${i}`} className="param-input" type="number" min={0} step={2.5} value={log.weight} readOnly />
           <button className="btn-icon" onClick={() => onWeightChange(2.5)}>+</button>
         </div>
         <div className="param-row">
-          <span>Series</span>
+          <label>Series</label>
           <button className="btn-icon" onClick={() => onSeriesChange(-1)}>−</button>
-          <input id={`w-series-${i}`} type="number" min={1} value={log.series} readOnly />
+          <input id={`w-series-${i}`} className="param-input" type="number" min={1} value={log.series} readOnly />
           <button className="btn-icon" onClick={() => onSeriesChange(1)}>+</button>
         </div>
         <div className="param-row">
-          <span>Reps obj.</span>
+          <label>Reps obj.</label>
           <button className="btn-icon" onClick={() => onRepsChange(-1)}>−</button>
-          <input id={`w-reps-${i}`} type="number" min={1} value={log.reps.expected} readOnly />
+          <input id={`w-reps-${i}`} className="param-input" type="number" min={1} value={log.reps.expected} readOnly />
           <button className="btn-icon" onClick={() => onRepsChange(1)}>+</button>
         </div>
-        <button className="btn-danger" onClick={onRemove}>Quitar de rutina</button>
+        <button className="btn-danger btn-sm" onClick={onRemove}>Quitar de rutina</button>
       </div>
     </div>
   )

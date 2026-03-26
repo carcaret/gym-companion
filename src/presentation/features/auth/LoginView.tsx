@@ -24,28 +24,37 @@ export function LoginView({ onLogin }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="login-form">
-      <label htmlFor="login-user">Usuario</label>
-      <input
-        id="login-user"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        autoComplete="username"
-      />
-      <label htmlFor="login-pass">Contraseña</label>
-      <input
-        id="login-pass"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        autoComplete="current-password"
-      />
-      <div id="login-error" hidden={!error}>
-        {error && <span>Datos incorrectos</span>}
-      </div>
-      <button id="login-btn" type="submit" disabled={loading}>
-        {loading ? 'Cargando…' : 'Entrar'}
-      </button>
-    </form>
+    <div className="login-container">
+      <div className="login-logo">🏋️</div>
+      <h1 className="login-title">Gym Companion</h1>
+      <p className="login-subtitle">Tu compañero de entreno</p>
+      <form id="login-form" onSubmit={handleSubmit}>
+        <div className="input-group">
+          <label htmlFor="login-user">Usuario</label>
+          <input
+            id="login-user"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
+          />
+        </div>
+        <div className="input-group">
+          <label htmlFor="login-pass">Contraseña</label>
+          <input
+            id="login-pass"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
+        </div>
+        <div id="login-error" hidden={!error}>
+          {error && <span>Datos incorrectos</span>}
+        </div>
+        <button id="login-btn" type="submit" className="btn-primary" disabled={loading}>
+          {loading ? 'Cargando…' : 'Entrar'}
+        </button>
+      </form>
+    </div>
   )
 }

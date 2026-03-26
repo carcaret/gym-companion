@@ -62,9 +62,12 @@ export function HistorialView({ db, onUpdateDB, onModalRequest }: Props) {
   ]
 
   return (
-    <div className="historial-view">
-      {/* Filters */}
-      <div className="history-filters">
+    <>
+      <div className="view-header">
+        <h2>Historial</h2>
+      </div>
+
+      <div className="filter-bar">
         {FILTERS.map(({ label, value }) => (
           <button
             key={value}
@@ -77,68 +80,73 @@ export function HistorialView({ db, onUpdateDB, onModalRequest }: Props) {
         ))}
       </div>
 
-      {/* Empty state */}
-      {displayed.length === 0 && (
-        <div className="empty-state">No hay sesiones para este filtro</div>
-      )}
+      <div className="view-body">
+        {/* Empty state */}
+        {displayed.length === 0 && (
+          <div className="empty-state">No hay sesiones para este filtro</div>
+        )}
 
-      {/* History cards */}
-      <div id="history-list">
-      {displayed.map((entry, i) => {
-        const expanded = expandedEntries.has(i)
-        const editing = editingEntries.has(i)
-        return (
-          <div key={entry.date} className="history-card">
-            <div className="card-header" onClick={() => toggleExpand(i)}>
-              <span className="date-text">{entry.date}</span>
-              <span className={`type-badge ${entry.type}`}>{DAY_LABELS[entry.type]}</span>
-              <span className="card-subtitle">{entry.logs.length} ejercicios</span>
-              <button
-                className="btn-icon"
-                onClick={(e) => { e.stopPropagation(); toggleEdit(i) }}
-                title="Editar"
-              >
-                {editing ? '✅' : '✏️'}
-              </button>
-              <button
-                className="btn-icon"
-                onClick={(e) => { e.stopPropagation(); onModalRequest({ type: 'confirm-delete', entryDate: entry.date }) }}
-                title="Borrar"
-              >
-                🗑️
-              </button>
-            </div>
-            <div id={`h-body-${i}`} className={`card-body${expanded ? ' open' : ''}${editing ? ' editing' : ''}`}>
-              {entry.logs.map((log, li) => (
-                <div key={log.exercise_id} className="exercise-row">
-                  <span className="exercise-name">{log.name}</span>
-                  <div className="param-row">
-                    <span>Peso</span>
-                    <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', -2.5)}>−</button>
-                    {editing
-                      ? <input className="param-input" type="number" value={log.weight} onChange={() => {}} />
-                      : <span className="param-input">{log.weight}</span>}
-                    <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', 2.5)}>+</button>
-                  </div>
-                  <div className="param-row">
-                    <span>Series</span>
-                    <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', -1)}>−</button>
-                    {editing
-                      ? <input className="param-input" type="number" value={log.series} onChange={() => {}} />
-                      : <span className="param-input">{log.series}</span>}
-                    <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', 1)}>+</button>
-                  </div>
-                  <div className="param-row">
-                    <span>Reps</span>
-                    <span>{log.reps.actual.filter((r) => r !== null).join(', ') || log.reps.expected}</span>
-                  </div>
+        {/* History cards */}
+        <div id="history-list">
+        {displayed.map((entry, i) => {
+          const expanded = expandedEntries.has(i)
+          const editing = editingEntries.has(i)
+          return (
+            <div key={entry.date} className="card history-card">
+              <div className="card-header" onClick={() => toggleExpand(i)}>
+                <div className="card-title">
+                  <span className="date-text">{entry.date}</span>
+                  <span className={`type-badge ${entry.type}`}>{DAY_LABELS[entry.type]}</span>
                 </div>
-              ))}
+                <span className="card-subtitle">{entry.logs.length} ejercicios</span>
+                <button
+                  className="btn-icon"
+                  onClick={(e) => { e.stopPropagation(); toggleEdit(i) }}
+                  title="Editar"
+                >
+                  {editing ? '✅' : '✏️'}
+                </button>
+                <button
+                  className="btn-icon"
+                  onClick={(e) => { e.stopPropagation(); onModalRequest({ type: 'confirm-delete', entryDate: entry.date }) }}
+                  title="Borrar"
+                >
+                  🗑️
+                </button>
+                <span className={`card-chevron${expanded ? ' open' : ''}`}>▾</span>
+              </div>
+              <div id={`h-body-${i}`} className={`card-body${expanded ? ' open' : ''}${editing ? ' editing' : ''}`}>
+                {entry.logs.map((log, li) => (
+                  <div key={log.exercise_id} className="exercise-row">
+                    <span className="exercise-name">{log.name}</span>
+                    <div className="param-row">
+                      <label>Peso</label>
+                      <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', -2.5)}>−</button>
+                      {editing
+                        ? <input className="param-input" type="number" value={log.weight} onChange={() => {}} />
+                        : <span className="param-input">{log.weight}</span>}
+                      <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', 2.5)}>+</button>
+                    </div>
+                    <div className="param-row">
+                      <label>Series</label>
+                      <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', -1)}>−</button>
+                      {editing
+                        ? <input className="param-input" type="number" value={log.series} onChange={() => {}} />
+                        : <span className="param-input">{log.series}</span>}
+                      <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', 1)}>+</button>
+                    </div>
+                    <div className="param-row">
+                      <label>Reps</label>
+                      <span>{log.reps.actual.filter((r) => r !== null).join(', ') || log.reps.expected}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

@@ -104,59 +104,72 @@ export function GraficasView({ db }: Props) {
   }, [db.history, selectedExercise, chartType, dateFrom, dateTo])
 
   return (
-    <div className="graficas-view">
-      <div className="graficas-controls">
-        <div className="date-range">
-          <label htmlFor="chart-from">Desde</label>
-          <input
-            id="chart-from"
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-          />
-          <label htmlFor="chart-to">Hasta</label>
-          <input
-            id="chart-to"
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-          />
+    <>
+      <div className="view-header">
+        <h2>Gráficas</h2>
+      </div>
+
+      <div className="view-body">
+        <div className="graficas-controls">
+          <div className="date-range">
+            <div className="input-group small">
+              <label htmlFor="chart-from">Desde</label>
+              <input
+                id="chart-from"
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+              />
+            </div>
+            <div className="input-group small">
+              <label htmlFor="chart-to">Hasta</label>
+              <input
+                id="chart-to"
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="input-group">
+            <select
+              id="chart-exercise-select"
+              value={selectedExercise}
+              onChange={(e) => setSelectedExercise(e.target.value)}
+            >
+              <option value="">-- Selecciona un ejercicio --</option>
+              {exercisesWithHistory.map((ex) => (
+                <option key={ex.id} value={ex.id}>{ex.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="chart-toggle">
+            <button
+              data-chart="line"
+              className={`toggle-btn${chartType === 'line' ? ' active' : ''}`}
+              onClick={() => setChartType('line')}
+            >
+              Líneas
+            </button>
+            <button
+              data-chart="bar"
+              className={`toggle-btn${chartType === 'bar' ? ' active' : ''}`}
+              onClick={() => setChartType('bar')}
+            >
+              Barras
+            </button>
+          </div>
         </div>
-        <select
-          id="chart-exercise-select"
-          value={selectedExercise}
-          onChange={(e) => setSelectedExercise(e.target.value)}
-        >
-          <option value="">-- Selecciona un ejercicio --</option>
-          {exercisesWithHistory.map((ex) => (
-            <option key={ex.id} value={ex.id}>{ex.name}</option>
-          ))}
-        </select>
-        <div className="chart-toggle">
-          <button
-            data-chart="line"
-            className={`toggle-btn${chartType === 'line' ? ' active' : ''}`}
-            onClick={() => setChartType('line')}
-          >
-            Líneas
-          </button>
-          <button
-            data-chart="bar"
-            className={`toggle-btn${chartType === 'bar' ? ' active' : ''}`}
-            onClick={() => setChartType('bar')}
-          >
-            Barras
-          </button>
+
+        <h3 className="chart-section-title">Volumen y e1RM</h3>
+        <div className="chart-container">
+          <canvas id="chart-canvas" ref={canvas1Ref} />
+        </div>
+        <h3 className="chart-section-title">Evolución del Peso</h3>
+        <div className="chart-container">
+          <canvas id="chart-canvas-weight" ref={canvas2Ref} />
         </div>
       </div>
-      <h3 className="chart-section-title">Volumen y e1RM</h3>
-      <div className="chart-container">
-        <canvas id="chart-canvas" ref={canvas1Ref} />
-      </div>
-      <h3 className="chart-section-title">Evolución del Peso</h3>
-      <div className="chart-container">
-        <canvas id="chart-canvas-weight" ref={canvas2Ref} />
-      </div>
-    </div>
+    </>
   )
 }

@@ -181,16 +181,17 @@ export function App() {
             <h3 id="modal-title">Añadir ejercicio</h3>
             <input
               id="exercise-search-input"
+              className="exercise-search"
               type="text"
               placeholder="Buscar ejercicio..."
               value={exerciseSearch}
               onChange={(e) => setExerciseSearch(e.target.value)}
               autoFocus
             />
-            <ul id="exercise-modal-list">
+            <ul id="exercise-modal-list" className="exercise-list">
               {filteredExercises.map((ex) => (
-                <li key={ex.id} onClick={() => handleAddExercise(ex.id)} style={{ cursor: 'pointer' }}>
-                  {ex.name}
+                <li key={ex.id} className="exercise-list-item" onClick={() => handleAddExercise(ex.id)}>
+                  {ex.name} <span className="add-icon">＋</span>
                 </li>
               ))}
             </ul>
