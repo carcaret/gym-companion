@@ -18,12 +18,12 @@ interface Props {
 
 export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: Props) {
   const [selectedDay, setSelectedDay] = useState<DayOfWeek | null>(dayType)
+  const [selectorOpen, setSelectorOpen] = useState(false)
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set())
 
   const todayEntry = db.history.find((h) => h.date === todayStr) ?? null
 
-  // Sync selectedDay when dayType changes (e.g. clock mock)
-  const effectiveDay = selectedDay ?? dayType
+  const effectiveDay = selectorOpen ? null : (selectedDay ?? dayType)
 
   function toggleCard(i: number) {
     setExpandedCards((prev) => {
@@ -36,7 +36,7 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
 
   // ── REST DAY / DAY SELECTOR ──────────────────────
   const isRestDay = !dayType
-  const showSelector = isRestDay && !selectedDay
+  const showSelector = selectorOpen || (isRestDay && !selectedDay)
 
   // ── TITLE ──────────────────────────────────────────
   function getTitle() {
@@ -159,7 +159,7 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
         <div className="day-selector">
           <p>Hoy es día de descanso. ¿Quieres hacer una rutina?</p>
           {WORKOUT_DAYS.map((d) => (
-            <button key={d} data-day={d} onClick={() => setSelectedDay(d)}>
+            <button key={d} data-day={d} onClick={() => { setSelectedDay(d); setSelectorOpen(false) }}>
               {DAY_LABELS[d]}
             </button>
           ))}
@@ -169,11 +169,9 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
       {/* ── PREVIEW (routine day or day selected, no active workout) ── */}
       {effectiveDay && !todayEntry && (
         <div className="workout-preview">
-          {isRestDay && (
-            <button id="back-to-selector-btn" onClick={() => setSelectedDay(null)}>
-              ← Cambiar día
-            </button>
-          )}
+          <button id="back-to-selector-btn" onClick={() => { setSelectedDay(null); setSelectorOpen(true) }}>
+            ← Cambiar día
+          </button>
           <ul>
             {previewExercises.map((name, i) => (
               <li key={i}>{name}</li>

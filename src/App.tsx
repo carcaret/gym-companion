@@ -175,7 +175,7 @@ export function App() {
       </div>
 
       {/* Single modal overlay */}
-      <div id="modal-overlay" hidden={!modalState}>
+      <div id="modal-overlay" className="modal-overlay" hidden={!modalState}>
         {modalState?.type === 'add-exercise' && (
           <div className="modal" id="modal-box">
             <h3 id="modal-title">Añadir ejercicio</h3>

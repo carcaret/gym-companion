@@ -83,6 +83,7 @@ export function HistorialView({ db, onUpdateDB, onModalRequest }: Props) {
       )}
 
       {/* History cards */}
+      <div id="history-list">
       {displayed.map((entry, i) => {
         const expanded = expandedEntries.has(i)
         const editing = editingEntries.has(i)
@@ -114,13 +115,17 @@ export function HistorialView({ db, onUpdateDB, onModalRequest }: Props) {
                   <div className="param-row">
                     <span>Peso</span>
                     <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', -2.5)}>−</button>
-                    <input className="param-input" type="number" value={log.weight} readOnly={!editing} onChange={() => {}} />
+                    {editing
+                      ? <input className="param-input" type="number" value={log.weight} onChange={() => {}} />
+                      : <span className="param-input">{log.weight}</span>}
                     <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', 2.5)}>+</button>
                   </div>
                   <div className="param-row">
                     <span>Series</span>
                     <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', -1)}>−</button>
-                    <input className="param-input" type="number" value={log.series} readOnly={!editing} onChange={() => {}} />
+                    {editing
+                      ? <input className="param-input" type="number" value={log.series} onChange={() => {}} />
+                      : <span className="param-input">{log.series}</span>}
                     <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', 1)}>+</button>
                   </div>
                   <div className="param-row">
@@ -133,6 +138,7 @@ export function HistorialView({ db, onUpdateDB, onModalRequest }: Props) {
           </div>
         )
       })}
+      </div>
     </div>
   )
 }
