@@ -17,11 +17,13 @@ export async function seedLoggedIn(page: Page) {
 }
 
 /**
- * Limpia localStorage para empezar desde la pantalla de login.
- * Útil para tests de autenticación.
+ * Seed solo la DB en localStorage sin sesión activa.
+ * La app arranca en la pantalla de login y al hacer login usa testDb.
+ * Útil para tests de autenticación con usuario 'test' / 'test1234'.
  */
-export async function seedClean(page: Page) {
-  await page.addInitScript(() => {
+export async function seedForLogin(page: Page) {
+  await page.addInitScript(({ db }) => {
     localStorage.clear();
-  });
+    localStorage.setItem('gym_companion_db', JSON.stringify(db));
+  }, { db: testDb });
 }

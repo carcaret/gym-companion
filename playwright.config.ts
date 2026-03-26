@@ -8,8 +8,10 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:4321',
-    ...devices['iPhone 14'],
+    browserName: 'chromium',
+    viewport: { width: 390, height: 844 },
     locale: 'es-ES',
+    userAgent: devices['iPhone 14'].userAgent,
   },
 
   webServer: {
