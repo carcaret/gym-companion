@@ -104,16 +104,17 @@ describe('ExerciseLogCard — variante inline', () => {
     expect(text).toMatch(/80/)
     expect(text).toMatch(/Series/)
     expect(text).toMatch(/3/)
-    expect(text).toMatch(/Reps/)
-    expect(text).toMatch(/obj.*10/)
+    expect(text).toMatch(/Reps obj/)
+    expect(text).toMatch(/10/)
   })
 
-  it('muestra reps reales desglosadas', () => {
+  it('muestra reps reales desglosadas en fila separada', () => {
     render(
       <ExerciseLogCard log={baselog} cardIdx={0} expanded={true} editing={false} onToggleExpand={vi.fn()} variant="inline" />
     )
     const text = document.querySelector('.exercise-row')!.textContent!
-    expect(text).toMatch(/real.*10.*9.*8/)
+    expect(text).toMatch(/Reales/)
+    expect(text).toMatch(/10, 9, 8/)
   })
 })
 

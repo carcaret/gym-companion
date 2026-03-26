@@ -106,14 +106,15 @@ export function ExerciseLogCard({
               <button className="btn-icon" onClick={() => onExpectedRepsChange(1)}>+</button>
             </>
           ) : (
-            <span className="param-input">
-              obj: {log.reps.expected}
-              {actualesRegistradas.length > 0 && (
-                <> · real: {actualesRegistradas.join(', ')}</>
-              )}
-            </span>
+            <span className="param-input">{log.reps.expected}</span>
           )}
         </div>
+        {!editing && actualesRegistradas.length > 0 && (
+          <div className="param-row">
+            <label>Reales</label>
+            <span className="param-input">{actualesRegistradas.join(', ')}</span>
+          </div>
+        )}
       </>
     )
   }

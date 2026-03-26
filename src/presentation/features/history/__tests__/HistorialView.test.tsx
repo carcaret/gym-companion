@@ -73,16 +73,16 @@ describe('HistorialView — botones +/− solo en edición (Bug 2)', () => {
 describe('HistorialView — formato de reps (Bug 2)', () => {
   it('muestra las reps objetivo (expected)', () => {
     render(<HistWrapper />)
-    // El número objetivo es 10; debería aparecer en el contexto de reps
     const content = document.querySelector('#h-body-0')?.textContent ?? ''
-    expect(content).toMatch(/obj.*10|10.*obj/i)
+    expect(content).toMatch(/Reps obj/)
+    expect(content).toMatch(/10/)
   })
 
-  it('muestra las reps reales cuando existen', () => {
+  it('muestra las reps reales en fila separada cuando existen', () => {
     render(<HistWrapper />)
     const content = document.querySelector('#h-body-0')?.textContent ?? ''
-    // actual: [10, 9, 8, 10] → debería contener "9" o "8" (valores reales)
-    expect(content).toMatch(/9/)
+    expect(content).toMatch(/Reales/)
+    expect(content).toMatch(/10, 9, 8, 10/)
   })
 
   it('sólo muestra objetivo cuando no hay reps reales registradas', () => {
@@ -98,8 +98,7 @@ describe('HistorialView — formato de reps (Bug 2)', () => {
     render(<HistWrapper initialDB={dbSinReales} />)
     const content = document.querySelector('#h-body-0')?.textContent ?? ''
     expect(content).toMatch(/12/)
-    // No debería tener "real:" si no hay reps reales
-    expect(content).not.toMatch(/real:/i)
+    expect(content).not.toMatch(/Reales/)
   })
 })
 
@@ -155,7 +154,9 @@ describe('HistorialView — edición completa', () => {
     expect(text).toMatch(/80/)
     expect(text).toMatch(/Series/)
     expect(text).toMatch(/4/)
-    expect(text).toMatch(/obj.*10/)
-    expect(text).toMatch(/real.*10.*9.*8.*10/)
+    expect(text).toMatch(/Reps obj/)
+    expect(text).toMatch(/10/)
+    expect(text).toMatch(/Reales/)
+    expect(text).toMatch(/10, 9, 8, 10/)
   })
 })
