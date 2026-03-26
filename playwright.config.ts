@@ -15,8 +15,9 @@ export default defineConfig({
   },
 
   webServer: {
-    command: 'npx serve . -p 4321 --no-clipboard',
+    command: 'vite build && npx serve dist -p 4321 --no-clipboard',
     port: 4321,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
+    timeout: 120000,
   },
 });

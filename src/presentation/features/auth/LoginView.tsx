@@ -26,11 +26,24 @@ export function LoginView({ onLogin }: Props) {
   return (
     <form onSubmit={handleSubmit} className="login-form">
       <label htmlFor="login-user">Usuario</label>
-      <input id="login-user" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
-      <label htmlFor="login-pwd">Contraseña</label>
-      <input id="login-pwd" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
-      {error && <p role="alert">{error}</p>}
-      <button type="submit" disabled={loading}>
+      <input
+        id="login-user"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        autoComplete="username"
+      />
+      <label htmlFor="login-pass">Contraseña</label>
+      <input
+        id="login-pass"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        autoComplete="current-password"
+      />
+      <div id="login-error" hidden={!error}>
+        {error && <span>Datos incorrectos</span>}
+      </div>
+      <button id="login-btn" type="submit" disabled={loading}>
         {loading ? 'Cargando…' : 'Entrar'}
       </button>
     </form>

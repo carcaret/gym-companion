@@ -14,10 +14,11 @@ interface Props {
 
 export function BottomNav({ activeView, onNavigate }: Props) {
   return (
-    <nav className="bottom-nav">
+    <nav id="tab-bar" className="bottom-nav">
       {TABS.map(({ id, label, icon }) => (
         <button
           key={id}
+          data-view={id}
           onClick={() => onNavigate(id)}
           aria-current={activeView === id ? 'page' : undefined}
           className={`nav-tab${activeView === id ? ' active' : ''}`}
