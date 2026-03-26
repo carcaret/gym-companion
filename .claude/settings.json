@@ -1,11 +1,27 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm test:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx vite:*)",
+      "Bash(npx playwright:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/ccarboet/git/gym-companion"
+    ]
+  },
   "hooks": {
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "cd '/c/Users/carca/.gemini/antigravity/scratch' && if [ -n \"$(git status --short)\" ]; then git add -A && git commit -m \"chore: cambios sin commitear al finalizar sesión (revisar historial)\"; fi",
+            "command": "cd '/workspaces/gym-companion' && if [ -n \"$(git status --short)\" ]; then git add -A && git commit -m \"chore: cambios sin commitear al finalizar sesión (revisar historial)\"; fi",
             "timeout": 30,
             "statusMessage": "Guardando cambios pendientes en git..."
           }
