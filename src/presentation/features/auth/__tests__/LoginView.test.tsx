@@ -11,6 +11,16 @@ describe('LoginView', () => {
     expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument()
   })
 
+  it('el input de usuario tiene type="text" para que los estilos CSS se apliquen', () => {
+    render(<LoginView onLogin={vi.fn()} />)
+    expect(screen.getByLabelText(/usuario/i)).toHaveAttribute('type', 'text')
+  })
+
+  it('el input de contraseña tiene type="password"', () => {
+    render(<LoginView onLogin={vi.fn()} />)
+    expect(screen.getByLabelText(/contraseña/i)).toHaveAttribute('type', 'password')
+  })
+
   it('llama onLogin con usuario y contraseña al enviar', async () => {
     const onLogin = vi.fn().mockResolvedValue(undefined)
     render(<LoginView onLogin={onLogin} />)
@@ -26,7 +36,7 @@ describe('LoginView', () => {
     await userEvent.type(screen.getByLabelText(/usuario/i), 'bad')
     await userEvent.type(screen.getByLabelText(/contraseña/i), 'wrong')
     await userEvent.click(screen.getByRole('button', { name: /entrar/i }))
-    expect(await screen.findByText(/credenciales incorrectas/i)).toBeInTheDocument()
+    expect(await screen.findByText(/datos incorrectos/i)).toBeInTheDocument()
   })
 
   it('deshabilita el botón mientras está cargando', async () => {

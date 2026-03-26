@@ -56,6 +56,14 @@ describe('LoginUseCase', () => {
 
     await expect(sut.execute('otro', 'password')).rejects.toThrow('Credenciales incorrectas')
   })
+
+  it('lanza AuthError cuando storage.load() devuelve null (localStorage vacío)', async () => {
+    const storage = { ...makeStorageRepo(), load: vi.fn().mockReturnValue(null) }
+    const crypto = makeCrypto()
+    const sut = new LoginUseCase(storage as never, crypto)
+
+    await expect(sut.execute('carlos', 'admin')).rejects.toThrow('Credenciales incorrectas')
+  })
 })
 
 describe('LogoutUseCase', () => {
