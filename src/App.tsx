@@ -29,17 +29,31 @@ export function App() {
   const dayType = DAY_MAP[new Date().getDay()] ?? null
 
   useEffect(() => {
-    const session = useCases.storage.getSession()
-    const localDB = useCases.storage.load()
-    if (
-      session &&
-      localDB &&
-      localDB.auth.username === session.user &&
-      localDB.auth.passwordHash === session.hash
-    ) {
-      setDB(localDB)
-      setAuthenticated(true)
+    async function init() {
+      let localDB = useCases.storage.load()
+      if (!localDB) {
+        try {
+          const res = await fetch('./db.json')
+          if (res.ok) {
+            localDB = await res.json()
+            useCases.storage.save(localDB!)
+          }
+        } catch {
+          // sin db.json, el usuario tendrá que cargar desde GitHub
+        }
+      }
+      const session = useCases.storage.getSession()
+      if (
+        session &&
+        localDB &&
+        localDB.auth.username === session.user &&
+        localDB.auth.passwordHash === session.hash
+      ) {
+        setDB(localDB)
+        setAuthenticated(true)
+      }
     }
+    init()
   }, [])
 
   function handleUpdateDB(updater: (db: DB) => DB) {

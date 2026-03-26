@@ -33,6 +33,7 @@ export function LoginView({ onLogin }: Props) {
           <label htmlFor="login-user">Usuario</label>
           <input
             id="login-user"
+            type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
