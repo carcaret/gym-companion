@@ -116,31 +116,57 @@ export function HistorialView({ db, onUpdateDB, onModalRequest }: Props) {
                 <span className={`card-chevron${expanded ? ' open' : ''}`}>▾</span>
               </div>
               <div id={`h-body-${i}`} className={`card-body${expanded ? ' open' : ''}${editing ? ' editing' : ''}`}>
-                {entry.logs.map((log, li) => (
-                  <div key={log.exercise_id} className="exercise-row">
-                    <span className="exercise-name">{log.name}</span>
-                    <div className="param-row">
-                      <label>Peso</label>
-                      <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', -2.5)}>−</button>
-                      {editing
-                        ? <input className="param-input" type="number" value={log.weight} onChange={() => {}} />
-                        : <span className="param-input">{log.weight}</span>}
-                      <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', 2.5)}>+</button>
+                {entry.logs.map((log, li) => {
+                  const actualesRegistradas = log.reps.actual.filter((r) => r !== null)
+                  return (
+                    <div key={log.exercise_id} className="exercise-row">
+                      <span className="exercise-name">{log.name}</span>
+                      <div className="param-row">
+                        <label>Peso</label>
+                        {editing && (
+                          <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', -2.5)}>−</button>
+                        )}
+                        {editing
+                          ? <input
+                              className="param-input"
+                              type="number"
+                              value={log.weight}
+                              onChange={(e) => updateExerciseParam(entry.date, li, 'weight', Number(e.target.value) - log.weight)}
+                            />
+                          : <span className="param-input">{log.weight} kg</span>}
+                        {editing && (
+                          <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', 2.5)}>+</button>
+                        )}
+                      </div>
+                      <div className="param-row">
+                        <label>Series</label>
+                        {editing && (
+                          <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', -1)}>−</button>
+                        )}
+                        {editing
+                          ? <input
+                              className="param-input"
+                              type="number"
+                              value={log.series}
+                              onChange={(e) => updateExerciseParam(entry.date, li, 'series', Number(e.target.value) - log.series)}
+                            />
+                          : <span className="param-input">{log.series}</span>}
+                        {editing && (
+                          <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', 1)}>+</button>
+                        )}
+                      </div>
+                      <div className="param-row">
+                        <label>Reps</label>
+                        <span className="param-input">
+                          obj: {log.reps.expected}
+                          {actualesRegistradas.length > 0 && (
+                            <> · real: {actualesRegistradas.join(', ')}</>
+                          )}
+                        </span>
+                      </div>
                     </div>
-                    <div className="param-row">
-                      <label>Series</label>
-                      <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', -1)}>−</button>
-                      {editing
-                        ? <input className="param-input" type="number" value={log.series} onChange={() => {}} />
-                        : <span className="param-input">{log.series}</span>}
-                      <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', 1)}>+</button>
-                    </div>
-                    <div className="param-row">
-                      <label>Reps</label>
-                      <span>{log.reps.actual.filter((r) => r !== null).join(', ') || log.reps.expected}</span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )

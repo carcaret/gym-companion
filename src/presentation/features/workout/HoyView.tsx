@@ -19,9 +19,15 @@ interface Props {
 export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: Props) {
   const [selectedDay, setSelectedDay] = useState<DayOfWeek | null>(dayType)
   const [selectorOpen, setSelectorOpen] = useState(false)
-  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set())
 
   const todayEntry = db.history.find((h) => h.date === todayStr) ?? null
+
+  // Auto-expand all cards when there is an active (not completed) workout
+  const [expandedCards, setExpandedCards] = useState<Set<number>>(() =>
+    todayEntry && !todayEntry.completed
+      ? new Set(todayEntry.logs.map((_, i) => i))
+      : new Set()
+  )
 
   const effectiveDay = selectorOpen ? null : (selectedDay ?? dayType)
 
@@ -45,20 +51,22 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
     return 'Hoy'
   }
 
+  // ── LAST KNOWN VALUES ────────────────────────────────
+  function getLastValues(exerciseId: string, day: DayOfWeek) {
+    const entries = db.history.filter((h) => h.type === day)
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const log = entries[i].logs.find((l) => l.exercise_id === exerciseId)
+      if (log) return { series: log.series, repsExpected: log.reps.expected, weight: log.weight }
+    }
+    return { series: 3, repsExpected: 10, weight: 0 }
+  }
+
   // ── WORKOUT MODE ────────────────────────────────────
   function startWorkout() {
     if (!effectiveDay) return
     const exercises = db.routines[effectiveDay] ?? []
-    const getLastValues = (id: string) => {
-      const entries = db.history.filter((h) => h.type === effectiveDay)
-      for (let i = entries.length - 1; i >= 0; i--) {
-        const log = entries[i].logs.find((l) => l.exercise_id === id)
-        if (log) return { series: log.series, repsExpected: log.reps.expected, weight: log.weight }
-      }
-      return { series: 3, repsExpected: 10, weight: 0 }
-    }
     const logs: ExerciseLog[] = exercises.map((id) => {
-      const last = getLastValues(id)
+      const last = getLastValues(id, effectiveDay)
       return {
         exercise_id: id,
         name: db.exercises[id]?.name ?? id,
@@ -69,7 +77,7 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
     })
     const entry: HistoryEntry = { date: todayStr, type: effectiveDay, completed: false, logs }
     onUpdateDB((d) => ({ ...d, history: [...d.history.filter((h) => h.date !== todayStr), entry] }))
-    setExpandedCards(new Set())
+    setExpandedCards(new Set(logs.map((_, i) => i)))
   }
 
   function finishWorkout() {
@@ -139,8 +147,14 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
     }))
   }
 
-  // ── PREVIEW EXERCISES (from routine) ────────────────
-  const previewExercises = effectiveDay ? (db.routines[effectiveDay] ?? []).map((id) => db.exercises[id]?.name ?? id) : []
+  // ── PREVIEW ITEMS (from routine, with last known values) ─────────────
+  const previewItems = effectiveDay
+    ? (db.routines[effectiveDay] ?? []).map((id) => ({
+        id,
+        name: db.exercises[id]?.name ?? id,
+        ...getLastValues(id, effectiveDay),
+      }))
+    : []
 
   // ── RENDER ──────────────────────────────────────────
   return (
@@ -181,11 +195,23 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
             <button id="back-to-selector-btn" className="btn-secondary btn-sm" onClick={() => { setSelectedDay(null); setSelectorOpen(true) }}>
               ← Cambiar día
             </button>
-            <ul>
-              {previewExercises.map((name, i) => (
-                <li key={i}>{name}</li>
+            <div className="preview-list">
+              {previewItems.map((item, i) => (
+                <div key={i} className="exercise-row">
+                  <span className="exercise-name">{item.name}</span>
+                  <div className="exercise-meta">
+                    <span className="meta-pill">
+                      <strong>{item.series}</strong>&nbsp;×&nbsp;<strong>{item.repsExpected}</strong>&nbsp;reps
+                    </span>
+                    {item.weight > 0 && (
+                      <span className="meta-pill">
+                        <strong>{item.weight}</strong>&nbsp;kg
+                      </span>
+                    )}
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
             <div className="workout-actions">
               <button id="add-exercise-btn" className="btn-secondary" onClick={() => onModalRequest({ type: 'add-exercise' })}>
                 + Añadir ejercicio

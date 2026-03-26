@@ -47,6 +47,13 @@ export function GraficasView({ db }: Props) {
     return [...idSet].map((id) => db.exercises[id]).filter(Boolean)
   }, [db.history, db.exercises])
 
+  // Auto-select first exercise when history is available
+  useEffect(() => {
+    if (!selectedExercise && exercisesWithHistory.length > 0) {
+      setSelectedExercise(exercisesWithHistory[0].id)
+    }
+  }, [exercisesWithHistory, selectedExercise])
+
   useEffect(() => {
     if (!canvas1Ref.current || !canvas2Ref.current || !selectedExercise) return
 
@@ -79,7 +86,7 @@ export function GraficasView({ db }: Props) {
             { label: 'e1RM (kg)', data: e1rmData as unknown[], borderColor: '#00b894', backgroundColor: '#00b89440' },
           ],
         },
-        options: { animation: false, responsive: true, scales: { x: { type: 'time' } } },
+        options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { type: 'time' } } },
       }) as { destroy(): void }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       chart2Ref.current = new ChartJS(canvas2Ref.current, {
@@ -89,7 +96,7 @@ export function GraficasView({ db }: Props) {
             { label: 'Peso (kg)', data: weightData as unknown[], borderColor: '#fdcb6e', backgroundColor: '#fdcb6e40' },
           ],
         },
-        options: { animation: false, responsive: true, scales: { x: { type: 'time' } } },
+        options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { type: 'time' } } },
       }) as { destroy(): void }
     } catch {
       // ignore chart errors when canvas is hidden
@@ -163,11 +170,17 @@ export function GraficasView({ db }: Props) {
 
         <h3 className="chart-section-title">Volumen y e1RM</h3>
         <div className="chart-container">
-          <canvas id="chart-canvas" ref={canvas1Ref} />
+          {selectedExercise
+            ? <canvas id="chart-canvas" ref={canvas1Ref} />
+            : <p className="chart-placeholder">Selecciona un ejercicio para ver la gráfica</p>
+          }
         </div>
         <h3 className="chart-section-title">Evolución del Peso</h3>
         <div className="chart-container">
-          <canvas id="chart-canvas-weight" ref={canvas2Ref} />
+          {selectedExercise
+            ? <canvas id="chart-canvas-weight" ref={canvas2Ref} />
+            : <p className="chart-placeholder">Selecciona un ejercicio para ver la gráfica</p>
+          }
         </div>
       </div>
     </>
