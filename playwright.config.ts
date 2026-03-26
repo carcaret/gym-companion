@@ -12,6 +12,9 @@ export default defineConfig({
     viewport: { width: 390, height: 844 },
     locale: 'es-ES',
     userAgent: devices['iPhone 14'].userAgent,
+    launchOptions: {
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    },
   },
 
   webServer: {

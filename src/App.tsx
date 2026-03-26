@@ -129,13 +129,13 @@ export function App() {
   return (
     <>
       {/* Login screen */}
-      <div id="login-screen" hidden={isAuthenticated}>
+      <div id="login-screen" className={isAuthenticated ? 'screen' : 'screen active'}>
         <LoginView onLogin={handleLogin} />
       </div>
 
       {/* App shell */}
       <div id="app-shell" hidden={!isAuthenticated}>
-        <div id="view-hoy" className="view" hidden={activeView !== 'hoy'}>
+        <div id="view-hoy" className={activeView === 'hoy' ? 'view active' : 'view'}>
           {db && (
             <HoyView
               db={db}
@@ -147,7 +147,7 @@ export function App() {
           )}
         </div>
 
-        <div id="view-historial" className="view" hidden={activeView !== 'historial'}>
+        <div id="view-historial" className={activeView === 'historial' ? 'view active' : 'view'}>
           {db && (
             <HistorialView
               db={db}
@@ -157,11 +157,11 @@ export function App() {
           )}
         </div>
 
-        <div id="view-graficas" className="view" hidden={activeView !== 'graficas'}>
+        <div id="view-graficas" className={activeView === 'graficas' ? 'view active' : 'view'}>
           {db && <GraficasView db={db} />}
         </div>
 
-        <div id="view-ajustes" className="view" hidden={activeView !== 'ajustes'}>
+        <div id="view-ajustes" className={activeView === 'ajustes' ? 'view active' : 'view'}>
           {db && (
             <AjustesView
               db={db}
