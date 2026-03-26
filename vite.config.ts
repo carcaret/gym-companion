@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   root: '.',
-  base: '/gym-companion/',
+  base: './',
   plugins: [react()],
   build: {
     outDir: 'dist',
