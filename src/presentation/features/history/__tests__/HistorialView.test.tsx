@@ -102,3 +102,60 @@ describe('HistorialView — formato de reps (Bug 2)', () => {
     expect(content).not.toMatch(/real:/i)
   })
 })
+
+// ── Edición completa: reps obj, reps reales, auto-propagación ────────
+
+describe('HistorialView — edición completa', () => {
+  it('en modo edición aparecen controles de reps obj (+/-)', async () => {
+    render(<HistWrapper />)
+    await userEvent.click(screen.getByTitle('Editar'))
+    const body = document.getElementById('h-body-0')!
+    // Should have a param-row for Reps obj. with +/- buttons
+    const paramRows = body.querySelectorAll('.param-row')
+    const repsRow = paramRows[2] // Peso, Series, Reps obj.
+    const buttons = repsRow.querySelectorAll('button.btn-icon')
+    expect(buttons).toHaveLength(2)
+  })
+
+  it('en modo edición aparecen inputs por serie con +/-', async () => {
+    render(<HistWrapper />)
+    await userEvent.click(screen.getByTitle('Editar'))
+    const body = document.getElementById('h-body-0')!
+    const seriesInputs = body.querySelectorAll('.series-row input')
+    expect(seriesInputs).toHaveLength(4) // 4 series in testDB
+    const seriesButtons = body.querySelectorAll('.series-row button.btn-icon')
+    expect(seriesButtons).toHaveLength(8) // 4 × 2
+  })
+
+  it('al cambiar reps obj, las reps reales se actualizan al nuevo valor', async () => {
+    render(<HistWrapper />)
+    await userEvent.click(screen.getByTitle('Editar'))
+    const body = document.getElementById('h-body-0')!
+    // Reps obj row is the third param-row, click + button
+    const paramRows = body.querySelectorAll('.param-row')
+    const repsRow = paramRows[2]
+    const plusBtn = repsRow.querySelectorAll('button.btn-icon')[1]
+    await userEvent.click(plusBtn)
+    // Expected was 10, now 11. All actual reps should be 11
+    const seriesInputs = body.querySelectorAll<HTMLInputElement>('.series-row input')
+    for (const input of seriesInputs) {
+      expect(input.value).toBe('11')
+    }
+  })
+
+  it('el body muestra ejercicios con .exercise-name, peso, series, reps obj y reps reales', () => {
+    render(<HistWrapper />)
+    const body = document.getElementById('h-body-0')!
+    // exercise-name
+    expect(body.querySelector('.exercise-name')).toBeInTheDocument()
+    expect(body.querySelector('.exercise-name')!.textContent).toBe('Press de Banca')
+    // params
+    const text = body.textContent!
+    expect(text).toMatch(/Peso/)
+    expect(text).toMatch(/80/)
+    expect(text).toMatch(/Series/)
+    expect(text).toMatch(/4/)
+    expect(text).toMatch(/obj.*10/)
+    expect(text).toMatch(/real.*10.*9.*8.*10/)
+  })
+})

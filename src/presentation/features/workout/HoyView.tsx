@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { DB, DayOfWeek, HistoryEntry, ExerciseLog } from '../../../domain/shared/DB'
+import { ExerciseLogCard } from '../../components/ExerciseLogCard'
 
 const DAY_LABELS: Record<DayOfWeek, string> = { LUNES: 'Lunes', MIERCOLES: 'Miércoles', VIERNES: 'Viernes' }
 const WORKOUT_DAYS: DayOfWeek[] = ['LUNES', 'MIERCOLES', 'VIERNES']
@@ -139,9 +140,11 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
       ...d,
       history: d.history.map((h) => {
         if (h.date !== todayStr) return h
-        const logs = h.logs.map((log, i) =>
-          i !== exerciseIdx ? log : { ...log, reps: { ...log.reps, expected: Math.max(1, log.reps.expected + delta) } }
-        )
+        const logs = h.logs.map((log, i) => {
+          if (i !== exerciseIdx) return log
+          const newExpected = Math.max(1, log.reps.expected + delta)
+          return { ...log, reps: { expected: newExpected, actual: new Array(log.series).fill(newExpected) } }
+        })
         return { ...h, logs }
       }),
     }))
@@ -227,17 +230,18 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
         {todayEntry && !todayEntry.completed && (
           <div id="active-workout">
             {todayEntry.logs.map((log, i) => (
-              <ExerciseCard
+              <ExerciseLogCard
                 key={`${log.exercise_id}-${i}`}
                 log={log}
                 cardIdx={i}
                 expanded={expandedCards.has(i)}
-                onToggle={() => toggleCard(i)}
+                editing={true}
+                onToggleExpand={() => toggleCard(i)}
                 onRepUpdate={(si, reps) => updateSeriesRep(i, si, reps)}
                 onWeightChange={(d) => updateWeight(i, d)}
                 onSeriesChange={(d) => updateSeries(i, d)}
-                onRepsChange={(d) => updateExpectedReps(i, d)}
-                onRemove={() => onModalRequest({ type: 'confirm-remove', exerciseIdx: i })}
+                onExpectedRepsChange={(d) => updateExpectedReps(i, d)}
+                actionSlot={<button className="btn-danger btn-sm" onClick={() => onModalRequest({ type: 'confirm-remove', exerciseIdx: i })}>Quitar de rutina</button>}
               />
             ))}
             <div className="workout-actions">
@@ -255,17 +259,13 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
         {todayEntry?.completed && (
           <div id="completed-workout">
             {todayEntry.logs.map((log, i) => (
-              <ExerciseCard
+              <ExerciseLogCard
                 key={`${log.exercise_id}-${i}`}
                 log={log}
                 cardIdx={i}
                 expanded={expandedCards.has(i)}
-                onToggle={() => toggleCard(i)}
-                onRepUpdate={() => {}}
-                onWeightChange={() => {}}
-                onSeriesChange={() => {}}
-                onRepsChange={() => {}}
-                onRemove={() => {}}
+                editing={false}
+                onToggleExpand={() => toggleCard(i)}
               />
             ))}
           </div>
@@ -276,66 +276,3 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
   )
 }
 
-// ── Exercise Card ──────────────────────────────────────
-interface CardProps {
-  log: ExerciseLog
-  cardIdx: number
-  expanded: boolean
-  onToggle: () => void
-  onRepUpdate: (seriesIdx: number, reps: number) => void
-  onWeightChange: (delta: number) => void
-  onSeriesChange: (delta: number) => void
-  onRepsChange: (delta: number) => void
-  onRemove: () => void
-}
-
-function ExerciseCard({ log, cardIdx, expanded, onToggle, onRepUpdate, onWeightChange, onSeriesChange, onRepsChange, onRemove }: CardProps) {
-  const i = cardIdx
-  return (
-    <div id={`exercise-card-${i}`} className="card">
-      <div className="card-header" onClick={onToggle}>
-        <div className="card-title">{log.name}</div>
-        <span className="card-subtitle">{log.series} × {log.reps.expected} @ {log.weight}kg</span>
-        <span className={`card-chevron${expanded ? ' open' : ''}`}>▾</span>
-      </div>
-      <div id={`body-${i}`} className={`card-body${expanded ? ' open' : ''}`}>
-        {/* Series rows */}
-        {Array.from({ length: log.series }).map((_, si) => (
-          <div key={si} className="series-row">
-            <span className="series-label">{si + 1}</span>
-            <button className="btn-icon" onClick={() => onRepUpdate(si, Math.max(0, (log.reps.actual[si] ?? log.reps.expected) - 1))}>−</button>
-            <input
-              id={`w-rep-${i}-${si}`}
-              className="series-input"
-              type="number"
-              min={0}
-              value={log.reps.actual[si] ?? log.reps.expected}
-              onChange={(e) => onRepUpdate(si, Number(e.target.value))}
-            />
-            <button className="btn-icon" onClick={() => onRepUpdate(si, (log.reps.actual[si] ?? log.reps.expected) + 1)}>+</button>
-          </div>
-        ))}
-        {/* Param rows */}
-        <div className="param-row">
-          <label>Peso</label>
-          <button className="btn-icon" onClick={() => onWeightChange(-2.5)}>−</button>
-          <input id={`w-weight-${i}`} className="param-input" type="number" min={0} step={2.5} value={log.weight} readOnly />
-          <button className="btn-icon" onClick={() => onWeightChange(2.5)}>+</button>
-        </div>
-        <div className="param-row">
-          <label>Series</label>
-          <button className="btn-icon" onClick={() => onSeriesChange(-1)}>−</button>
-          <input id={`w-series-${i}`} className="param-input" type="number" min={1} value={log.series} readOnly />
-          <button className="btn-icon" onClick={() => onSeriesChange(1)}>+</button>
-        </div>
-        <div className="param-row">
-          <label>Reps obj.</label>
-          <button className="btn-icon" onClick={() => onRepsChange(-1)}>−</button>
-          <input id={`w-reps-${i}`} className="param-input" type="number" min={1} value={log.reps.expected} readOnly />
-          <button className="btn-icon" onClick={() => onRepsChange(1)}>+</button>
-        </div>
-        <button className="btn-danger btn-sm" onClick={onRemove}>Quitar de rutina</button>
-      </div>
-    </div>
-  )
-}

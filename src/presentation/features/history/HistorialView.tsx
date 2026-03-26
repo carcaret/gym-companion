@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { DB, DayOfWeek } from '../../../domain/shared/DB'
+import { ExerciseLogCard } from '../../components/ExerciseLogCard'
 
 const DAY_LABELS: Record<DayOfWeek, string> = { LUNES: 'Lunes', MIERCOLES: 'Miércoles', VIERNES: 'Viernes' }
 type Filter = DayOfWeek | 'TODOS'
@@ -39,15 +40,62 @@ export function HistorialView({ db, onUpdateDB, onModalRequest }: Props) {
     })
   }
 
-  function updateExerciseParam(entryDate: string, exerciseIdx: number, field: 'weight' | 'series', delta: number) {
+  function updateWeight(entryDate: string, exerciseIdx: number, delta: number) {
+    onUpdateDB((d) => ({
+      ...d,
+      history: d.history.map((h) => {
+        if (h.date !== entryDate) return h
+        const logs = h.logs.map((log, i) =>
+          i !== exerciseIdx ? log : { ...log, weight: Math.max(0, log.weight + delta) }
+        )
+        return { ...h, logs }
+      }),
+    }))
+  }
+
+  function updateSeries(entryDate: string, exerciseIdx: number, delta: number) {
     onUpdateDB((d) => ({
       ...d,
       history: d.history.map((h) => {
         if (h.date !== entryDate) return h
         const logs = h.logs.map((log, i) => {
           if (i !== exerciseIdx) return log
-          if (field === 'weight') return { ...log, weight: Math.max(0, log.weight + delta) }
-          return { ...log, series: Math.max(1, log.series + delta) }
+          const newSeries = Math.max(1, log.series + delta)
+          const actual = [...log.reps.actual]
+          while (actual.length < newSeries) actual.push(null)
+          while (actual.length > newSeries) actual.pop()
+          return { ...log, series: newSeries, reps: { ...log.reps, actual } }
+        })
+        return { ...h, logs }
+      }),
+    }))
+  }
+
+  function updateExpectedReps(entryDate: string, exerciseIdx: number, delta: number) {
+    onUpdateDB((d) => ({
+      ...d,
+      history: d.history.map((h) => {
+        if (h.date !== entryDate) return h
+        const logs = h.logs.map((log, i) => {
+          if (i !== exerciseIdx) return log
+          const newExpected = Math.max(1, log.reps.expected + delta)
+          return { ...log, reps: { expected: newExpected, actual: new Array(log.series).fill(newExpected) } }
+        })
+        return { ...h, logs }
+      }),
+    }))
+  }
+
+  function updateSeriesRep(entryDate: string, exerciseIdx: number, seriesIdx: number, reps: number) {
+    onUpdateDB((d) => ({
+      ...d,
+      history: d.history.map((h) => {
+        if (h.date !== entryDate) return h
+        const logs = h.logs.map((log, i) => {
+          if (i !== exerciseIdx) return log
+          const actual = [...log.reps.actual]
+          actual[seriesIdx] = reps
+          return { ...log, reps: { ...log.reps, actual } }
         })
         return { ...h, logs }
       }),
@@ -116,57 +164,21 @@ export function HistorialView({ db, onUpdateDB, onModalRequest }: Props) {
                 <span className={`card-chevron${expanded ? ' open' : ''}`}>▾</span>
               </div>
               <div id={`h-body-${i}`} className={`card-body${expanded ? ' open' : ''}${editing ? ' editing' : ''}`}>
-                {entry.logs.map((log, li) => {
-                  const actualesRegistradas = log.reps.actual.filter((r) => r !== null)
-                  return (
-                    <div key={log.exercise_id} className="exercise-row">
-                      <span className="exercise-name">{log.name}</span>
-                      <div className="param-row">
-                        <label>Peso</label>
-                        {editing && (
-                          <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', -2.5)}>−</button>
-                        )}
-                        {editing
-                          ? <input
-                              className="param-input"
-                              type="number"
-                              value={log.weight}
-                              onChange={(e) => updateExerciseParam(entry.date, li, 'weight', Number(e.target.value) - log.weight)}
-                            />
-                          : <span className="param-input">{log.weight} kg</span>}
-                        {editing && (
-                          <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'weight', 2.5)}>+</button>
-                        )}
-                      </div>
-                      <div className="param-row">
-                        <label>Series</label>
-                        {editing && (
-                          <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', -1)}>−</button>
-                        )}
-                        {editing
-                          ? <input
-                              className="param-input"
-                              type="number"
-                              value={log.series}
-                              onChange={(e) => updateExerciseParam(entry.date, li, 'series', Number(e.target.value) - log.series)}
-                            />
-                          : <span className="param-input">{log.series}</span>}
-                        {editing && (
-                          <button className="btn-icon" onClick={() => updateExerciseParam(entry.date, li, 'series', 1)}>+</button>
-                        )}
-                      </div>
-                      <div className="param-row">
-                        <label>Reps</label>
-                        <span className="param-input">
-                          obj: {log.reps.expected}
-                          {actualesRegistradas.length > 0 && (
-                            <> · real: {actualesRegistradas.join(', ')}</>
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })}
+                {entry.logs.map((log, li) => (
+                  <ExerciseLogCard
+                    key={log.exercise_id}
+                    log={log}
+                    cardIdx={li}
+                    expanded={true}
+                    editing={editing}
+                    onToggleExpand={() => {}}
+                    variant="inline"
+                    onWeightChange={editing ? (d) => updateWeight(entry.date, li, d) : undefined}
+                    onSeriesChange={editing ? (d) => updateSeries(entry.date, li, d) : undefined}
+                    onExpectedRepsChange={editing ? (d) => updateExpectedReps(entry.date, li, d) : undefined}
+                    onRepUpdate={editing ? (si, reps) => updateSeriesRep(entry.date, li, si, reps) : undefined}
+                  />
+                ))}
               </div>
             </div>
           )

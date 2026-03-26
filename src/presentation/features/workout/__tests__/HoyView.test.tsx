@@ -135,3 +135,56 @@ describe('HoyView — auto-expand de tarjetas (Bug 1)', () => {
     expect(body0).not.toHaveClass('open')
   })
 })
+
+// ── Entrenamiento completado: reps reales y read-only ────────────────
+
+describe('HoyView — entrenamiento completado', () => {
+  const completedDB: DB = {
+    ...testDB,
+    history: [
+      ...testDB.history,
+      {
+        date: '2026-03-23',
+        type: 'LUNES',
+        completed: true,
+        logs: [
+          { exercise_id: 'press_banca', name: 'Press de Banca', series: 4, reps: { expected: 8, actual: [8, 8, 7, 6] }, weight: 80 },
+        ],
+      },
+    ],
+  }
+
+  it('muestra reps reales desglosadas en el subtitle del card', () => {
+    render(<HoyWrapper initialDB={completedDB} />)
+    const subtitle = document.querySelector('.card-subtitle')!
+    expect(subtitle.textContent).toMatch(/real.*8.*8.*7.*6/)
+  })
+
+  it('es read-only — no hay botones btn-icon dentro del body', () => {
+    render(<HoyWrapper initialDB={completedDB} />)
+    // Expand to see body content
+    const body = document.getElementById('body-0')!
+    const buttons = body.querySelectorAll('button.btn-icon')
+    expect(buttons).toHaveLength(0)
+  })
+})
+
+// ── Auto-propagación de reps objetivo ────────────────────────────────
+
+describe('HoyView — auto-propagación reps obj', () => {
+  it('al pulsar + en reps obj, todas las reps reales se actualizan al nuevo valor', async () => {
+    render(<HoyWrapper initialDB={activeWorkoutDB} />)
+    // body-0 should be open (active workout auto-expands)
+    const body0 = document.getElementById('body-0')!
+    // Find the Reps obj. param-row (third one), click +
+    const paramRows = body0.querySelectorAll('.param-row')
+    const repsRow = paramRows[2] // Peso, Series, Reps obj.
+    const plusBtn = repsRow.querySelectorAll('button.btn-icon')[1]
+    await userEvent.click(plusBtn)
+    // Expected was 10, now 11. All actual reps should be 11
+    const seriesInputs = body0.querySelectorAll<HTMLInputElement>('.series-row input')
+    for (const input of seriesInputs) {
+      expect(input.value).toBe('11')
+    }
+  })
+})
