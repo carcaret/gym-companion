@@ -522,13 +522,13 @@ Hasta el Slice 9, el workflow de deploy no incluye la nueva app en `index.html`.
 
 ## Estado
 
-- [ ] Slice 0 — Toolchain y estructura
-- [ ] Slice 1 — Capa de dominio
-- [ ] Slice 2 — Capa de infraestructura
-- [ ] Slice 3 — Capa de aplicación (casos de uso)
-- [ ] Slice 4 — Store Zustand + Layout base
-- [ ] Slice 5 — Vista Ajustes
-- [ ] Slice 6 — Vista Historial
-- [ ] Slice 7 — Vista Gráficas
-- [ ] Slice 8 — Vista Hoy
-- [ ] Slice 9 — Vista Auth + integración final
+- [x] Slice 0 — Toolchain y estructura
+- [x] Slice 1 — Capa de dominio
+- [x] Slice 2 — Capa de infraestructura
+- [x] Slice 3 — Capa de aplicación (casos de uso)
+- [x] Slice 4 — Store Zustand + Layout base
+- [x] Slice 5 — Vista Ajustes
+- [x] Slice 6 — Vista Historial
+- [x] Slice 7 — Vista Gráficas
+- [x] Slice 8 — Vista Hoy
+- [x] Slice 9 — Vista Auth + integración final
