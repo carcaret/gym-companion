@@ -17,21 +17,23 @@ describe('AjustesView — atributos de inputs (Bug 5)', () => {
     render(<AjustesView db={testDB} onChangePassword={vi.fn()} onLogout={vi.fn()} />)
     const input = document.getElementById('set-repo') as HTMLInputElement
     expect(input).not.toBeNull()
-    expect(input.type).toBe('text')
+    // Verificar el atributo HTML explícito (no la propiedad DOM que siempre devuelve "text")
+    // El selector CSS [type="text"] sólo coincide cuando el atributo está presente en el DOM
+    expect(input.getAttribute('type')).toBe('text')
   })
 
   it('el input de rama tiene type="text"', () => {
     render(<AjustesView db={testDB} onChangePassword={vi.fn()} onLogout={vi.fn()} />)
     const input = document.getElementById('set-branch') as HTMLInputElement
     expect(input).not.toBeNull()
-    expect(input.type).toBe('text')
+    expect(input.getAttribute('type')).toBe('text')
   })
 
   it('el input de ruta tiene type="text"', () => {
     render(<AjustesView db={testDB} onChangePassword={vi.fn()} onLogout={vi.fn()} />)
     const input = document.getElementById('set-path') as HTMLInputElement
     expect(input).not.toBeNull()
-    expect(input.type).toBe('text')
+    expect(input.getAttribute('type')).toBe('text')
   })
 
   it('los inputs de contraseña mantienen type="password"', () => {

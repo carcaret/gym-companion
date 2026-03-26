@@ -57,15 +57,15 @@ export function AjustesView({ db, onChangePassword, onLogout }: Props) {
           <h3>GitHub API</h3>
           <div className="input-group">
             <label htmlFor="set-repo">Repositorio (usuario/repo)</label>
-            <input id="set-repo" value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="usuario/repo" />
+            <input id="set-repo" type="text" value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="usuario/repo" />
           </div>
           <div className="input-group">
             <label htmlFor="set-branch">Rama</label>
-            <input id="set-branch" value={branch} onChange={(e) => setBranch(e.target.value)} />
+            <input id="set-branch" type="text" value={branch} onChange={(e) => setBranch(e.target.value)} />
           </div>
           <div className="input-group">
             <label htmlFor="set-path">Ruta del archivo</label>
-            <input id="set-path" value={path} onChange={(e) => setPath(e.target.value)} />
+            <input id="set-path" type="text" value={path} onChange={(e) => setPath(e.target.value)} />
           </div>
           <div className="input-group">
             <label htmlFor="set-pat">Personal Access Token</label>
