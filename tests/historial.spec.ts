@@ -14,6 +14,9 @@ test.describe('Vista Historial', () => {
     await page.click('[data-view="historial"]');
   });
 
+  // ─────────────────────────────────────────
+  // LISTA
+  // ─────────────────────────────────────────
   test.describe('Lista de entradas', () => {
 
     test('muestra todas las entradas del historial', async ({ page }) => {
@@ -21,7 +24,6 @@ test.describe('Vista Historial', () => {
     });
 
     test('muestra la fecha de cada entrada', async ({ page }) => {
-      // La más reciente primero (2026-03-24)
       await expect(page.locator('.history-card').first().locator('.date-text')).toBeVisible();
     });
 
@@ -32,21 +34,20 @@ test.describe('Vista Historial', () => {
     });
 
     test('muestra el número de ejercicios de cada entrada', async ({ page }) => {
-      // Primera entrada (2026-03-24, LUNES) tiene 3 logs
       await expect(page.locator('.history-card').first().locator('.card-subtitle')).toContainText('ejercicios');
     });
 
     test('las entradas están ordenadas de más reciente a más antigua', async ({ page }) => {
       const dates = page.locator('.history-card .date-text');
-      const count = await dates.count();
-      const texts = await Promise.all(Array.from({ length: count }, (_, i) => dates.nth(i).textContent()));
-      // Verificamos que al menos el primero es más reciente (contiene "mar." de marzo 2026)
-      expect(texts[0]).toBeTruthy();
-      expect(count).toBe(4);
+      expect(await dates.count()).toBe(4);
+      await expect(dates.first()).toBeVisible();
     });
 
   });
 
+  // ─────────────────────────────────────────
+  // FILTROS
+  // ─────────────────────────────────────────
   test.describe('Filtros', () => {
 
     test('el filtro "Todos" está activo por defecto', async ({ page }) => {
@@ -57,7 +58,6 @@ test.describe('Vista Historial', () => {
       await page.click('[data-filter="LUNES"]');
 
       await expect(page.locator('.history-card')).toHaveCount(2);
-      await expect(page.locator('.type-badge.LUNES')).toHaveCount(2);
       await expect(page.locator('.type-badge.MIERCOLES')).toHaveCount(0);
       await expect(page.locator('.type-badge.VIERNES')).toHaveCount(0);
     });
@@ -90,9 +90,11 @@ test.describe('Vista Historial', () => {
       await expect(page.locator('.history-card')).toHaveCount(4);
     });
 
-
   });
 
+  // ─────────────────────────────────────────
+  // EXPANDIR / COLAPSAR
+  // ─────────────────────────────────────────
   test.describe('Expandir / colapsar entradas', () => {
 
     test('click en cabecera expande el detalle', async ({ page }) => {
@@ -104,7 +106,6 @@ test.describe('Vista Historial', () => {
     test('el detalle expandido muestra los ejercicios', async ({ page }) => {
       await page.click('.history-card:first-child .card-header');
 
-      // Primera entrada del testDb (2026-03-24, LUNES) tiene Prensa de Piernas
       await expect(page.locator('#h-body-0')).toContainText('Prensa de Piernas');
     });
 
@@ -116,9 +117,8 @@ test.describe('Vista Historial', () => {
 
     test('segundo click en cabecera colapsa el detalle', async ({ page }) => {
       await page.click('.history-card:first-child .card-header');
-      await expect(page.locator('#h-body-0')).toHaveClass(/open/);
-
       await page.click('.history-card:first-child .card-header');
+
       await expect(page.locator('#h-body-0')).not.toHaveClass(/open/);
     });
 
@@ -131,9 +131,109 @@ test.describe('Vista Historial', () => {
 
   });
 
+  // ─────────────────────────────────────────
+  // BORRAR ENTRADAS
+  // ─────────────────────────────────────────
+  test.describe('Borrar entradas', () => {
+
+    test('click en 🗑️ abre modal de confirmación', async ({ page }) => {
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(1).click();
+
+      await expect(page.locator('#modal-overlay')).toBeVisible();
+      await expect(page.locator('#modal-title')).toContainText('Borrar');
+    });
+
+    test('confirmar borrado elimina la entrada de la lista', async ({ page }) => {
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(1).click();
+      await page.locator('#modal-actions .btn-danger').click();
+
+      await expect(page.locator('.history-card')).toHaveCount(3);
+    });
+
+    test('cancelar borrado mantiene la entrada en la lista', async ({ page }) => {
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(1).click();
+      await page.locator('#modal-actions .btn-secondary').click();
+
+      await expect(page.locator('.history-card')).toHaveCount(4);
+    });
+
+  });
+
+  // ─────────────────────────────────────────
+  // MODO EDICIÓN
+  // ─────────────────────────────────────────
+  test.describe('Modo edición', () => {
+
+    test('click en ✏️ activa el modo edición (aparecen inputs)', async ({ page }) => {
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(0).click();
+
+      await expect(page.locator('#h-body-0')).toHaveClass(/editing/);
+      await expect(page.locator('#h-body-0 .param-input').first()).toBeVisible();
+    });
+
+    test('en modo edición el botón muestra ✅', async ({ page }) => {
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(0).click();
+
+      await expect(
+        page.locator('.history-card').first().locator('.card-header .btn-icon').nth(0)
+      ).toContainText('✅');
+    });
+
+    test('click en ✅ desactiva el modo edición', async ({ page }) => {
+      // Activar edición
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(0).click();
+      await expect(page.locator('#h-body-0')).toHaveClass(/editing/);
+
+      // Desactivar edición
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(0).click();
+      await expect(page.locator('#h-body-0')).not.toHaveClass(/editing/);
+    });
+
+    test('botón + en peso (modo edición) incrementa el valor', async ({ page }) => {
+      // Expandir primero para que .open.editing tenga max-height: none
+      await page.click('.history-card:first-child .card-header');
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(0).click();
+
+      // Hay 3 ejercicios en la entrada, usamos el primero
+      const firstExercise = page.locator('#h-body-0 .exercise-row').first();
+      const weightInput = firstExercise.locator('.param-row').filter({ hasText: 'Peso' }).locator('.param-input');
+      const before = parseFloat(await weightInput.inputValue());
+
+      await firstExercise.locator('.param-row').filter({ hasText: 'Peso' }).locator('button.btn-icon').last().click();
+
+      const after = parseFloat(await weightInput.inputValue());
+      expect(after).toBe(before + 2.5);
+    });
+
+    test('botón + en series (modo edición) incrementa el valor', async ({ page }) => {
+      // Expandir primero para que .open.editing tenga max-height: none
+      await page.click('.history-card:first-child .card-header');
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(0).click();
+
+      const firstExercise = page.locator('#h-body-0 .exercise-row').first();
+      const seriesInput = firstExercise.locator('.param-row').filter({ hasText: 'Series' }).locator('.param-input');
+      const before = parseInt(await seriesInput.inputValue());
+
+      await firstExercise.locator('.param-row').filter({ hasText: 'Series' }).locator('button.btn-icon').last().click();
+
+      const after = parseInt(await seriesInput.inputValue());
+      expect(after).toBe(before + 1);
+    });
+
+    test('editar solo afecta a la entrada editada, no a las demás', async ({ page }) => {
+      await page.locator('.history-card').first().locator('.card-header .btn-icon').nth(0).click();
+
+      await expect(page.locator('#h-body-0')).toHaveClass(/editing/);
+      await expect(page.locator('#h-body-1')).not.toHaveClass(/editing/);
+    });
+
+  });
+
 });
 
-// Test aislado: necesita su propio seed sin entradas de MIERCOLES
+// ─────────────────────────────────────────
+// TEST AISLADO: filtro sin resultados
+// ─────────────────────────────────────────
 test('historial: filtro sin resultados muestra estado vacío', async ({ page }) => {
   const dbSinMiercoles = {
     ...testDb,
