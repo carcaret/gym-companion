@@ -876,7 +876,6 @@
           {
             label: 'Borrar', className: 'btn-danger btn-sm', action: async () => {
               DB.history = DB.history.filter(h => h.date !== date);
-              editingHistoryDates.delete(date);
               await persistDB();
               renderHistorial();
               toast('Entreno eliminado');
@@ -884,16 +883,6 @@
           }
         ]
       );
-    },
-
-    toggleHistoryEdit: (date, event) => {
-      event.stopPropagation();
-      if (editingHistoryDates.has(date)) {
-        editingHistoryDates.delete(date);
-      } else {
-        editingHistoryDates.add(date);
-      }
-      renderHistorial();
     },
 
     adjustHistoryParam: async (date, logIdx, param, delta) => {
@@ -911,7 +900,7 @@
         log.reps.expected = Math.max(1, log.reps.expected + delta);
       }
       await persistDB();
-      renderHistorial();
+      renderHistorialDetail(date);
     },
 
     setHistoryParam: async (date, logIdx, param, value) => {
@@ -927,7 +916,7 @@
         log.series = newSeries;
       } else if (param === 'repsExpected') log.reps.expected = Math.max(1, Math.round(num));
       await persistDB();
-      renderHistorial();
+      renderHistorialDetail(date);
     },
 
     adjustHistoryRep: async (date, logIdx, seriesIdx, delta) => {
@@ -937,7 +926,7 @@
       const current = log.reps.actual[seriesIdx] !== null ? log.reps.actual[seriesIdx] : log.reps.expected;
       log.reps.actual[seriesIdx] = Math.max(0, current + delta);
       await persistDB();
-      renderHistorial();
+      renderHistorialDetail(date);
     },
 
     setHistoryRep: async (date, logIdx, seriesIdx, value) => {
@@ -970,15 +959,16 @@
 
   // ── View: Historial ──
   let historialFilter = 'TODOS';
-  const editingHistoryDates = new Set();
+  let editingHistorialExercise = null; // { date, logIdx } or null
 
   function renderHistorial() {
     const content = document.getElementById('historial-content');
+    const filters = document.getElementById('historial-filters');
+    const header = document.querySelector('#view-historial .view-header h2');
+    if (filters) filters.style.display = '';
+    if (header) header.textContent = 'Historial';
 
-    const openIndices = new Set();
-    content.querySelectorAll('.card-body.open').forEach(body => {
-      openIndices.add(body.id.replace('h-body-', ''));
-    });
+    editingHistorialExercise = null;
 
     const entries = [...DB.history].sort((a, b) => b.date.localeCompare(a.date));
     const filtered = historialFilter === 'TODOS' ? entries : entries.filter(e => e.type === historialFilter);
@@ -988,102 +978,134 @@
       return;
     }
 
-    let html = '';
-    filtered.forEach((entry, idx) => {
+    let html = '<div class="historial-list">';
+    filtered.forEach(entry => {
       const completed = entry.completed !== false;
-      const isEditing = editingHistoryDates.has(entry.date);
-      html += `<div class="card history-card" data-hidx="${idx}">
-      <div class="card-header" data-hidx="${idx}">
-        <div>
-          <div class="card-title">
-            <span>${completed ? '✅' : '⏸️'}</span>
-            <span class="date-text">${formatDate(entry.date)}</span>
-          </div>
-          <div class="card-subtitle">${entry.logs.length} ejercicios</div>
-        </div>
-        <div class="flex-center gap-sm">
-          <span class="type-badge ${entry.type}">${DAY_LABELS[entry.type] || entry.type}</span>
-          <button class="btn-icon" style="font-size:14px;" onclick="GymCompanion.toggleHistoryEdit('${entry.date}',event)">${isEditing ? '✅' : '✏️'}</button>
-          <button class="btn-icon" style="font-size:14px;" onclick="GymCompanion.deleteHistoryEntry('${entry.date}',event)">🗑️</button>
-          <span class="card-chevron" id="h-chevron-${idx}">▼</span>
-        </div>
-      </div>
-      <div class="card-body" id="h-body-${idx}">`;
+      const exercises = entry.logs.map(l => getExerciseName(l.exercise_id));
+      const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
+      html += `<div class="historial-entry-btn" data-date="${entry.date}">
+      <span class="day-icon">${DAY_ICONS[entry.type] || '📋'}</span>
+      <span class="day-info">
+        <span class="day-name">${DAY_LABELS[entry.type] || entry.type} ${completed ? '✅' : '⏸️'}</span>
+        <span class="day-exercises">${formatDate(entry.date)} · ${entry.logs.length} ejercicios</span>
+        <span class="day-exercises">${preview}</span>
+      </span>
+      <button class="btn-icon historial-delete-btn" style="font-size:14px;" data-date="${entry.date}">🗑️</button>
+    </div>`;
+    });
+    html += '</div>';
 
-      entry.logs.forEach((log, logIdx) => {
-        if (isEditing) {
-          html += `<div class="exercise-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
-          <div class="exercise-name">${getExerciseName(log.exercise_id)}</div>
+    content.innerHTML = html;
+
+    content.querySelectorAll('.historial-entry-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        if (e.target.closest('.historial-delete-btn')) return;
+        renderHistorialDetail(btn.dataset.date);
+      };
+    });
+
+    content.querySelectorAll('.historial-delete-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        GymCompanion.deleteHistoryEntry(btn.dataset.date, e);
+      };
+    });
+  }
+
+  function renderHistorialDetail(date) {
+    const entry = DB.history.find(h => h.date === date);
+    if (!entry) return;
+
+    const content = document.getElementById('historial-content');
+    const filters = document.getElementById('historial-filters');
+    const header = document.querySelector('#view-historial .view-header h2');
+    if (filters) filters.style.display = 'none';
+    if (header) header.textContent = `${DAY_LABELS[entry.type] || entry.type} — ${formatDate(date)}`;
+
+    let html = '';
+
+    entry.logs.forEach((log, logIdx) => {
+      const name = getExerciseName(log.exercise_id);
+      const isEditing = editingHistorialExercise && editingHistorialExercise.date === date && editingHistorialExercise.logIdx === logIdx;
+
+      if (isEditing) {
+        html += `<div class="card historial-detail-card editing">
+        <div class="exercise-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="exercise-name">${name}</div>
+            <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}">✅</button>
+          </div>
           <div class="param-row">
             <label>Peso (kg)</label>
             <div class="flex-center gap-sm">
-              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'weight',-2.5)">−</button>
-              <input class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setHistoryParam('${entry.date}',${logIdx},'weight',this.value)">
-              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'weight',2.5)">+</button>
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'weight',-2.5)">−</button>
+              <input class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'weight',this.value)">
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'weight',2.5)">+</button>
             </div>
           </div>
           <div class="param-row">
             <label>Series</label>
             <div class="flex-center gap-sm">
-              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'series',-1)">−</button>
-              <input class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setHistoryParam('${entry.date}',${logIdx},'series',this.value)">
-              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'series',1)">+</button>
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'series',-1)">−</button>
+              <input class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'series',this.value)">
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'series',1)">+</button>
             </div>
           </div>
           <div class="param-row">
             <label>Reps obj.</label>
             <div class="flex-center gap-sm">
-              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'repsExpected',-1)">−</button>
-              <input class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setHistoryParam('${entry.date}',${logIdx},'repsExpected',this.value)">
-              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${entry.date}',${logIdx},'repsExpected',1)">+</button>
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'repsExpected',-1)">−</button>
+              <input class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'repsExpected',this.value)">
+              <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'repsExpected',1)">+</button>
             </div>
           </div>
           <div class="mt-sm"><p class="text-xs text-muted mb-sm">Reps por serie:</p>`;
-          for (let s = 0; s < log.series; s++) {
-            const val = log.reps.actual[s];
-            html += `<div class="series-row">
+        for (let s = 0; s < log.series; s++) {
+          const val = log.reps.actual[s];
+          html += `<div class="series-row">
             <span class="series-label">S${s + 1}</span>
-            <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${entry.date}',${logIdx},${s},-1)">−</button>
-            <input class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setHistoryRep('${entry.date}',${logIdx},${s},this.value)">
-            <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${entry.date}',${logIdx},${s},1)">+</button>
+            <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${date}',${logIdx},${s},-1)">−</button>
+            <input class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setHistoryRep('${date}',${logIdx},${s},this.value)">
+            <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${date}',${logIdx},${s},1)">+</button>
           </div>`;
-          }
-          html += `</div></div>`;
-        } else {
-          const reps = log.reps.actual && log.reps.actual.length > 0 && log.reps.actual.some(r => r !== null)
-            ? log.reps.actual.map(r => r !== null ? r : '-').join(', ')
-            : `${log.reps.expected} × ${log.series}`;
-          html += `<div class="exercise-row">
-          <div class="exercise-name">${getExerciseName(log.exercise_id)}</div>
+        }
+        html += `</div></div></div>`;
+      } else {
+        const reps = log.reps.actual && log.reps.actual.length > 0 && log.reps.actual.some(r => r !== null)
+          ? log.reps.actual.map(r => r !== null ? r : '-').join(', ')
+          : `${log.reps.expected} × ${log.series}`;
+        html += `<div class="card historial-detail-card">
+        <div class="exercise-row">
+          <div class="exercise-name">${name}</div>
           <div class="exercise-meta">
             <span class="meta-pill">📊 <strong>${log.series}</strong>s</span>
             <span class="meta-pill">🔄 <strong>${reps}</strong></span>
             ${log.weight > 0 ? `<span class="meta-pill">🏋️ <strong>${log.weight}</strong> kg</span>` : ''}
           </div>
-        </div>`;
-        }
-      });
-
-      html += '</div></div>';
+          <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}">✏️</button>
+        </div>
+      </div>`;
+      }
     });
+
+    html += `<div class="routine-actions">
+      <button class="btn-secondary btn-sm" id="historial-back-btn">← Volver al historial</button>
+    </div>`;
 
     content.innerHTML = html;
 
-    content.querySelectorAll('.card-header').forEach(header => {
-      header.onclick = () => {
-        const idx = header.dataset.hidx;
-        const body = document.getElementById(`h-body-${idx}`);
-        const chevron = document.getElementById(`h-chevron-${idx}`);
-        body.classList.toggle('open');
-        chevron.classList.toggle('open');
-      };
-    });
+    document.getElementById('historial-back-btn').onclick = () => renderHistorial();
 
-    openIndices.forEach(idx => {
-      const body = document.getElementById(`h-body-${idx}`);
-      const chevron = document.getElementById(`h-chevron-${idx}`);
-      if (body) body.classList.add('open');
-      if (chevron) chevron.classList.add('open');
+    content.querySelectorAll('.historial-edit-btn').forEach(btn => {
+      btn.onclick = () => {
+        const logIdx = parseInt(btn.dataset.logidx);
+        if (editingHistorialExercise && editingHistorialExercise.date === date && editingHistorialExercise.logIdx === logIdx) {
+          editingHistorialExercise = null;
+        } else {
+          editingHistorialExercise = { date, logIdx };
+        }
+        renderHistorialDetail(date);
+      };
     });
   }
 

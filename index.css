@@ -510,32 +510,72 @@ body {
 .workout-actions .btn-primary,
 .workout-actions .btn-secondary { flex: 1; margin-bottom: 0; }
 
-/* ── Historial Cards ── */
-.history-card {
+/* ── Historial List (tarjetas estilo day-btn) ── */
+.historial-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.historial-entry-btn {
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s var(--ease);
+}
+.historial-entry-btn:active { transform: scale(0.97); }
+.historial-entry-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+
+.historial-entry-btn .day-icon { font-size: 28px; }
+.historial-entry-btn .day-info { text-align: left; flex: 1; min-width: 0; }
+.historial-entry-btn .day-name { display: block; }
+.historial-entry-btn .day-exercises {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.history-card .date-text {
-  font-size: 15px;
-  font-weight: 600;
+.historial-delete-btn {
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.historial-delete-btn:hover { opacity: 1; }
+
+/* ── Historial Detail ── */
+.historial-detail-card .exercise-row {
+  align-items: center;
 }
 
-.history-card .type-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.historial-detail-card .historial-edit-btn {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.historial-detail-card.editing {
+  border-color: var(--accent-glow);
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .type-badge.LUNES { background: rgba(108, 92, 231, 0.2); color: var(--accent-light); }
 .type-badge.MIERCOLES { background: rgba(0, 206, 201, 0.15); color: var(--cyan); }
 .type-badge.VIERNES { background: rgba(253, 203, 110, 0.15); color: var(--gold); }
-
-.completed-icon { color: var(--green); font-size: 18px; }
-.incomplete-icon { color: var(--text-muted); font-size: 18px; }
 
 /* ── Charts ── */
 .graficas-controls {
