@@ -9,7 +9,7 @@
   const SALT = 'GYMPRO_SALT_2024';
   const DAY_MAP = { 1: 'LUNES', 3: 'MIERCOLES', 5: 'VIERNES' };
   const DAY_LABELS = { LUNES: 'Lunes', MIERCOLES: 'Miércoles', VIERNES: 'Viernes' };
-  const DAY_ICONS = { LUNES: '🔵', MIERCOLES: '🟢', VIERNES: '🟡' };
+
   const SESSION_KEY = 'gym_companion_session';
   const GITHUB_KEY = 'gym_companion_github';
   const DB_LOCAL_KEY = 'gym_companion_db';
@@ -442,7 +442,6 @@
       const exercises = (DB.routines[type] || []).map(id => getExerciseName(id));
       const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
       html += `<button class="day-btn" data-day="${type}">
-      <span class="day-icon">${DAY_ICONS[type]}</span>
       <span class="day-info">
         <span class="day-name">${DAY_LABELS[type]}</span>
         <span class="day-exercises">${exercises.length} ejercicios · ${preview}</span>
@@ -478,12 +477,12 @@
     exerciseIds.forEach(id => {
       const last = getLastValuesForExercise(id, dayType);
       const name = getExerciseName(id);
-      const weightStr = last.weight > 0 ? ` · ${last.weight} kg` : '';
+      const weightStr = last.weight > 0 ? `${last.weight} kg · ` : '';
       html += `<div class="card compact-card">
       <div class="card-header">
         <div>
           <div class="card-title">${name}</div>
-          <div class="card-subtitle">${last.series}×${last.repsExpected}${weightStr}</div>
+          <div class="card-subtitle">${weightStr}${last.series}×${last.repsExpected}</div>
         </div>
       </div>
     </div>`;
@@ -587,7 +586,7 @@
             ${isVolRecord ? '<span class="record-badge">🏆 Volumen</span>' : ''}
             ${isE1RMRecord ? '<span class="record-badge">🏆 e1RM</span>' : ''}
           </div>
-          <div class="card-subtitle" id="w-subtitle-${logIdx}">${log.series}×${log.reps.expected} · ${log.weight > 0 ? log.weight + ' kg' : 'Sin peso'}</div>
+          <div class="card-subtitle" id="w-subtitle-${logIdx}">${log.weight > 0 ? log.weight + ' kg · ' : ''}${log.series}×${log.reps.expected}</div>
         </div>
         <span class="card-chevron" id="chevron-${logIdx}">▼</span>
       </div>
@@ -703,9 +702,9 @@
       <div class="exercise-row">
         <div class="exercise-name">${name}</div>
         <div class="exercise-meta">
+          ${log.weight > 0 ? `<span class="meta-pill">🏋️ <strong>${log.weight}</strong> kg</span>` : ''}
           <span class="meta-pill">📊 <strong>${log.series}</strong></span>
           <span class="meta-pill">🔄 <strong>${reps}</strong></span>
-          ${log.weight > 0 ? `<span class="meta-pill">🏋️ <strong>${log.weight}</strong> kg</span>` : ''}
         </div>
       </div>
     </div>`;
@@ -993,9 +992,8 @@
       const exercises = entry.logs.map(l => getExerciseName(l.exercise_id));
       const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
       html += `<div class="historial-entry-btn" data-date="${entry.date}">
-      <span class="day-icon">${DAY_ICONS[entry.type] || '📋'}</span>
       <span class="day-info">
-        <span class="day-name">${DAY_LABELS[entry.type] || entry.type} ${completed ? '✅' : '⏸️'}</span>
+        <span class="day-name">${DAY_LABELS[entry.type] || entry.type}${completed ? '' : ' ⏸️'}</span>
         <span class="day-exercises">${formatDate(entry.date)} · ${entry.logs.length} ejercicios</span>
         <span class="day-exercises">${preview}</span>
       </span>
@@ -1080,14 +1078,14 @@
         }
         html += `</div></div></div>`;
       } else {
-        const weightStr = log.weight > 0 ? ` · ${log.weight} kg` : '';
+        const weightStr = log.weight > 0 ? `${log.weight} kg · ` : '';
         const repsFmt = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected);
         const repsPart = repsFmt ? ` · Reps: ${repsFmt}` : '';
         html += `<div class="card compact-card historial-detail-card">
         <div class="card-header">
           <div>
             <div class="card-title">${name}</div>
-            <div class="card-subtitle">${log.series}×${log.reps.expected}${weightStr}${repsPart}</div>
+            <div class="card-subtitle">${weightStr}${log.series}×${log.reps.expected}${repsPart}</div>
           </div>
           <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}">✏️</button>
         </div>
