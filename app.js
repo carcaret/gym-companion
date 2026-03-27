@@ -490,7 +490,7 @@
 
     if (showStartBtn) {
       html += `<div class="workout-actions">
-      <button class="btn-primary" id="start-workout-btn">🚀 Iniciar entreno</button>
+      <button class="btn-primary" id="start-workout-btn">Iniciar entreno</button>
     </div>`;
       html += `<div class="routine-actions">
       <button class="btn-secondary btn-sm" id="add-exercise-btn">+ Añadir ejercicio</button>

@@ -724,7 +724,9 @@ body {
 }
 
 .tab.active { color: var(--accent-light); }
-.tab-icon { font-size: 22px; }
+.tab-icon { font-size: 0; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.tab-icon svg { display: block; opacity: 0.5; }
+.tab.active .tab-icon svg { opacity: 1; }
 .tab-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
 /* ── Modal ── */
