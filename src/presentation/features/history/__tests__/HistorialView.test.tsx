@@ -22,6 +22,27 @@ const testDB: DB = {
           reps: { expected: 10, actual: [10, 9, 8, 10] },
           weight: 80,
         },
+        {
+          exercise_id: 'curl_biceps',
+          name: 'Curl de Bíceps',
+          series: 3,
+          reps: { expected: 12, actual: [12, 11, 10] },
+          weight: 20,
+        },
+      ],
+    },
+    {
+      date: '2026-03-21',
+      type: 'VIERNES',
+      completed: true,
+      logs: [
+        {
+          exercise_id: 'sentadilla',
+          name: 'Sentadilla',
+          series: 3,
+          reps: { expected: 8, actual: [8, 8, 7] },
+          weight: 100,
+        },
       ],
     },
   ],
@@ -38,125 +59,102 @@ function HistWrapper({ initialDB = testDB }: { initialDB?: DB }) {
   )
 }
 
-// ── Bug 2a: Botones +/− condicionales a modo edición ─────────────────
+// ── Lista compacta (tests 26-27) ─────────────────────────────────────
 
-describe('HistorialView — botones +/− solo en edición (Bug 2)', () => {
-  it('no hay botones +/− en las filas de parámetros cuando no se edita', () => {
+describe('HistorialView — lista compacta', () => {
+  it('muestra cards con fecha, tipo badge y N ejercicios', () => {
     render(<HistWrapper />)
-    // Los botones en .param-row sólo deben existir en edición
-    const paramButtons = document.querySelectorAll('.param-row button.btn-icon')
-    expect(paramButtons).toHaveLength(0)
+    // Sorted by date desc: 2026-03-23 first, then 2026-03-21
+    expect(screen.getByText('2026-03-23')).toBeInTheDocument()
+    expect(screen.getByText('2026-03-21')).toBeInTheDocument()
+    // Type badges inside cards (filter bar also has "Lunes"/"Viernes")
+    const cards = document.querySelectorAll('.history-card')
+    expect(cards).toHaveLength(2)
+    expect(cards[0].textContent).toMatch(/Lunes/)
+    expect(cards[0].textContent).toMatch(/2 ejercicios/)
+    expect(cards[1].textContent).toMatch(/Viernes/)
+    expect(cards[1].textContent).toMatch(/1 ejercicios/)
   })
 
-  it('aparecen botones +/− en param-rows al activar edición', async () => {
+  it('cada card tiene botón 🗑️', () => {
     render(<HistWrapper />)
-    const editBtn = screen.getByTitle('Editar')
-    await userEvent.click(editBtn)
-    const paramButtons = document.querySelectorAll('.param-row button.btn-icon')
+    const deleteButtons = screen.getAllByTitle('Borrar')
+    expect(deleteButtons).toHaveLength(2)
+  })
+})
+
+// ── Navegación lista → detalle (tests 28-30) ────────────────────────
+
+describe('HistorialView — navegación a detalle', () => {
+  it('click en card navega a vista de detalle (WorkoutDetailView aparece)', async () => {
+    render(<HistWrapper />)
+    // Click on the first history card header
+    await userEvent.click(screen.getByText('2026-03-23'))
+    // Should now show exercise cards from WorkoutDetailView
+    expect(screen.getByText('Press de Banca')).toBeInTheDocument()
+    expect(screen.getByText('Curl de Bíceps')).toBeInTheDocument()
+    // The list should be hidden
+    expect(screen.queryByText('2026-03-21')).not.toBeInTheDocument()
+  })
+
+  it('vista detalle muestra botón "← Volver"', async () => {
+    render(<HistWrapper />)
+    await userEvent.click(screen.getByText('2026-03-23'))
+    expect(screen.getByRole('button', { name: /volver/i })).toBeInTheDocument()
+  })
+
+  it('click en "← Volver" vuelve a la lista', async () => {
+    render(<HistWrapper />)
+    await userEvent.click(screen.getByText('2026-03-23'))
+    expect(screen.queryByText('2026-03-21')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /volver/i }))
+    // Back to list — both entries visible
+    expect(screen.getByText('2026-03-23')).toBeInTheDocument()
+    expect(screen.getByText('2026-03-21')).toBeInTheDocument()
+  })
+})
+
+// ── Detalle: edición y restricciones (tests 31-32) ──────────────────
+
+describe('HistorialView — detalle edición', () => {
+  it('en detalle se puede editar (✏️ → controles de edición)', async () => {
+    render(<HistWrapper />)
+    await userEvent.click(screen.getByText('2026-03-23'))
+    // Should have edit button
+    await userEvent.click(screen.getByTitle('Editar'))
+    // After activating edit, param-rows should have btn-icon buttons
+    const body0 = document.getElementById('body-0')!
+    const paramButtons = body0.querySelectorAll('.param-row button.btn-icon')
     expect(paramButtons.length).toBeGreaterThan(0)
   })
 
-  it('desaparecen los botones +/− al desactivar edición', async () => {
+  it('no hay botón "+ Ejercicio" ni "Quitar de rutina" en detalle desde historial', async () => {
     render(<HistWrapper />)
-    const editBtn = screen.getByTitle('Editar')
-    // Activar
-    await userEvent.click(editBtn)
-    expect(document.querySelectorAll('.param-row button.btn-icon').length).toBeGreaterThan(0)
-    // Desactivar
-    await userEvent.click(editBtn)
-    expect(document.querySelectorAll('.param-row button.btn-icon')).toHaveLength(0)
+    await userEvent.click(screen.getByText('2026-03-23'))
+    expect(screen.queryByRole('button', { name: /\+ ejercicio/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /quitar de rutina/i })).not.toBeInTheDocument()
   })
 })
 
-// ── Bug 2b: Formato de reps ──────────────────────────────────────────
+// ── Edición completa (mantener de tests anteriores) ─────────────────
 
-describe('HistorialView — formato de reps (Bug 2)', () => {
-  it('muestra las reps objetivo (expected)', () => {
-    render(<HistWrapper />)
-    const content = document.querySelector('#h-body-0')?.textContent ?? ''
-    expect(content).toMatch(/Reps obj/)
-    expect(content).toMatch(/10/)
-  })
-
-  it('muestra las reps reales en fila separada cuando existen', () => {
-    render(<HistWrapper />)
-    const content = document.querySelector('#h-body-0')?.textContent ?? ''
-    expect(content).toMatch(/Reales/)
-    expect(content).toMatch(/10, 9, 8, 10/)
-  })
-
-  it('sólo muestra objetivo cuando no hay reps reales registradas', () => {
-    const dbSinReales: DB = {
-      ...testDB,
-      history: [
-        {
-          ...testDB.history[0],
-          logs: [{ ...testDB.history[0].logs[0], reps: { expected: 12, actual: [] } }],
-        },
-      ],
-    }
-    render(<HistWrapper initialDB={dbSinReales} />)
-    const content = document.querySelector('#h-body-0')?.textContent ?? ''
-    expect(content).toMatch(/12/)
-    expect(content).not.toMatch(/Reales/)
-  })
-})
-
-// ── Edición completa: reps obj, reps reales, auto-propagación ────────
-
-describe('HistorialView — edición completa', () => {
-  it('en modo edición aparecen controles de reps obj (+/-)', async () => {
-    render(<HistWrapper />)
-    await userEvent.click(screen.getByTitle('Editar'))
-    const body = document.getElementById('h-body-0')!
-    // Should have a param-row for Reps obj. with +/- buttons
-    const paramRows = body.querySelectorAll('.param-row')
-    const repsRow = paramRows[2] // Peso, Series, Reps obj.
-    const buttons = repsRow.querySelectorAll('button.btn-icon')
-    expect(buttons).toHaveLength(2)
-  })
-
-  it('en modo edición aparecen inputs por serie con +/-', async () => {
-    render(<HistWrapper />)
-    await userEvent.click(screen.getByTitle('Editar'))
-    const body = document.getElementById('h-body-0')!
-    const seriesInputs = body.querySelectorAll('.series-row input')
-    expect(seriesInputs).toHaveLength(4) // 4 series in testDB
-    const seriesButtons = body.querySelectorAll('.series-row button.btn-icon')
-    expect(seriesButtons).toHaveLength(8) // 4 × 2
-  })
-
+describe('HistorialView — auto-propagación en detalle', () => {
   it('al cambiar reps obj, las reps reales se actualizan al nuevo valor', async () => {
     render(<HistWrapper />)
+    // Navigate to detail
+    await userEvent.click(screen.getByText('2026-03-23'))
+    // Activate edit
     await userEvent.click(screen.getByTitle('Editar'))
-    const body = document.getElementById('h-body-0')!
+    const body0 = document.getElementById('body-0')!
     // Reps obj row is the third param-row, click + button
-    const paramRows = body.querySelectorAll('.param-row')
+    const paramRows = body0.querySelectorAll('.param-row')
     const repsRow = paramRows[2]
     const plusBtn = repsRow.querySelectorAll('button.btn-icon')[1]
     await userEvent.click(plusBtn)
     // Expected was 10, now 11. All actual reps should be 11
-    const seriesInputs = body.querySelectorAll<HTMLInputElement>('.series-row input')
+    const seriesInputs = body0.querySelectorAll<HTMLInputElement>('.series-row input')
     for (const input of seriesInputs) {
       expect(input.value).toBe('11')
     }
-  })
-
-  it('el body muestra ejercicios con .exercise-name, peso, series, reps obj y reps reales', () => {
-    render(<HistWrapper />)
-    const body = document.getElementById('h-body-0')!
-    // exercise-name
-    expect(body.querySelector('.exercise-name')).toBeInTheDocument()
-    expect(body.querySelector('.exercise-name')!.textContent).toBe('Press de Banca')
-    // params
-    const text = body.textContent!
-    expect(text).toMatch(/Peso/)
-    expect(text).toMatch(/80/)
-    expect(text).toMatch(/Series/)
-    expect(text).toMatch(/4/)
-    expect(text).toMatch(/Reps obj/)
-    expect(text).toMatch(/10/)
-    expect(text).toMatch(/Reales/)
-    expect(text).toMatch(/10, 9, 8, 10/)
   })
 })

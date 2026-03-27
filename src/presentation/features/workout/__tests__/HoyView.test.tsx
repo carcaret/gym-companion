@@ -167,6 +167,19 @@ describe('HoyView — entrenamiento completado', () => {
     const buttons = body.querySelectorAll('button.btn-icon')
     expect(buttons).toHaveLength(0)
   })
+
+  it('muestra botón ✏️ para activar edición', () => {
+    render(<HoyWrapper initialDB={completedDB} />)
+    expect(screen.getByTitle('Editar')).toBeInTheDocument()
+  })
+
+  it('tras pulsar ✏️, se puede editar peso (+/- aparecen)', async () => {
+    render(<HoyWrapper initialDB={completedDB} />)
+    await userEvent.click(screen.getByTitle('Editar'))
+    const body0 = document.getElementById('body-0')!
+    const paramButtons = body0.querySelectorAll('.param-row button.btn-icon')
+    expect(paramButtons.length).toBeGreaterThan(0)
+  })
 })
 
 // ── Auto-propagación de reps objetivo ────────────────────────────────

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { DB, DayOfWeek, HistoryEntry, ExerciseLog } from '../../../domain/shared/DB'
-import { ExerciseLogCard } from '../../components/ExerciseLogCard'
+import { WorkoutDetailView } from './WorkoutDetailView'
 
 const DAY_LABELS: Record<DayOfWeek, string> = { LUNES: 'Lunes', MIERCOLES: 'Miércoles', VIERNES: 'Viernes' }
 const WORKOUT_DAYS: DayOfWeek[] = ['LUNES', 'MIERCOLES', 'VIERNES']
@@ -23,23 +23,7 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
 
   const todayEntry = db.history.find((h) => h.date === todayStr) ?? null
 
-  // Auto-expand all cards when there is an active (not completed) workout
-  const [expandedCards, setExpandedCards] = useState<Set<number>>(() =>
-    todayEntry && !todayEntry.completed
-      ? new Set(todayEntry.logs.map((_, i) => i))
-      : new Set()
-  )
-
   const effectiveDay = selectorOpen ? null : (selectedDay ?? dayType)
-
-  function toggleCard(i: number) {
-    setExpandedCards((prev) => {
-      const next = new Set(prev)
-      if (next.has(i)) next.delete(i)
-      else next.add(i)
-      return next
-    })
-  }
 
   // ── REST DAY / DAY SELECTOR ──────────────────────
   const isRestDay = !dayType
@@ -62,7 +46,7 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
     return { series: 3, repsExpected: 10, weight: 0 }
   }
 
-  // ── WORKOUT MODE ────────────────────────────────────
+  // ── START WORKOUT ────────────────────────────────────
   function startWorkout() {
     if (!effectiveDay) return
     const exercises = db.routines[effectiveDay] ?? []
@@ -78,76 +62,6 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
     })
     const entry: HistoryEntry = { date: todayStr, type: effectiveDay, completed: false, logs }
     onUpdateDB((d) => ({ ...d, history: [...d.history.filter((h) => h.date !== todayStr), entry] }))
-    setExpandedCards(new Set(logs.map((_, i) => i)))
-  }
-
-  function finishWorkout() {
-    onUpdateDB((d) => ({
-      ...d,
-      history: d.history.map((h) => (h.date === todayStr ? { ...h, completed: true } : h)),
-    }))
-  }
-
-  function updateSeriesRep(exerciseIdx: number, seriesIdx: number, reps: number) {
-    onUpdateDB((d) => ({
-      ...d,
-      history: d.history.map((h) => {
-        if (h.date !== todayStr) return h
-        const logs = h.logs.map((log, i) => {
-          if (i !== exerciseIdx) return log
-          const actual = [...log.reps.actual]
-          actual[seriesIdx] = reps
-          return { ...log, reps: { ...log.reps, actual } }
-        })
-        return { ...h, logs }
-      }),
-    }))
-  }
-
-  function updateWeight(exerciseIdx: number, delta: number) {
-    onUpdateDB((d) => ({
-      ...d,
-      history: d.history.map((h) => {
-        if (h.date !== todayStr) return h
-        const logs = h.logs.map((log, i) =>
-          i !== exerciseIdx ? log : { ...log, weight: Math.max(0, log.weight + delta) }
-        )
-        return { ...h, logs }
-      }),
-    }))
-  }
-
-  function updateSeries(exerciseIdx: number, delta: number) {
-    onUpdateDB((d) => ({
-      ...d,
-      history: d.history.map((h) => {
-        if (h.date !== todayStr) return h
-        const logs = h.logs.map((log, i) => {
-          if (i !== exerciseIdx) return log
-          const newSeries = Math.max(1, log.series + delta)
-          const actual = [...log.reps.actual]
-          while (actual.length < newSeries) actual.push(null)
-          while (actual.length > newSeries) actual.pop()
-          return { ...log, series: newSeries, reps: { ...log.reps, actual } }
-        })
-        return { ...h, logs }
-      }),
-    }))
-  }
-
-  function updateExpectedReps(exerciseIdx: number, delta: number) {
-    onUpdateDB((d) => ({
-      ...d,
-      history: d.history.map((h) => {
-        if (h.date !== todayStr) return h
-        const logs = h.logs.map((log, i) => {
-          if (i !== exerciseIdx) return log
-          const newExpected = Math.max(1, log.reps.expected + delta)
-          return { ...log, reps: { expected: newExpected, actual: new Array(log.series).fill(newExpected) } }
-        })
-        return { ...h, logs }
-      }),
-    }))
   }
 
   // ── PREVIEW ITEMS (from routine, with last known values) ─────────────
@@ -226,53 +140,19 @@ export function HoyView({ db, todayStr, dayType, onUpdateDB, onModalRequest }: P
           </div>
         )}
 
-        {/* ── ACTIVE WORKOUT ── */}
-        {todayEntry && !todayEntry.completed && (
-          <div id="active-workout">
-            {todayEntry.logs.map((log, i) => (
-              <ExerciseLogCard
-                key={`${log.exercise_id}-${i}`}
-                log={log}
-                cardIdx={i}
-                expanded={expandedCards.has(i)}
-                editing={true}
-                onToggleExpand={() => toggleCard(i)}
-                onRepUpdate={(si, reps) => updateSeriesRep(i, si, reps)}
-                onWeightChange={(d) => updateWeight(i, d)}
-                onSeriesChange={(d) => updateSeries(i, d)}
-                onExpectedRepsChange={(d) => updateExpectedReps(i, d)}
-                actionSlot={<button className="btn-danger btn-sm" onClick={() => onModalRequest({ type: 'confirm-remove', exerciseIdx: i })}>Quitar de rutina</button>}
-              />
-            ))}
-            <div className="workout-actions">
-              <button id="add-exercise-mid-btn" className="btn-secondary" onClick={() => onModalRequest({ type: 'add-exercise' })}>
-                + Ejercicio
-              </button>
-              <button id="finish-workout-btn" className="btn-primary" onClick={finishWorkout}>
-                Finalizar entreno
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── COMPLETED WORKOUT ── */}
-        {todayEntry?.completed && (
-          <div id="completed-workout">
-            {todayEntry.logs.map((log, i) => (
-              <ExerciseLogCard
-                key={`${log.exercise_id}-${i}`}
-                log={log}
-                cardIdx={i}
-                expanded={expandedCards.has(i)}
-                editing={false}
-                onToggleExpand={() => toggleCard(i)}
-              />
-            ))}
-          </div>
+        {/* ── WORKOUT (active or completed) → WorkoutDetailView ── */}
+        {todayEntry && (
+          <WorkoutDetailView
+            db={db}
+            entry={todayEntry}
+            onUpdateDB={onUpdateDB}
+            canAddRemoveExercises={true}
+            canFinishWorkout={!todayEntry.completed}
+            onModalRequest={onModalRequest}
+          />
         )}
 
       </div>
     </>
   )
 }
-
