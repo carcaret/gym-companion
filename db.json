@@ -18373,7 +18373,7 @@
     {
       "date": "2026-03-27",
       "type": "VIERNES",
-      "completed": false,
+      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -18382,10 +18382,10 @@
           "reps": {
             "expected": 11,
             "actual": [
-              null,
-              null,
-              null,
-              null
+              11,
+              11,
+              11,
+              11
             ]
           },
           "weight": 97
@@ -18397,10 +18397,10 @@
           "reps": {
             "expected": 12,
             "actual": [
-              null,
-              null,
-              null,
-              null
+              12,
+              12,
+              12,
+              12
             ]
           },
           "weight": 30
@@ -18412,10 +18412,10 @@
           "reps": {
             "expected": 10,
             "actual": [
-              null,
-              null,
-              null,
-              null
+              10,
+              10,
+              10,
+              10
             ]
           },
           "weight": 59
@@ -18427,9 +18427,9 @@
           "reps": {
             "expected": 10,
             "actual": [
-              null,
-              null,
-              null
+              10,
+              10,
+              10
             ]
           },
           "weight": 18
@@ -18441,9 +18441,9 @@
           "reps": {
             "expected": 12,
             "actual": [
-              null,
-              null,
-              null
+              12,
+              12,
+              12
             ]
           },
           "weight": 57.5
@@ -18455,9 +18455,9 @@
           "reps": {
             "expected": 10,
             "actual": [
-              null,
-              null,
-              null
+              10,
+              10,
+              10
             ]
           },
           "weight": 100
