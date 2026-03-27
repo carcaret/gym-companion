@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd '/c/Users/carca/.gemini/antigravity/scratch' && if [ -n \"$(git status --short)\" ]; then git add -A && git commit -m \"chore: cambios sin commitear al finalizar sesión (revisar historial)\"; fi",
+            "command": "cd '/workspaces/gym-companion' && if [ -n \"$(git status --short)\" ]; then git add -A && git commit -m \"chore: cambios sin commitear al finalizar sesión (revisar historial)\"; fi",
             "timeout": 30,
             "statusMessage": "Guardando cambios pendientes en git..."
           }
