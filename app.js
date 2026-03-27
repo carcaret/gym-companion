@@ -461,6 +461,16 @@
     });
   }
 
+  function formatRepsInteligente(actualArr, series, expected) {
+    if (actualArr && actualArr.length > 0 && actualArr.some(r => r !== null)) {
+      const vals = actualArr.filter(r => r !== null);
+      const allEqual = vals.every(v => v === vals[0]);
+      if (allEqual) return `${vals.length}x${vals[0]}`;
+      return actualArr.map(r => r !== null ? r : '-').join('-');
+    }
+    return null;
+  }
+
   function renderRoutinePreview(container, dayType, showStartBtn) {
     const exerciseIds = DB.routines[dayType] || [];
     let html = '';
@@ -468,13 +478,12 @@
     exerciseIds.forEach(id => {
       const last = getLastValuesForExercise(id, dayType);
       const name = getExerciseName(id);
-      html += `<div class="card">
-      <div class="exercise-row">
-        <div class="exercise-name">${name}</div>
-        <div class="exercise-meta">
-          <span class="meta-pill">📊 <strong>${last.series}</strong> series</span>
-          <span class="meta-pill">🔄 <strong>${last.repsExpected}</strong> reps</span>
-          ${last.weight > 0 ? `<span class="meta-pill">🏋️ <strong>${last.weight}</strong> kg</span>` : ''}
+      const weightStr = last.weight > 0 ? ` · ${last.weight} kg` : '';
+      html += `<div class="card compact-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${name}</div>
+          <div class="card-subtitle">${last.series}×${last.repsExpected}${weightStr}</div>
         </div>
       </div>
     </div>`;
@@ -1071,16 +1080,14 @@
         }
         html += `</div></div></div>`;
       } else {
-        const reps = log.reps.actual && log.reps.actual.length > 0 && log.reps.actual.some(r => r !== null)
-          ? log.reps.actual.map(r => r !== null ? r : '-').join(', ')
-          : `${log.reps.expected} × ${log.series}`;
-        html += `<div class="card historial-detail-card">
-        <div class="exercise-row">
-          <div class="exercise-name">${name}</div>
-          <div class="exercise-meta">
-            <span class="meta-pill">📊 <strong>${log.series}</strong>s</span>
-            <span class="meta-pill">🔄 <strong>${reps}</strong></span>
-            ${log.weight > 0 ? `<span class="meta-pill">🏋️ <strong>${log.weight}</strong> kg</span>` : ''}
+        const weightStr = log.weight > 0 ? ` · ${log.weight} kg` : '';
+        const repsFmt = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected);
+        const repsPart = repsFmt ? ` · Reps: ${repsFmt}` : '';
+        html += `<div class="card compact-card historial-detail-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">${name}</div>
+            <div class="card-subtitle">${log.series}×${log.reps.expected}${weightStr}${repsPart}</div>
           </div>
           <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}">✏️</button>
         </div>

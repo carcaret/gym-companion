@@ -296,6 +296,10 @@ body {
   cursor: pointer;
 }
 
+.compact-card .card-header {
+  cursor: default;
+}
+
 .card-title {
   font-size: 15px;
   font-weight: 600;
