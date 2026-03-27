@@ -12,11 +12,13 @@ python -m http.server 8000
 
 Luego abre `http://localhost:8000` en el navegador. Para parar el servidor, `Ctrl+C`.
 
-Si quieres que abra el navegador automáticamente (Windows):
+### Devcontainer (Codespaces / VS Code Remote)
 
 ```bash
-python -m http.server 8000 & start http://localhost:8000
+npx serve -l 8000
 ```
+
+El devcontainer redirige automáticamente el puerto. Abre la URL que aparece en la pestaña **Ports** de VS Code o navega a `http://localhost:8000` en Chrome.
 
 > `file://` no funciona — el Service Worker y la carga de datos requieren HTTP.
 
