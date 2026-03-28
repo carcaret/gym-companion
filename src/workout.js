@@ -1,4 +1,4 @@
-import { computeVolume, computeE1RM } from './metrics.js';
+import { computeVolume, computeE1RM, getMaxMetrics } from './metrics.js';
 import { adjustLogParam, setLogParam, adjustLogRep, setLogRep } from './log-mutations.js';
 
 /**
@@ -131,16 +131,7 @@ export function detectRecords(log, prevHistory) {
   const currentE1RM = computeE1RM(log);
   const hasActualReps = log.reps.actual.some(r => r !== null);
 
-  let prevMaxVol = 0;
-  let prevMaxE1RM = 0;
-  for (const entry of prevHistory) {
-    for (const l of entry.logs) {
-      if (l.exercise_id === log.exercise_id) {
-        prevMaxVol = Math.max(prevMaxVol, computeVolume(l));
-        prevMaxE1RM = Math.max(prevMaxE1RM, computeE1RM(l));
-      }
-    }
-  }
+  const { maxVolume: prevMaxVol, maxE1RM: prevMaxE1RM } = getMaxMetrics(prevHistory, log.exercise_id);
 
   return {
     isVolRecord: currentVol > 0 && currentVol > prevMaxVol && hasActualReps,

@@ -1,4 +1,4 @@
-import { computeVolume, computeE1RM } from './metrics.js';
+import { getMaxMetrics } from './metrics.js';
 
 export function getExerciseName(db, id) {
   return db.exercises[id] ? db.exercises[id].name : id;
@@ -20,14 +20,5 @@ export function getLastValuesForExercise(db, exerciseId, dayType) {
 }
 
 export function getHistoricalRecords(db, exerciseId) {
-  let maxVolume = 0, maxE1RM = 0;
-  for (const entry of db.history) {
-    for (const log of entry.logs) {
-      if (log.exercise_id === exerciseId) {
-        maxVolume = Math.max(maxVolume, computeVolume(log));
-        maxE1RM = Math.max(maxE1RM, computeE1RM(log));
-      }
-    }
-  }
-  return { maxVolume, maxE1RM };
+  return getMaxMetrics(db.history, exerciseId);
 }

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { computeAvgReps, computeVolume, computeE1RM } from '../../src/metrics.js';
+import { computeAvgReps, computeVolume, computeE1RM, getMaxMetrics } from '../../src/metrics.js';
 
 function makeLog({ weight = 50, series = 3, expected = 10, actual = null }) {
   return {
@@ -97,5 +97,59 @@ describe('computeVolume (edge cases)', () => {
     const log = { weight: 50, series: 3, reps: { expected: 10, actual: [null, null, null] } };
     // avgReps = 0, vol = 50 * 3 * 0 = 0
     expect(computeVolume(log)).toBe(0);
+  });
+});
+
+// ── getMaxMetrics ──
+
+function makeEntry(date, logs) {
+  return { date, type: 'LUNES', completed: true, logs };
+}
+
+function makeFullLog(id, { weight = 50, series = 3, actual = [10, 10, 10] } = {}) {
+  return {
+    exercise_id: id,
+    name: id,
+    weight,
+    series,
+    reps: { expected: 10, actual }
+  };
+}
+
+describe('getMaxMetrics', () => {
+  test('devuelve máximos de volumen y e1RM para un ejercicio', () => {
+    const entries = [
+      makeEntry('2026-01-01', [makeFullLog('press', { weight: 50, series: 3, actual: [10, 10, 10] })]),
+      makeEntry('2026-01-02', [makeFullLog('press', { weight: 60, series: 3, actual: [8, 8, 8] })]),
+    ];
+    const result = getMaxMetrics(entries, 'press');
+    // Entry 1: vol = 50*3*10 = 1500, e1RM = 50*(1+10/30) = 66.67
+    // Entry 2: vol = 60*3*8 = 1440, e1RM = 60*(1+8/30) = 76
+    expect(result.maxVolume).toBe(1500);
+    expect(result.maxE1RM).toBeCloseTo(76, 0);
+  });
+
+  test('ignora ejercicios que no coinciden', () => {
+    const entries = [
+      makeEntry('2026-01-01', [
+        makeFullLog('press', { weight: 100 }),
+        makeFullLog('curl', { weight: 20 }),
+      ]),
+    ];
+    const result = getMaxMetrics(entries, 'curl');
+    expect(result.maxVolume).toBe(20 * 3 * 10); // 600
+  });
+
+  test('historial vacío → maxVolume=0, maxE1RM=0', () => {
+    const result = getMaxMetrics([], 'press');
+    expect(result.maxVolume).toBe(0);
+    expect(result.maxE1RM).toBe(0);
+  });
+
+  test('ejercicio no encontrado → maxVolume=0, maxE1RM=0', () => {
+    const entries = [makeEntry('2026-01-01', [makeFullLog('press')])];
+    const result = getMaxMetrics(entries, 'sentadilla');
+    expect(result.maxVolume).toBe(0);
+    expect(result.maxE1RM).toBe(0);
   });
 });
