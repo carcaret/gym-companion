@@ -695,6 +695,15 @@ function showCreateExerciseModal(dayType) {
   }, 100);
 }
 
+// ── History update helper ──
+async function withHistoryUpdate(mutationFn, date, logIdx) {
+  if (!mutationFn()) return;
+  await persistDB();
+  renderHistorialDetail(date);
+  const entry = DB.history.find(h => h.date === date);
+  if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
+}
+
 // ── Param adjustments (exposed globally) ──
 window.GymCompanion = {
   adjustParam: async (logIdx, param, delta) => {
@@ -752,37 +761,17 @@ window.GymCompanion = {
     );
   },
 
-  adjustHistoryParam: async (date, logIdx, param, delta) => {
-    if (!_adjustHistoryParam(DB.history, date, logIdx, param, delta)) return;
-    await persistDB();
-    renderHistorialDetail(date);
-    const entry = DB.history.find(h => h.date === date);
-    if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
-  },
+  adjustHistoryParam: (date, logIdx, param, delta) =>
+    withHistoryUpdate(() => _adjustHistoryParam(DB.history, date, logIdx, param, delta), date, logIdx),
 
-  setHistoryParam: async (date, logIdx, param, value) => {
-    if (!_setHistoryParam(DB.history, date, logIdx, param, value)) return;
-    await persistDB();
-    renderHistorialDetail(date);
-    const entry = DB.history.find(h => h.date === date);
-    if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
-  },
+  setHistoryParam: (date, logIdx, param, value) =>
+    withHistoryUpdate(() => _setHistoryParam(DB.history, date, logIdx, param, value), date, logIdx),
 
-  adjustHistoryRep: async (date, logIdx, seriesIdx, delta) => {
-    if (!_adjustHistoryRep(DB.history, date, logIdx, seriesIdx, delta)) return;
-    await persistDB();
-    renderHistorialDetail(date);
-    const entry = DB.history.find(h => h.date === date);
-    if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
-  },
+  adjustHistoryRep: (date, logIdx, seriesIdx, delta) =>
+    withHistoryUpdate(() => _adjustHistoryRep(DB.history, date, logIdx, seriesIdx, delta), date, logIdx),
 
-  setHistoryRep: async (date, logIdx, seriesIdx, value) => {
-    if (!_setHistoryRep(DB.history, date, logIdx, seriesIdx, value)) return;
-    await persistDB();
-    renderHistorialDetail(date);
-    const entry = DB.history.find(h => h.date === date);
-    if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
-  },
+  setHistoryRep: (date, logIdx, seriesIdx, value) =>
+    withHistoryUpdate(() => _setHistoryRep(DB.history, date, logIdx, seriesIdx, value), date, logIdx),
 
   removeExerciseFromRoutine: (dayType, exerciseId, logIdx) => {
     showModal('¿Quitar ejercicio?', `<p class="text-sm">Se eliminará <strong>${getExerciseName(exerciseId)}</strong> de la rutina de ${DAY_LABELS[dayType]}. Los registros históricos se conservarán.</p>`, [
