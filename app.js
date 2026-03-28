@@ -513,7 +513,7 @@ function renderActiveWorkout(container, entry) {
 
   html += `<div class="workout-actions">
   <button class="btn-secondary" id="add-exercise-mid-btn">+ Ejercicio</button>
-  <button class="btn-primary" id="finish-workout-btn">✅ Finalizar entreno</button>
+  <button class="btn-primary" id="finish-workout-btn">Finalizar entreno</button>
 </div>`;
 
   const openIndices = new Set();
