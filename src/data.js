@@ -9,7 +9,9 @@ export function getTodayEntry(db, today) {
 }
 
 export function getLastValuesForExercise(db, exerciseId, dayType) {
-  const entries = db.history.filter(h => h.type === dayType);
+  const entries = db.history
+    .filter(h => h.type === dayType)
+    .sort((a, b) => a.date.localeCompare(b.date));
   for (let i = entries.length - 1; i >= 0; i--) {
     const log = entries[i].logs.find(l => l.exercise_id === exerciseId);
     if (log) return { series: log.series, repsExpected: log.reps.expected, weight: log.weight, repsActual: log.reps.actual || [] };

@@ -28,7 +28,10 @@ export function validateGitHubConfig(config) {
 
 export function buildGitHubPayload(db, sha, { branch = 'main', message = '' } = {}) {
   const json = JSON.stringify(db, null, 2);
-  const content = btoa(unescape(encodeURIComponent(json)));
+  const bytes = new TextEncoder().encode(json);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  const content = btoa(binary);
   const body = { message: message || `Gym Companion update`, content, branch };
   if (sha) body.sha = sha;
   return body;

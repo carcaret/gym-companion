@@ -173,6 +173,31 @@ describe('getLastValuesForExercise (casos adicionales)', () => {
     expect(last.series).toBe(3);
   });
 
+  test('history desordenado → devuelve valores del más reciente por fecha, no por posición', () => {
+    const db = {
+      exercises: DB_FIXTURE.exercises,
+      routines: DB_FIXTURE.routines,
+      history: [
+        {
+          date: '2024-03-01', type: 'LUNES', completed: true,
+          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 8, actual: [8, 8, 8, 8, 8] }, weight: 85 }],
+        },
+        {
+          date: '2024-01-01', type: 'LUNES', completed: true,
+          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }],
+        },
+        {
+          date: '2024-02-01', type: 'LUNES', completed: true,
+          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 4, reps: { expected: 10, actual: [10, 10, 10, 10] }, weight: 70 }],
+        },
+      ],
+    };
+    const last = getLastValuesForExercise(db, 'press_banca', 'LUNES');
+    // El más reciente por fecha es 2024-03-01 (weight=85), aunque está en posición 0
+    expect(last.weight).toBe(85);
+    expect(last.series).toBe(5);
+  });
+
   test('reps.actual con nulls → devuelve el array tal cual', () => {
     const db = {
       exercises: DB_FIXTURE.exercises,

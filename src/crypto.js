@@ -1,3 +1,5 @@
+// Cache de constantes SHA-256 (primes). Se inicializa una vez y se reutiliza.
+// Patrón intencional del algoritmo — no es un bug de estado mutable.
 export function fallbackSha256(ascii) {
   function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); };
   var mathPow = Math.pow, maxWord = mathPow(2, 32), lengthProperty = 'length', i, j, result = '';

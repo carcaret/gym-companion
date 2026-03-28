@@ -5,7 +5,6 @@
 import { SALT, DAY_MAP, DAY_LABELS, SESSION_KEY, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
 import { sha256 } from './src/crypto.js';
 import { todayStr, formatDate, getTodayDayType } from './src/dates.js';
-import { computeAvgReps, computeVolume, computeE1RM } from './src/metrics.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords } from './src/data.js';
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords } from './src/workout.js';
@@ -111,11 +110,20 @@ async function persistDB() {
   saveDBLocal();
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async () => {
+    saveTimeout = null;
     const ok = await saveDBToGitHub();
     if (ok) toast('💾 Guardado');
     else if (getGithubConfig()) toast('⚠️ Guardado local (sin GitHub)');
-  }, 1200);
+  }, 500);
 }
+
+window.addEventListener('beforeunload', () => {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveTimeout = null;
+    saveDBToGitHub();
+  }
+});
 
 async function loadDB() {
   let data = await loadDBFromGitHub();
@@ -221,18 +229,8 @@ function updateWorkoutCardInPlace(logIdx, entry) {
   const log = entry.logs[logIdx];
   const name = getExerciseName(log.exercise_id);
 
-  const currentVol = computeVolume(log);
-  const currentE1RM = computeE1RM(log);
   const prevEntries = DB.history.filter(h => h.date !== entry.date);
-  let prevMaxVol = 0, prevMaxE1RM = 0;
-  prevEntries.forEach(e => {
-    e.logs.filter(l => l.exercise_id === log.exercise_id).forEach(l => {
-      prevMaxVol = Math.max(prevMaxVol, computeVolume(l));
-      prevMaxE1RM = Math.max(prevMaxE1RM, computeE1RM(l));
-    });
-  });
-  const isVolRecord = currentVol > 0 && currentVol > prevMaxVol && log.reps.actual.some(r => r !== null);
-  const isE1RMRecord = currentE1RM > 0 && currentE1RM > prevMaxE1RM && log.reps.actual.some(r => r !== null);
+  const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
 
   const title = document.getElementById(`w-title-${logIdx}`);
   if (title) title.innerHTML = `${name}${isVolRecord ? ' <span class="record-badge">🏆 Volumen</span>' : ''}${isE1RMRecord ? ' <span class="record-badge">🏆 e1RM</span>' : ''}`;
@@ -252,17 +250,9 @@ function updateWorkoutCardInPlace(logIdx, entry) {
   const seriesRows = document.getElementById(`w-seriesrows-${logIdx}`);
   if (seriesRows) seriesRows.innerHTML = buildSeriesRowsHtml(logIdx, log);
 
-  const hasRecord = entry.logs.some((l) => {
-    const vol = computeVolume(l);
-    const e1rm = computeE1RM(l);
-    const prev = DB.history.filter(h => h.date !== entry.date);
-    let pVol = 0, pE1rm = 0;
-    prev.forEach(e => e.logs.filter(x => x.exercise_id === l.exercise_id).forEach(x => {
-      pVol = Math.max(pVol, computeVolume(x));
-      pE1rm = Math.max(pE1rm, computeE1RM(x));
-    }));
-    return (vol > 0 && vol > pVol && l.reps.actual.some(r => r !== null)) ||
-           (e1rm > 0 && e1rm > pE1rm && l.reps.actual.some(r => r !== null));
+  const hasRecord = entry.logs.some(l => {
+    const { isVolRecord: vr, isE1RMRecord: er } = detectRecords(l, prevEntries);
+    return vr || er;
   });
   document.getElementById('hoy-badge').hidden = !hasRecord;
 }
