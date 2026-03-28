@@ -131,7 +131,9 @@ async function loadDB() {
   let data = await loadDBFromGitHub();
   if (!data) {
     const local = localStorage.getItem(DB_LOCAL_KEY);
-    if (local) data = JSON.parse(local);
+    if (local) {
+      try { data = JSON.parse(local); } catch { /* JSON corrupto — tratar como sin datos */ }
+    }
   }
   return data;
 }
@@ -188,7 +190,7 @@ async function tryAutoLogin() {
   // We need the password to decrypt PAT, but we can still load local DB
   const local = localStorage.getItem(DB_LOCAL_KEY);
   if (local) {
-    DB = JSON.parse(local);
+    try { DB = JSON.parse(local); } catch { return false; }
     if (DB.auth && DB.auth.username === session.user && DB.auth.passwordHash === session.hash) {
       showApp();
       return true;
