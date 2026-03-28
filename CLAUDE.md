@@ -82,9 +82,9 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - **NUNCA** commitear `.env` (contiene API keys)
 - El PAT de GitHub se almacena cifrado con XOR en localStorage
 
-## Commits al final de sesión
+## Commits
 
-**Al terminar cada tarea o sesión de modificación, Claude DEBE crear un commit manualmente** con un mensaje descriptivo que explique qué se cambió y por qué. No basta con listar archivos ni stats de git.
+**Al terminar cada cambio, Claude DEBE preguntar al usuario si quiere hacer commit.** Si el usuario acepta, Claude crea el commit con un mensaje descriptivo.
 
 ### Formato del mensaje de commit
 
@@ -104,6 +104,6 @@ Ejemplos incorrectos (no usar):
 
 ### Procedimiento
 
-1. Antes de terminar, revisar `git diff` para confirmar qué cambió.
-2. Crear el commit con `git add` de los archivos relevantes y mensaje descriptivo.
-3. El hook Stop en `.claude/settings.json` es solo una red de seguridad para cambios no commiteados; si ya hay commit, no hace nada.
+1. Terminar el cambio pedido por el usuario.
+2. Preguntar: "¿Hacemos commit?" (proponer el mensaje).
+3. Si acepta, hacer `git add` de los archivos relevantes y commit con el mensaje acordado.
