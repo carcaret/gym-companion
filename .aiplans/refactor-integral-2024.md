@@ -153,9 +153,9 @@ Implementar las 9 mejoras detectadas en el escaneo exhaustivo de la app. Cada pa
 **Problema**: Documentación desactualizada en 3 puntos.
 
 **Cambios**:
-- [ ] Debounce: cambiar "1200ms" a "500ms" (o documentar el valor real)
-- [ ] Cache version: cambiar "gym-companion-v1" a "gym-companion-v2"
-- [ ] Color acento: el CSS usa `--accent: #569cd6` (azul VS Code), no `#6c5ce7` (púrpura). Actualizar la mención en CLAUDE.md
+- [x] Debounce: cambiar "1200ms" a "500ms" (o documentar el valor real)
+- [x] Cache version: cambiar "gym-companion-v1" a "gym-companion-v2"
+- [x] Color acento: el CSS usa `--accent: #569cd6` (azul VS Code), no `#6c5ce7` (púrpura). Actualizar la mención en CLAUDE.md
 
 **Tests**: N/A — solo documentación.
 
@@ -168,8 +168,8 @@ Implementar las 9 mejoras detectadas en el escaneo exhaustivo de la app. Cada pa
 **Problema**: `"purpose": "any maskable"` combinado puede causar que Android use el icono maskable en contextos donde debería usar el normal, recortando contenido.
 
 **Cambios**:
-- [ ] Duplicar cada entrada de icono: una con `"purpose": "any"` y otra con `"purpose": "maskable"`
-- [ ] Resultado: 4 entries en vez de 2 (192 any, 192 maskable, 512 any, 512 maskable)
+- [x] Duplicar cada entrada de icono: una con `"purpose": "any"` y otra con `"purpose": "maskable"`
+- [x] Resultado: 4 entries en vez de 2 (192 any, 192 maskable, 512 any, 512 maskable)
 
 **Tests**:
 - [ ] Validar manifest con herramienta de Chrome DevTools > Application > Manifest

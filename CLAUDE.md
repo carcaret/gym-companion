@@ -17,7 +17,7 @@ app.js        → Toda la lógica de la app (~1200 líneas)
 index.css     → Dark theme con glassmorphism, variables CSS, mobile-first
 db.json       → BD por defecto: ejercicios (~100), rutinas, credenciales; también archivo de sync con GitHub
 manifest.json → Config PWA
-sw.js         → Service Worker (cache network-first, omite GitHub API) — versión gym-companion-v1
+sw.js         → Service Worker (cache network-first, omite GitHub API) — versión gym-companion-v2
 ```
 
 ## Stack técnico
@@ -46,11 +46,11 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - **Métricas**: Volumen (peso × series × reps_avg), e1RM (peso × (1 + reps_avg/30))
 - **Historial**: Filtro por tipo de rutina, detalle expandible
 - **Gráficas**: Volumen, Peso, e1RM con Chart.js, selector de ejercicio y rango de fechas
-- **Sync GitHub**: PUT API con token PAT cifrado (XOR + contraseña), auto-save con debounce 1200ms
+- **Sync GitHub**: PUT API con token PAT cifrado (XOR + contraseña), auto-save con debounce 500ms
 
 ## UX / Diseño
 
-- Dark mode, acento púrpura `#6c5ce7`
+- Dark mode, acento azul `#569cd6`
 - Mobile-first, safe area insets (notches)
 - Bottom tab navigation, modales, toast notifications
 - Animaciones: fade-up, bounce en badges de PR
