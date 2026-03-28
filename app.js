@@ -1417,8 +1417,7 @@
           return;
         }
         DB = data;
-        githubSha = null;
-        await persistDB();
+        saveDBLocal();
         renderHoy();
         statusEl.textContent = '✅ Datos sincronizados desde GitHub';
         statusEl.className = 'status-msg success';
