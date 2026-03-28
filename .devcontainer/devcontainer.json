@@ -16,7 +16,8 @@
     }
   },
 
-  "postCreateCommand": "npm install && npx playwright install chromium --with-deps",
+  "onCreateCommand": "npm install",
+  "postStartCommand": "npx playwright install chromium --with-deps",
 
   "customizations": {
     "vscode": {
