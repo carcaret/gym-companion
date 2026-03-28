@@ -463,8 +463,8 @@
   function formatRepsInteligente(actualArr, series, expected) {
     if (actualArr && actualArr.length > 0 && actualArr.some(r => r !== null)) {
       const vals = actualArr.filter(r => r !== null);
-      const allEqual = vals.every(v => v === vals[0]);
-      if (allEqual) return `${vals.length}x${vals[0]}`;
+      const allMatch = vals.length === series && vals.every(v => v === expected);
+      if (allMatch) return null;
       return actualArr.map(r => r !== null ? r : '-').join('-');
     }
     return null;
@@ -479,7 +479,7 @@
       const name = getExerciseName(id);
       const weightStr = last.weight > 0 ? `${last.weight} kg · ` : '';
       const repsFmt = formatRepsInteligente(last.repsActual, last.series, last.repsExpected);
-      const repsPart = repsFmt ? ` · Reps: ${repsFmt}` : '';
+      const repsPart = repsFmt ? ` · ${repsFmt}` : '';
       html += `<div class="card compact-card">
       <div class="card-header">
         <div>
@@ -1085,7 +1085,7 @@
       } else {
         const weightStr = log.weight > 0 ? `${log.weight} kg · ` : '';
         const repsFmt = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected);
-        const repsPart = repsFmt ? ` · Reps: ${repsFmt}` : '';
+        const repsPart = repsFmt ? ` · ${repsFmt}` : '';
         html += `<div class="card compact-card historial-detail-card">
         <div class="card-header">
           <div>
