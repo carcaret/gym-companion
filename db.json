@@ -18380,12 +18380,12 @@
           "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
-            "expected": 11,
+            "expected": 10,
             "actual": [
               12,
               12,
-              null,
-              null
+              12,
+              12
             ]
           },
           "weight": 97
