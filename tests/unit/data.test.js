@@ -92,4 +92,99 @@ describe('getHistoricalRecords', () => {
     expect(records.maxVolume).toBe(0);
     expect(records.maxE1RM).toBe(0);
   });
+
+  test('múltiples entries del mismo ejercicio → toma el max de todos', () => {
+    const records = getHistoricalRecords(DB_FIXTURE, 'press_banca');
+    // Entry 2024-01-15: weight=65, series=4, actual=[10,10,10,8] → avg=9.5 → vol=65*4*9.5=2470, e1RM=65*(1+9.5/30)=85.58
+    // Entry 2024-01-08: weight=60, series=3, actual=[10,10,8] → avg=9.33 → vol=60*3*9.33=1680, e1RM=60*(1+9.33/30)=78.67
+    expect(records.maxVolume).toBeCloseTo(65 * 4 * 9.5, 0);
+    expect(records.maxE1RM).toBeCloseTo(65 * (1 + 9.5 / 30), 1);
+  });
+
+  test('ejercicio con peso=0 → maxE1RM es 0, maxVolume se calcula con bodyweight', () => {
+    const db = {
+      ...DB_FIXTURE,
+      history: [
+        {
+          date: '2024-02-01', type: 'LUNES', completed: true,
+          logs: [{ exercise_id: 'dominadas', name: 'Dominadas', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 0 }],
+        },
+      ],
+    };
+    const records = getHistoricalRecords(db, 'dominadas');
+    expect(records.maxE1RM).toBe(0);
+    expect(records.maxVolume).toBe(3 * 10); // bodyweight: series * avgReps
+  });
+
+  test('entry no completed → sí lo considera en records', () => {
+    const db = {
+      ...DB_FIXTURE,
+      history: [
+        {
+          date: '2024-02-01', type: 'LUNES', completed: false,
+          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 10, actual: [10, 10, 10, 10, 10] }, weight: 80 }],
+        },
+      ],
+    };
+    const records = getHistoricalRecords(db, 'press_banca');
+    // vol = 80*5*10 = 4000
+    expect(records.maxVolume).toBe(4000);
+  });
+});
+
+describe('getLastValuesForExercise (casos adicionales)', () => {
+  test('múltiples entries del mismo dayType → toma el último cronológicamente', () => {
+    const last = getLastValuesForExercise(DB_FIXTURE, 'press_banca', 'LUNES');
+    // Last LUNES entry is 2024-01-15 (appears last in array) with weight=65
+    expect(last.weight).toBe(65);
+    expect(last.series).toBe(4);
+  });
+
+  test('entry con completed=false → sí lo considera', () => {
+    const db = {
+      ...DB_FIXTURE,
+      history: [
+        ...DB_FIXTURE.history,
+        {
+          date: '2024-01-22', type: 'LUNES', completed: false,
+          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 8, actual: [8, 8, 8, 8, 8] }, weight: 70 }],
+        },
+      ],
+    };
+    const last = getLastValuesForExercise(db, 'press_banca', 'LUNES');
+    expect(last.weight).toBe(70);
+    expect(last.series).toBe(5);
+  });
+
+  test('entry de otro dayType con el mismo ejercicio → no lo usa', () => {
+    const db = {
+      exercises: DB_FIXTURE.exercises,
+      routines: DB_FIXTURE.routines,
+      history: [
+        {
+          date: '2024-02-01', type: 'MIERCOLES', completed: true,
+          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 8, actual: [8, 8, 8, 8, 8] }, weight: 90 }],
+        },
+      ],
+    };
+    const last = getLastValuesForExercise(db, 'press_banca', 'LUNES');
+    // No LUNES entries → defaults
+    expect(last.weight).toBe(0);
+    expect(last.series).toBe(3);
+  });
+
+  test('reps.actual con nulls → devuelve el array tal cual', () => {
+    const db = {
+      exercises: DB_FIXTURE.exercises,
+      routines: DB_FIXTURE.routines,
+      history: [
+        {
+          date: '2024-02-01', type: 'LUNES', completed: false,
+          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, null, null] }, weight: 60 }],
+        },
+      ],
+    };
+    const last = getLastValuesForExercise(db, 'press_banca', 'LUNES');
+    expect(last.repsActual).toEqual([10, null, null]);
+  });
 });

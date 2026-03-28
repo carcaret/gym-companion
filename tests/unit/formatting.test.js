@@ -47,4 +47,24 @@ describe('slugifyExerciseName', () => {
   test('convierte múltiples espacios', () => {
     expect(slugifyExerciseName('press   banca')).toBe('press_banca');
   });
+
+  test('string vacío → string vacío', () => {
+    expect(slugifyExerciseName('')).toBe('');
+  });
+
+  test('solo caracteres especiales → string vacío', () => {
+    expect(slugifyExerciseName('!!@@##$$')).toBe('');
+  });
+
+  test('números → se mantienen', () => {
+    expect(slugifyExerciseName('press 21s')).toBe('press_21s');
+  });
+
+  test('nombre ya en formato slug → sin cambio', () => {
+    expect(slugifyExerciseName('press_banca')).toBe('press_banca');
+  });
+
+  test('mayúsculas mezcladas → todo lowercase', () => {
+    expect(slugifyExerciseName('Press BANCA Inclinado')).toBe('press_banca_inclinado');
+  });
 });

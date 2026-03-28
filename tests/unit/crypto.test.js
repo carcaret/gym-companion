@@ -40,4 +40,40 @@ describe('xorEncrypt / xorDecrypt', () => {
     const result = xorDecrypt('', 'key');
     expect(result).toBe('');
   });
+
+  test('texto más largo que key → key se repite (wrap around)', () => {
+    const text = 'este_texto_es_largo_para_la_key';
+    const key = 'ab';
+    const encrypted = xorEncrypt(text, key);
+    const decrypted = xorDecrypt(encrypted, key);
+    expect(decrypted).toBe(text);
+  });
+
+  test('key de un solo carácter', () => {
+    const text = 'hola mundo';
+    const key = 'x';
+    const encrypted = xorEncrypt(text, key);
+    const decrypted = xorDecrypt(encrypted, key);
+    expect(decrypted).toBe(text);
+  });
+});
+
+describe('sha256 (edge cases)', () => {
+  test('hash de string vacío → hash conocido', async () => {
+    const hash = await sha256('');
+    expect(hash).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+  });
+
+  test('hash de string con tildes y eñes (UTF-8)', async () => {
+    const h1 = await sha256('año');
+    const h2 = await sha256('ano');
+    expect(h1).not.toBe(h2);
+    expect(h1.length).toBe(64);
+  });
+
+  test('hash es determinista', async () => {
+    const h1 = await sha256('test123');
+    const h2 = await sha256('test123');
+    expect(h1).toBe(h2);
+  });
 });
