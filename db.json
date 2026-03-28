@@ -18383,7 +18383,7 @@
             "expected": 11,
             "actual": [
               12,
-              null,
+              12,
               null,
               null
             ]
