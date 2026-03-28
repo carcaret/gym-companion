@@ -9,14 +9,14 @@
     "sentadilla": { "id": "sentadilla", "name": "Sentadilla" }
   },
   "routines": {
-    "LUNES": ["press_banca", "curl_biceps"],
-    "MIERCOLES": ["sentadilla"],
-    "VIERNES": ["press_banca", "sentadilla"]
+    "DIA1": ["press_banca", "curl_biceps"],
+    "DIA2": ["sentadilla"],
+    "DIA3": ["press_banca", "sentadilla"]
   },
   "history": [
     {
       "date": "2024-01-08",
-      "type": "LUNES",
+      "type": "DIA1",
       "completed": true,
       "logs": [
         { "exercise_id": "press_banca", "name": "Press Banca", "series": 3, "reps": { "expected": 10, "actual": [10, 10, 8] }, "weight": 60 },
@@ -25,7 +25,7 @@
     },
     {
       "date": "2024-01-10",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "completed": true,
       "logs": [
         { "exercise_id": "sentadilla", "name": "Sentadilla", "series": 3, "reps": { "expected": 8, "actual": [8, 8, 8] }, "weight": 100 }

@@ -13,7 +13,7 @@ test.describe('Validación en vista Hoy', () => {
   });
 
   async function startWorkout(page) {
-    const dayBtn = page.locator('.day-btn', { hasText: 'Lunes' });
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();

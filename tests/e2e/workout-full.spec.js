@@ -12,7 +12,7 @@ test.describe('Workout flow completo', () => {
     await clearStorage(page);
   });
 
-  async function selectRoutineAndStart(page, dayLabel = 'Lunes') {
+  async function selectRoutineAndStart(page, dayLabel = 'Día 1') {
     // If today is not a routine day, the day selector is shown
     const dayBtn = page.locator(`.day-btn`, { hasText: dayLabel });
     const startBtn = page.locator('#start-workout-btn');
@@ -29,7 +29,7 @@ test.describe('Workout flow completo', () => {
 
   test('iniciar entreno y verificar que muestra cards de ejercicios', async ({ page }) => {
     await selectRoutineAndStart(page);
-    // Should show exercise cards for the LUNES routine (press_banca, curl_biceps)
+    // Should show exercise cards for the DIA1 routine (press_banca, curl_biceps)
     await expect(page.locator('.card')).toHaveCount(2);
   });
 

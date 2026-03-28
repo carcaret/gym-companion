@@ -103,7 +103,7 @@ describe('computeVolume (edge cases)', () => {
 // ── getMaxMetrics ──
 
 function makeEntry(date, logs) {
-  return { date, type: 'LUNES', completed: true, logs };
+  return { date, type: 'DIA1', completed: true, logs };
 }
 
 function makeFullLog(id, { weight = 50, series = 3, actual = [10, 10, 10] } = {}) {

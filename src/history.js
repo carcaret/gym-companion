@@ -7,7 +7,7 @@ import { adjustLogParam, setLogParam, adjustLogRep, setLogRep } from './log-muta
 /**
  * Filter history entries by day type.
  * @param {Array} history
- * @param {string} filter - 'TODOS' | 'LUNES' | 'MIERCOLES' | 'VIERNES'
+ * @param {string} filter - 'TODOS' | 'DIA1' | 'DIA2' | 'DIA3'
  * @returns {Array}
  */
 export function filterHistory(history, filter) {

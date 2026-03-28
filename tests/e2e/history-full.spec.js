@@ -95,30 +95,30 @@ test.describe('Historial completo', () => {
     expect(newCount).toBe(initialCount);
   });
 
-  test('filtro Lunes muestra solo entries de lunes', async ({ page }) => {
-    const lunesFilter = page.locator('.filter-btn', { hasText: 'Lunes' });
-    await lunesFilter.click();
+  test('filtro Día 1 muestra solo entries de Día 1', async ({ page }) => {
+    const dia1Filter = page.locator('.filter-btn', { hasText: 'Día 1' });
+    await dia1Filter.click();
 
     const entries = page.locator('.historial-entry-btn');
     const count = await entries.count();
     expect(count).toBeGreaterThanOrEqual(1);
 
-    // All visible entries should be Lunes
+    // All visible entries should be Día 1
     for (let i = 0; i < count; i++) {
-      await expect(entries.nth(i)).toContainText('Lunes');
+      await expect(entries.nth(i)).toContainText('Día 1');
     }
   });
 
   test('filtro Todos muestra todos los entries', async ({ page }) => {
-    // First filter to Lunes
-    await page.locator('.filter-btn', { hasText: 'Lunes' }).click();
-    const lunesCount = await page.locator('.historial-entry-btn').count();
+    // First filter to Día 1
+    await page.locator('.filter-btn', { hasText: 'Día 1' }).click();
+    const dia1Count = await page.locator('.historial-entry-btn').count();
 
     // Then switch to Todos
     await page.locator('.filter-btn', { hasText: 'Todos' }).click();
     const todosCount = await page.locator('.historial-entry-btn').count();
 
-    expect(todosCount).toBeGreaterThanOrEqual(lunesCount);
+    expect(todosCount).toBeGreaterThanOrEqual(dia1Count);
   });
 
   test('volver desde detalle vuelve a la lista', async ({ page }) => {

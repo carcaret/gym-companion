@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-import { SALT, DAY_MAP, DAY_LABELS, SESSION_KEY, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
+import { SALT, DAY_MAP, DAY_LABELS, ROUTINE_KEYS, SESSION_KEY, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
 import { sha256 } from './src/crypto.js';
 import { todayStr, formatDate, getTodayDayType } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
@@ -339,7 +339,7 @@ const getTodayEntry = () => _getTodayEntry(DB, todayStr());
 const getLastValuesForExercise = (exerciseId, dayType) => _getLastValuesForExercise(DB, exerciseId, dayType);
 const getHistoricalRecords = (exerciseId) => _getHistoricalRecords(DB, exerciseId);
 
-// ── View: Hoy ──
+// ── View: Rutinas ──
 function renderHoy() {
   const content = document.getElementById('hoy-content');
   const title = document.getElementById('hoy-title');
@@ -371,13 +371,13 @@ function renderHoy() {
   }
 
   // NOT a training day — show day selector
-  title.textContent = 'Hoy';
+  title.textContent = 'Rutinas';
   renderDaySelector(content);
 }
 
 function renderDaySelector(container) {
   let html = '<div class="day-selector"><p class="day-selector-title">Selecciona una rutina para entrenar</p>';
-  for (const type of ['LUNES', 'MIERCOLES', 'VIERNES']) {
+  for (const type of ROUTINE_KEYS) {
     const exercises = (DB.routines[type] || []).map(id => getExerciseName(id));
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
     html += `<button class="day-btn" data-day="${type}">
@@ -444,7 +444,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   const backBtn = document.getElementById('back-to-selector-btn');
   if (backBtn) {
     backBtn.onclick = () => {
-      document.getElementById('hoy-title').textContent = 'Hoy';
+      document.getElementById('hoy-title').textContent = 'Rutinas';
       renderDaySelector(container);
     };
   }

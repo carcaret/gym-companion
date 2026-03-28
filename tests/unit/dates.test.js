@@ -19,24 +19,24 @@ describe('formatDate', () => {
 });
 
 describe('getTodayDayType', () => {
-  test('devuelve LUNES en lunes', () => {
+  test('devuelve DIA1 en lunes', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2024-01-15T12:00:00')); // Monday
-    expect(getTodayDayType()).toBe('LUNES');
+    expect(getTodayDayType()).toBe('DIA1');
     vi.useRealTimers();
   });
 
-  test('devuelve MIERCOLES en miercoles', () => {
+  test('devuelve DIA2 en miercoles', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2024-01-17T12:00:00')); // Wednesday
-    expect(getTodayDayType()).toBe('MIERCOLES');
+    expect(getTodayDayType()).toBe('DIA2');
     vi.useRealTimers();
   });
 
-  test('devuelve VIERNES en viernes', () => {
+  test('devuelve DIA3 en viernes', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2024-01-19T12:00:00')); // Friday
-    expect(getTodayDayType()).toBe('VIERNES');
+    expect(getTodayDayType()).toBe('DIA3');
     vi.useRealTimers();
   });
 

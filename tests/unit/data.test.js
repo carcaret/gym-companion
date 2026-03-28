@@ -8,13 +8,13 @@ const DB_FIXTURE = {
     sentadilla: { id: 'sentadilla', name: 'Sentadilla' },
   },
   routines: {
-    LUNES: ['press_banca', 'curl_biceps'],
-    MIERCOLES: ['sentadilla'],
+    DIA1: ['press_banca', 'curl_biceps'],
+    DIA2: ['sentadilla'],
   },
   history: [
     {
       date: '2024-01-08',
-      type: 'LUNES',
+      type: 'DIA1',
       completed: true,
       logs: [
         { exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 8] }, weight: 60 },
@@ -23,7 +23,7 @@ const DB_FIXTURE = {
     },
     {
       date: '2024-01-15',
-      type: 'LUNES',
+      type: 'DIA1',
       completed: true,
       logs: [
         { exercise_id: 'press_banca', name: 'Press Banca', series: 4, reps: { expected: 10, actual: [10, 10, 10, 8] }, weight: 65 },
@@ -31,7 +31,7 @@ const DB_FIXTURE = {
     },
     {
       date: '2024-01-10',
-      type: 'MIERCOLES',
+      type: 'DIA2',
       completed: true,
       logs: [
         { exercise_id: 'sentadilla', name: 'Sentadilla', series: 3, reps: { expected: 8, actual: [8, 8, 8] }, weight: 100 },
@@ -65,14 +65,14 @@ describe('getTodayEntry', () => {
 
 describe('getLastValuesForExercise', () => {
   test('devuelve los últimos valores conocidos', () => {
-    const last = getLastValuesForExercise(DB_FIXTURE, 'press_banca', 'LUNES');
+    const last = getLastValuesForExercise(DB_FIXTURE, 'press_banca', 'DIA1');
     expect(last.weight).toBe(65);
     expect(last.series).toBe(4);
     expect(last.repsExpected).toBe(10);
   });
 
   test('devuelve defaults si no hay historial', () => {
-    const last = getLastValuesForExercise(DB_FIXTURE, 'no_existe', 'LUNES');
+    const last = getLastValuesForExercise(DB_FIXTURE, 'no_existe', 'DIA1');
     expect(last.series).toBe(3);
     expect(last.repsExpected).toBe(10);
     expect(last.weight).toBe(0);
@@ -106,7 +106,7 @@ describe('getHistoricalRecords', () => {
       ...DB_FIXTURE,
       history: [
         {
-          date: '2024-02-01', type: 'LUNES', completed: true,
+          date: '2024-02-01', type: 'DIA1', completed: true,
           logs: [{ exercise_id: 'dominadas', name: 'Dominadas', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 0 }],
         },
       ],
@@ -121,7 +121,7 @@ describe('getHistoricalRecords', () => {
       ...DB_FIXTURE,
       history: [
         {
-          date: '2024-02-01', type: 'LUNES', completed: false,
+          date: '2024-02-01', type: 'DIA1', completed: false,
           logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 10, actual: [10, 10, 10, 10, 10] }, weight: 80 }],
         },
       ],
@@ -134,8 +134,8 @@ describe('getHistoricalRecords', () => {
 
 describe('getLastValuesForExercise (casos adicionales)', () => {
   test('múltiples entries del mismo dayType → toma el último cronológicamente', () => {
-    const last = getLastValuesForExercise(DB_FIXTURE, 'press_banca', 'LUNES');
-    // Last LUNES entry is 2024-01-15 (appears last in array) with weight=65
+    const last = getLastValuesForExercise(DB_FIXTURE, 'press_banca', 'DIA1');
+    // Last DIA1 entry is 2024-01-15 (appears last in array) with weight=65
     expect(last.weight).toBe(65);
     expect(last.series).toBe(4);
   });
@@ -146,12 +146,12 @@ describe('getLastValuesForExercise (casos adicionales)', () => {
       history: [
         ...DB_FIXTURE.history,
         {
-          date: '2024-01-22', type: 'LUNES', completed: false,
+          date: '2024-01-22', type: 'DIA1', completed: false,
           logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 8, actual: [8, 8, 8, 8, 8] }, weight: 70 }],
         },
       ],
     };
-    const last = getLastValuesForExercise(db, 'press_banca', 'LUNES');
+    const last = getLastValuesForExercise(db, 'press_banca', 'DIA1');
     expect(last.weight).toBe(70);
     expect(last.series).toBe(5);
   });
@@ -162,13 +162,13 @@ describe('getLastValuesForExercise (casos adicionales)', () => {
       routines: DB_FIXTURE.routines,
       history: [
         {
-          date: '2024-02-01', type: 'MIERCOLES', completed: true,
+          date: '2024-02-01', type: 'DIA2', completed: true,
           logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 8, actual: [8, 8, 8, 8, 8] }, weight: 90 }],
         },
       ],
     };
-    const last = getLastValuesForExercise(db, 'press_banca', 'LUNES');
-    // No LUNES entries → defaults
+    const last = getLastValuesForExercise(db, 'press_banca', 'DIA1');
+    // No DIA1 entries → defaults
     expect(last.weight).toBe(0);
     expect(last.series).toBe(3);
   });
@@ -179,20 +179,20 @@ describe('getLastValuesForExercise (casos adicionales)', () => {
       routines: DB_FIXTURE.routines,
       history: [
         {
-          date: '2024-03-01', type: 'LUNES', completed: true,
+          date: '2024-03-01', type: 'DIA1', completed: true,
           logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 8, actual: [8, 8, 8, 8, 8] }, weight: 85 }],
         },
         {
-          date: '2024-01-01', type: 'LUNES', completed: true,
+          date: '2024-01-01', type: 'DIA1', completed: true,
           logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }],
         },
         {
-          date: '2024-02-01', type: 'LUNES', completed: true,
+          date: '2024-02-01', type: 'DIA1', completed: true,
           logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 4, reps: { expected: 10, actual: [10, 10, 10, 10] }, weight: 70 }],
         },
       ],
     };
-    const last = getLastValuesForExercise(db, 'press_banca', 'LUNES');
+    const last = getLastValuesForExercise(db, 'press_banca', 'DIA1');
     // El más reciente por fecha es 2024-03-01 (weight=85), aunque está en posición 0
     expect(last.weight).toBe(85);
     expect(last.series).toBe(5);
@@ -204,12 +204,12 @@ describe('getLastValuesForExercise (casos adicionales)', () => {
       routines: DB_FIXTURE.routines,
       history: [
         {
-          date: '2024-02-01', type: 'LUNES', completed: false,
+          date: '2024-02-01', type: 'DIA1', completed: false,
           logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, null, null] }, weight: 60 }],
         },
       ],
     };
-    const last = getLastValuesForExercise(db, 'press_banca', 'LUNES');
+    const last = getLastValuesForExercise(db, 'press_banca', 'DIA1');
     expect(last.repsActual).toEqual([10, null, null]);
   });
 });

@@ -4,9 +4,9 @@ const { clearStorage } = require('./helpers.js');
 const TEST_DB = {
   auth: { username: 'testuser', passwordHash: '00ea24559d2fbb7ef0f4310680c8759255966500c40387cdd64f67b2ebc4df8f' },
   exercises: { press_banca: { id: 'press_banca', name: 'Press Banca' } },
-  routines: { LUNES: ['press_banca'] },
+  routines: { DIA1: ['press_banca'] },
   history: [
-    { date: '2024-01-08', type: 'LUNES', completed: true,
+    { date: '2024-01-08', type: 'DIA1', completed: true,
       logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 8] }, weight: 60 }]
     }
   ]
@@ -109,7 +109,7 @@ test.describe('GitHub sync (mock)', () => {
     await loginManually(page);
 
     // Start a workout to trigger a save (persistDB is called after startWorkout)
-    const dayBtn = page.locator('.day-btn', { hasText: 'Lunes' });
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();
@@ -242,7 +242,7 @@ test.describe('GitHub sync (mock)', () => {
     const initialDB = await page.evaluate(() => localStorage.getItem('gym_companion_db'));
 
     // Start a workout (triggers save)
-    const dayBtn = page.locator('.day-btn', { hasText: 'Lunes' });
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();

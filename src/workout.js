@@ -45,7 +45,7 @@ export function validateEntry(entry) {
 /**
  * Build a new workout entry from routine exercise IDs.
  * @param {string} date - YYYY-MM-DD
- * @param {string} dayType - LUNES|MIERCOLES|VIERNES
+ * @param {string} dayType - DIA1|DIA2|DIA3
  * @param {string[]} routineIds - exercise IDs for this day
  * @param {function} getLastValues - (exerciseId, dayType) => { series, repsExpected, weight, repsActual }
  * @param {function} getExerciseName - (exerciseId) => string

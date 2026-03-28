@@ -23,7 +23,7 @@ function makeLog({ id = 'press_banca', name = 'Press banca', weight = 50, series
   };
 }
 
-function makeEntry({ date = '2026-03-28', type = 'LUNES', completed = false, logs = [] }) {
+function makeEntry({ date = '2026-03-28', type = 'DIA1', completed = false, logs = [] }) {
   return { date, type, completed, logs };
 }
 
@@ -45,9 +45,9 @@ function stubGetExerciseName(exercises = {}) {
 
 describe('buildWorkoutEntry', () => {
   test('crea entry con fecha, tipo y completed=false', () => {
-    const entry = buildWorkoutEntry('2026-03-28', 'LUNES', [], stubGetLastValues(), stubGetExerciseName());
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', [], stubGetLastValues(), stubGetExerciseName());
     expect(entry.date).toBe('2026-03-28');
-    expect(entry.type).toBe('LUNES');
+    expect(entry.type).toBe('DIA1');
     expect(entry.completed).toBe(false);
   });
 
@@ -55,7 +55,7 @@ describe('buildWorkoutEntry', () => {
     const getLastValues = stubGetLastValues({
       press_banca: { series: 4, repsExpected: 8, weight: 80, repsActual: [8, 8, 7, 6] }
     });
-    const entry = buildWorkoutEntry('2026-03-28', 'LUNES', ['press_banca'], getLastValues, stubGetExerciseName());
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName());
     const log = entry.logs[0];
     expect(log.weight).toBe(80);
     expect(log.series).toBe(4);
@@ -63,7 +63,7 @@ describe('buildWorkoutEntry', () => {
   });
 
   test('si no hay historial previo, usa defaults (3 series, 10 reps, 0 kg)', () => {
-    const entry = buildWorkoutEntry('2026-03-28', 'LUNES', ['press_banca'], stubGetLastValues(), stubGetExerciseName());
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], stubGetLastValues(), stubGetExerciseName());
     const log = entry.logs[0];
     expect(log.weight).toBe(0);
     expect(log.series).toBe(3);
@@ -74,7 +74,7 @@ describe('buildWorkoutEntry', () => {
     const getLastValues = stubGetLastValues({
       press_banca: { series: 3, repsExpected: 10, weight: 60, repsActual: [10, 8, 9] }
     });
-    const entry = buildWorkoutEntry('2026-03-28', 'LUNES', ['press_banca'], getLastValues, stubGetExerciseName());
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName());
     expect(entry.logs[0].reps.actual).toEqual([10, 8, 9]);
   });
 
@@ -82,7 +82,7 @@ describe('buildWorkoutEntry', () => {
     const getLastValues = stubGetLastValues({
       press_banca: { series: 2, repsExpected: 10, weight: 60, repsActual: [10, 8, 9] }
     });
-    const entry = buildWorkoutEntry('2026-03-28', 'LUNES', ['press_banca'], getLastValues, stubGetExerciseName());
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName());
     expect(entry.logs[0].reps.actual).toEqual([10, 8]);
   });
 
@@ -90,19 +90,19 @@ describe('buildWorkoutEntry', () => {
     const getLastValues = stubGetLastValues({
       press_banca: { series: 4, repsExpected: 10, weight: 60, repsActual: [10, 8] }
     });
-    const entry = buildWorkoutEntry('2026-03-28', 'LUNES', ['press_banca'], getLastValues, stubGetExerciseName());
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName());
     expect(entry.logs[0].reps.actual).toEqual([10, 8, null, null]);
   });
 
   test('con rutina vacía (0 ejercicios), crea entry con logs=[]', () => {
-    const entry = buildWorkoutEntry('2026-03-28', 'LUNES', [], stubGetLastValues(), stubGetExerciseName());
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', [], stubGetLastValues(), stubGetExerciseName());
     expect(entry.logs).toEqual([]);
   });
 
   test('ejercicio sin historial previo usa defaults', () => {
     const getLastValues = stubGetLastValues(); // no overrides
     const names = { press_banca: 'Press banca' };
-    const entry = buildWorkoutEntry('2026-03-28', 'LUNES', ['press_banca'], getLastValues, stubGetExerciseName(names));
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName(names));
     const log = entry.logs[0];
     expect(log.exercise_id).toBe('press_banca');
     expect(log.name).toBe('Press banca');
@@ -116,7 +116,7 @@ describe('buildWorkoutEntry', () => {
     const getLastValues = stubGetLastValues({
       press_banca: { series: 3, repsExpected: 10, weight: 60, repsActual: [10, null, 8] }
     });
-    const entry = buildWorkoutEntry('2026-03-28', 'LUNES', ['press_banca'], getLastValues, stubGetExerciseName());
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName());
     expect(entry.logs[0].reps.actual).toEqual([10, null, 8]);
   });
 });
@@ -385,7 +385,7 @@ describe('detectRecords', () => {
   function makeHistoryEntry(weight, series, actual, date = '2026-03-01') {
     return {
       date,
-      type: 'LUNES',
+      type: 'DIA1',
       completed: true,
       logs: [{
         exercise_id: exerciseId,
@@ -453,7 +453,7 @@ describe('detectRecords', () => {
   test('excluye correctamente otros ejercicios del historial', () => {
     const otherExerciseEntry = {
       date: '2026-03-01',
-      type: 'LUNES',
+      type: 'DIA1',
       completed: true,
       logs: [{
         exercise_id: 'sentadilla',

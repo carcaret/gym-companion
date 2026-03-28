@@ -13,7 +13,7 @@ function makeLog({ id = 'press_banca', weight = 60, series = 3, expected = 10, a
   };
 }
 
-function makeEntry({ date = '2024-03-01', type = 'LUNES', logs = [] }) {
+function makeEntry({ date = '2024-03-01', type = 'DIA1', logs = [] }) {
   return { date, type, completed: true, logs };
 }
 

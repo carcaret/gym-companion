@@ -31,7 +31,7 @@ test.describe('Persistencia y datos', () => {
     await expect(page.locator('#app-shell')).toBeVisible();
 
     // Select a routine and start workout
-    const dayBtn = page.locator('.day-btn', { hasText: 'Lunes' });
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();
@@ -77,7 +77,7 @@ test.describe('Persistencia y datos', () => {
     await expect(page.locator('#app-shell')).toBeVisible();
 
     // Start and finish workout
-    const dayBtn = page.locator('.day-btn', { hasText: 'Lunes' });
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();

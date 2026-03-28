@@ -230,14 +230,14 @@
     }
   },
   "routines": {
-    "LUNES": [
+    "DIA1": [
       "prensa_de_piernas",
       "press_banca_mancuernas",
       "hammer_row_neutral",
       "landmine_press",
       "curl_femoral_sentado"
     ],
-    "MIERCOLES": [
+    "DIA2": [
       "abductores",
       "adductores",
       "press_inclinado_mancuernas",
@@ -247,7 +247,7 @@
       "elevaciones_laterales_con_cable",
       "reverse_delt_con_mancuernas"
     ],
-    "VIERNES": [
+    "DIA3": [
       "extension_de_cuadriceps",
       "press_inclinado_maquina",
       "pullover_polea",
@@ -259,7 +259,7 @@
   "history": [
     {
       "date": "2024-09-23",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -336,7 +336,7 @@
     },
     {
       "date": "2024-09-25",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -413,7 +413,7 @@
     },
     {
       "date": "2024-09-27",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -490,7 +490,7 @@
     },
     {
       "date": "2024-10-14",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -567,7 +567,7 @@
     },
     {
       "date": "2024-10-16",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -644,7 +644,7 @@
     },
     {
       "date": "2024-10-18",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -721,7 +721,7 @@
     },
     {
       "date": "2024-10-21",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -798,7 +798,7 @@
     },
     {
       "date": "2024-10-23",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -875,7 +875,7 @@
     },
     {
       "date": "2024-10-25",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -952,7 +952,7 @@
     },
     {
       "date": "2024-10-28",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -1029,7 +1029,7 @@
     },
     {
       "date": "2024-10-30",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -1106,7 +1106,7 @@
     },
     {
       "date": "2024-11-01",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -1183,7 +1183,7 @@
     },
     {
       "date": "2024-11-04",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -1260,7 +1260,7 @@
     },
     {
       "date": "2024-11-06",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -1337,7 +1337,7 @@
     },
     {
       "date": "2024-11-08",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -1414,7 +1414,7 @@
     },
     {
       "date": "2024-11-11",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -1491,7 +1491,7 @@
     },
     {
       "date": "2024-11-13",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -1568,7 +1568,7 @@
     },
     {
       "date": "2024-11-15",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -1645,7 +1645,7 @@
     },
     {
       "date": "2024-11-18",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -1722,7 +1722,7 @@
     },
     {
       "date": "2024-11-20",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -1799,7 +1799,7 @@
     },
     {
       "date": "2024-11-22",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -1876,7 +1876,7 @@
     },
     {
       "date": "2024-11-25",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -1953,7 +1953,7 @@
     },
     {
       "date": "2024-11-27",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -2030,7 +2030,7 @@
     },
     {
       "date": "2024-11-29",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -2107,7 +2107,7 @@
     },
     {
       "date": "2024-12-02",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -2184,7 +2184,7 @@
     },
     {
       "date": "2024-12-04",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -2261,7 +2261,7 @@
     },
     {
       "date": "2024-12-06",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -2338,7 +2338,7 @@
     },
     {
       "date": "2024-12-09",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -2415,7 +2415,7 @@
     },
     {
       "date": "2024-12-11",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -2492,7 +2492,7 @@
     },
     {
       "date": "2024-12-13",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -2569,7 +2569,7 @@
     },
     {
       "date": "2024-12-16",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -2646,7 +2646,7 @@
     },
     {
       "date": "2024-12-18",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -2723,7 +2723,7 @@
     },
     {
       "date": "2024-12-20",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -2800,7 +2800,7 @@
     },
     {
       "date": "2024-12-30",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -2877,7 +2877,7 @@
     },
     {
       "date": "2025-01-01",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -2954,7 +2954,7 @@
     },
     {
       "date": "2025-01-03",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -3031,7 +3031,7 @@
     },
     {
       "date": "2025-01-06",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -3108,7 +3108,7 @@
     },
     {
       "date": "2025-01-08",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -3185,7 +3185,7 @@
     },
     {
       "date": "2025-01-10",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -3262,7 +3262,7 @@
     },
     {
       "date": "2025-01-13",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -3339,7 +3339,7 @@
     },
     {
       "date": "2025-01-15",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -3416,7 +3416,7 @@
     },
     {
       "date": "2025-01-17",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -3493,7 +3493,7 @@
     },
     {
       "date": "2025-01-20",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -3570,7 +3570,7 @@
     },
     {
       "date": "2025-01-22",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -3647,7 +3647,7 @@
     },
     {
       "date": "2025-01-24",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -3724,7 +3724,7 @@
     },
     {
       "date": "2025-01-27",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -3801,7 +3801,7 @@
     },
     {
       "date": "2025-01-29",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -3878,7 +3878,7 @@
     },
     {
       "date": "2025-01-31",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -3955,7 +3955,7 @@
     },
     {
       "date": "2025-02-03",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -4032,7 +4032,7 @@
     },
     {
       "date": "2025-02-05",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -4109,7 +4109,7 @@
     },
     {
       "date": "2025-02-07",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -4186,7 +4186,7 @@
     },
     {
       "date": "2025-02-10",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -4263,7 +4263,7 @@
     },
     {
       "date": "2025-02-12",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -4340,7 +4340,7 @@
     },
     {
       "date": "2025-02-14",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -4417,7 +4417,7 @@
     },
     {
       "date": "2025-02-17",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -4494,7 +4494,7 @@
     },
     {
       "date": "2025-02-19",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -4571,7 +4571,7 @@
     },
     {
       "date": "2025-02-21",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -4648,7 +4648,7 @@
     },
     {
       "date": "2025-03-03",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -4725,7 +4725,7 @@
     },
     {
       "date": "2025-03-05",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -4802,7 +4802,7 @@
     },
     {
       "date": "2025-03-07",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -4879,7 +4879,7 @@
     },
     {
       "date": "2025-03-10",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -4956,7 +4956,7 @@
     },
     {
       "date": "2025-03-12",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -5033,7 +5033,7 @@
     },
     {
       "date": "2025-03-14",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -5110,7 +5110,7 @@
     },
     {
       "date": "2025-03-17",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -5187,7 +5187,7 @@
     },
     {
       "date": "2025-03-19",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -5264,7 +5264,7 @@
     },
     {
       "date": "2025-03-21",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -5341,7 +5341,7 @@
     },
     {
       "date": "2025-03-24",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -5418,7 +5418,7 @@
     },
     {
       "date": "2025-03-26",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -5495,7 +5495,7 @@
     },
     {
       "date": "2025-03-28",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -5572,7 +5572,7 @@
     },
     {
       "date": "2025-03-31",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -5649,7 +5649,7 @@
     },
     {
       "date": "2025-04-02",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -5726,7 +5726,7 @@
     },
     {
       "date": "2025-04-04",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -5803,7 +5803,7 @@
     },
     {
       "date": "2025-04-07",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -5880,7 +5880,7 @@
     },
     {
       "date": "2025-04-09",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -5957,7 +5957,7 @@
     },
     {
       "date": "2025-04-11",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -6034,7 +6034,7 @@
     },
     {
       "date": "2025-04-14",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "sentadilla_barra",
@@ -6111,7 +6111,7 @@
     },
     {
       "date": "2025-04-16",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "peso_muerto_barra",
@@ -6188,7 +6188,7 @@
     },
     {
       "date": "2025-04-18",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "sentadilla_frontal",
@@ -6265,7 +6265,7 @@
     },
     {
       "date": "2025-04-21",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -6342,7 +6342,7 @@
     },
     {
       "date": "2025-04-23",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -6419,7 +6419,7 @@
     },
     {
       "date": "2025-04-25",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -6496,7 +6496,7 @@
     },
     {
       "date": "2025-04-28",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -6573,7 +6573,7 @@
     },
     {
       "date": "2025-04-30",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -6650,7 +6650,7 @@
     },
     {
       "date": "2025-05-02",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -6727,7 +6727,7 @@
     },
     {
       "date": "2025-05-05",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -6804,7 +6804,7 @@
     },
     {
       "date": "2025-05-07",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -6881,7 +6881,7 @@
     },
     {
       "date": "2025-05-09",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -6958,7 +6958,7 @@
     },
     {
       "date": "2025-05-12",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -7035,7 +7035,7 @@
     },
     {
       "date": "2025-05-14",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "extensiones_de_espalda",
@@ -7112,7 +7112,7 @@
     },
     {
       "date": "2025-05-16",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -7189,7 +7189,7 @@
     },
     {
       "date": "2025-05-19",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -7266,7 +7266,7 @@
     },
     {
       "date": "2025-05-21",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "extensiones_de_espalda",
@@ -7343,7 +7343,7 @@
     },
     {
       "date": "2025-05-23",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -7420,7 +7420,7 @@
     },
     {
       "date": "2025-05-26",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -7497,7 +7497,7 @@
     },
     {
       "date": "2025-05-28",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "extensiones_de_espalda",
@@ -7574,7 +7574,7 @@
     },
     {
       "date": "2025-05-30",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -7651,7 +7651,7 @@
     },
     {
       "date": "2025-06-02",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -7728,7 +7728,7 @@
     },
     {
       "date": "2025-06-04",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "extensiones_de_espalda",
@@ -7805,7 +7805,7 @@
     },
     {
       "date": "2025-06-06",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -7882,7 +7882,7 @@
     },
     {
       "date": "2025-06-09",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -7959,7 +7959,7 @@
     },
     {
       "date": "2025-06-11",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "extensiones_de_espalda",
@@ -8036,7 +8036,7 @@
     },
     {
       "date": "2025-06-13",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -8113,7 +8113,7 @@
     },
     {
       "date": "2025-06-16",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -8190,7 +8190,7 @@
     },
     {
       "date": "2025-06-18",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "extensiones_de_espalda",
@@ -8267,7 +8267,7 @@
     },
     {
       "date": "2025-06-20",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -8344,7 +8344,7 @@
     },
     {
       "date": "2025-06-23",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -8423,7 +8423,7 @@
     },
     {
       "date": "2025-06-25",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -8509,7 +8509,7 @@
     },
     {
       "date": "2025-06-27",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -8591,7 +8591,7 @@
     },
     {
       "date": "2025-06-30",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -8675,7 +8675,7 @@
     },
     {
       "date": "2025-07-02",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -8761,7 +8761,7 @@
     },
     {
       "date": "2025-07-04",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -8847,7 +8847,7 @@
     },
     {
       "date": "2025-07-07",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -8936,7 +8936,7 @@
     },
     {
       "date": "2025-07-09",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -9026,7 +9026,7 @@
     },
     {
       "date": "2025-07-11",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -9116,7 +9116,7 @@
     },
     {
       "date": "2025-07-14",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -9205,7 +9205,7 @@
     },
     {
       "date": "2025-07-16",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -9295,7 +9295,7 @@
     },
     {
       "date": "2025-07-18",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -9387,7 +9387,7 @@
     },
     {
       "date": "2025-07-21",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -9476,7 +9476,7 @@
     },
     {
       "date": "2025-07-23",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -9566,7 +9566,7 @@
     },
     {
       "date": "2025-07-25",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -9658,7 +9658,7 @@
     },
     {
       "date": "2025-07-28",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -9747,7 +9747,7 @@
     },
     {
       "date": "2025-07-30",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -9832,7 +9832,7 @@
     },
     {
       "date": "2025-08-01",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -9914,7 +9914,7 @@
     },
     {
       "date": "2025-08-04",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -10003,7 +10003,7 @@
     },
     {
       "date": "2025-08-06",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -10088,7 +10088,7 @@
     },
     {
       "date": "2025-08-08",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -10170,7 +10170,7 @@
     },
     {
       "date": "2025-08-11",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -10259,7 +10259,7 @@
     },
     {
       "date": "2025-08-13",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -10349,7 +10349,7 @@
     },
     {
       "date": "2025-08-15",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -10431,7 +10431,7 @@
     },
     {
       "date": "2025-08-18",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -10520,7 +10520,7 @@
     },
     {
       "date": "2025-08-20",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -10610,7 +10610,7 @@
     },
     {
       "date": "2025-08-22",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -10701,7 +10701,7 @@
     },
     {
       "date": "2025-08-25",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -10792,7 +10792,7 @@
     },
     {
       "date": "2025-08-27",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -10873,7 +10873,7 @@
     },
     {
       "date": "2025-08-29",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -10964,7 +10964,7 @@
     },
     {
       "date": "2025-09-01",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -11060,7 +11060,7 @@
     },
     {
       "date": "2025-09-03",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -11146,7 +11146,7 @@
     },
     {
       "date": "2025-09-05",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -11237,7 +11237,7 @@
     },
     {
       "date": "2025-09-08",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -11318,7 +11318,7 @@
     },
     {
       "date": "2025-09-10",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -11399,7 +11399,7 @@
     },
     {
       "date": "2025-09-12",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -11509,7 +11509,7 @@
     },
     {
       "date": "2025-09-15",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -11594,7 +11594,7 @@
     },
     {
       "date": "2025-09-17",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -11680,7 +11680,7 @@
     },
     {
       "date": "2025-09-19",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -11767,7 +11767,7 @@
     },
     {
       "date": "2025-09-22",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -11862,7 +11862,7 @@
     },
     {
       "date": "2025-09-24",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -11948,7 +11948,7 @@
     },
     {
       "date": "2025-09-26",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -12052,7 +12052,7 @@
     },
     {
       "date": "2025-09-29",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -12133,7 +12133,7 @@
     },
     {
       "date": "2025-10-01",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -12214,7 +12214,7 @@
     },
     {
       "date": "2025-10-03",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -12318,7 +12318,7 @@
     },
     {
       "date": "2025-10-06",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -12407,7 +12407,7 @@
     },
     {
       "date": "2025-10-08",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -12489,7 +12489,7 @@
     },
     {
       "date": "2025-10-10",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -12593,7 +12593,7 @@
     },
     {
       "date": "2025-10-20",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -12688,7 +12688,7 @@
     },
     {
       "date": "2025-10-22",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -12770,7 +12770,7 @@
     },
     {
       "date": "2025-10-24",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -12875,7 +12875,7 @@
     },
     {
       "date": "2025-10-27",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -12960,7 +12960,7 @@
     },
     {
       "date": "2025-10-29",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -13046,7 +13046,7 @@
     },
     {
       "date": "2025-10-31",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -13151,7 +13151,7 @@
     },
     {
       "date": "2025-11-03",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -13241,7 +13241,7 @@
     },
     {
       "date": "2025-11-05",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -13327,7 +13327,7 @@
     },
     {
       "date": "2025-11-07",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -13433,7 +13433,7 @@
     },
     {
       "date": "2025-11-10",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -13514,7 +13514,7 @@
     },
     {
       "date": "2025-11-12",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "hack_squat",
@@ -13600,7 +13600,7 @@
     },
     {
       "date": "2025-11-14",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -13705,7 +13705,7 @@
     },
     {
       "date": "2025-11-17",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -13791,7 +13791,7 @@
     },
     {
       "date": "2025-11-19",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "hack_squat",
@@ -13877,7 +13877,7 @@
     },
     {
       "date": "2025-11-21",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -13990,7 +13990,7 @@
     },
     {
       "date": "2025-11-24",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -14072,7 +14072,7 @@
     },
     {
       "date": "2025-11-26",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "sentadilla_bulgara",
@@ -14158,7 +14158,7 @@
     },
     {
       "date": "2025-11-28",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -14253,7 +14253,7 @@
     },
     {
       "date": "2025-12-01",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -14344,7 +14344,7 @@
     },
     {
       "date": "2025-12-03",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -14431,7 +14431,7 @@
     },
     {
       "date": "2025-12-05",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -14525,7 +14525,7 @@
     },
     {
       "date": "2025-12-08",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -14616,7 +14616,7 @@
     },
     {
       "date": "2025-12-10",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -14703,7 +14703,7 @@
     },
     {
       "date": "2025-12-12",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -14788,7 +14788,7 @@
     },
     {
       "date": "2025-12-15",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -14875,7 +14875,7 @@
     },
     {
       "date": "2025-12-17",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -14971,7 +14971,7 @@
     },
     {
       "date": "2025-12-19",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -15052,7 +15052,7 @@
     },
     {
       "date": "2025-12-29",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -15139,7 +15139,7 @@
     },
     {
       "date": "2025-12-31",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -15230,7 +15230,7 @@
     },
     {
       "date": "2026-01-02",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -15311,7 +15311,7 @@
     },
     {
       "date": "2026-01-05",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -15398,7 +15398,7 @@
     },
     {
       "date": "2026-01-07",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -15498,7 +15498,7 @@
     },
     {
       "date": "2026-01-09",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -15579,7 +15579,7 @@
     },
     {
       "date": "2026-01-12",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -15661,7 +15661,7 @@
     },
     {
       "date": "2026-01-14",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -15761,7 +15761,7 @@
     },
     {
       "date": "2026-01-16",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -15838,7 +15838,7 @@
     },
     {
       "date": "2026-01-19",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -15920,7 +15920,7 @@
     },
     {
       "date": "2026-01-21",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -16021,7 +16021,7 @@
     },
     {
       "date": "2026-01-23",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -16098,7 +16098,7 @@
     },
     {
       "date": "2026-01-26",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -16180,7 +16180,7 @@
     },
     {
       "date": "2026-01-28",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -16267,7 +16267,7 @@
     },
     {
       "date": "2026-01-30",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -16353,7 +16353,7 @@
     },
     {
       "date": "2026-02-02",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -16430,7 +16430,7 @@
     },
     {
       "date": "2026-02-04",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -16526,7 +16526,7 @@
     },
     {
       "date": "2026-02-06",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -16617,7 +16617,7 @@
     },
     {
       "date": "2026-02-09",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -16694,7 +16694,7 @@
     },
     {
       "date": "2026-02-11",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -16790,7 +16790,7 @@
     },
     {
       "date": "2026-02-13",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -16867,7 +16867,7 @@
     },
     {
       "date": "2026-02-16",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -16949,7 +16949,7 @@
     },
     {
       "date": "2026-02-18",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -17045,7 +17045,7 @@
     },
     {
       "date": "2026-02-20",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -17122,7 +17122,7 @@
     },
     {
       "date": "2026-02-23",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -17204,7 +17204,7 @@
     },
     {
       "date": "2026-02-25",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -17300,7 +17300,7 @@
     },
     {
       "date": "2026-02-27",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -17381,7 +17381,7 @@
     },
     {
       "date": "2026-03-02",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -17468,7 +17468,7 @@
     },
     {
       "date": "2026-03-04",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -17564,7 +17564,7 @@
     },
     {
       "date": "2026-03-06",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -17650,7 +17650,7 @@
     },
     {
       "date": "2026-03-09",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -17737,7 +17737,7 @@
     },
     {
       "date": "2026-03-11",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -17833,7 +17833,7 @@
     },
     {
       "date": "2026-03-13",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -17919,7 +17919,7 @@
     },
     {
       "date": "2026-03-16",
-      "type": "LUNES",
+      "type": "DIA1",
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -18001,7 +18001,7 @@
     },
     {
       "date": "2026-03-18",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "logs": [
         {
           "exercise_id": "abductores",
@@ -18099,7 +18099,7 @@
     },
     {
       "date": "2026-03-20",
-      "type": "VIERNES",
+      "type": "DIA3",
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -18185,7 +18185,7 @@
     },
     {
       "date": "2026-03-23",
-      "type": "LUNES",
+      "type": "DIA1",
       "completed": true,
       "logs": [
         {
@@ -18265,7 +18265,7 @@
     },
     {
       "date": "2026-03-25",
-      "type": "MIERCOLES",
+      "type": "DIA2",
       "completed": true,
       "logs": [
         {

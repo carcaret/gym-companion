@@ -20,15 +20,15 @@ function makeLog({ id = 'press_banca', name = 'Press banca', weight = 50, series
   };
 }
 
-function makeEntry({ date = '2026-03-28', type = 'LUNES', completed = true, logs = [] }) {
+function makeEntry({ date = '2026-03-28', type = 'DIA1', completed = true, logs = [] }) {
   return { date, type, completed, logs };
 }
 
 function makeHistory() {
   return [
-    makeEntry({ date: '2026-03-25', type: 'LUNES', logs: [makeLog({ weight: 50, actual: [10, 10, 10] })] }),
-    makeEntry({ date: '2026-03-26', type: 'MIERCOLES', logs: [makeLog({ id: 'sentadilla', weight: 80, actual: [8, 8, 8] })] }),
-    makeEntry({ date: '2026-03-28', type: 'VIERNES', logs: [makeLog({ id: 'peso_muerto', weight: 100, actual: [5, 5, 5] })] }),
+    makeEntry({ date: '2026-03-25', type: 'DIA1', logs: [makeLog({ weight: 50, actual: [10, 10, 10] })] }),
+    makeEntry({ date: '2026-03-26', type: 'DIA2', logs: [makeLog({ id: 'sentadilla', weight: 80, actual: [8, 8, 8] })] }),
+    makeEntry({ date: '2026-03-28', type: 'DIA3', logs: [makeLog({ id: 'peso_muerto', weight: 100, actual: [5, 5, 5] })] }),
   ];
 }
 
@@ -42,11 +42,11 @@ describe('filterHistory', () => {
     expect(filterHistory(h, 'TODOS')).toHaveLength(3);
   });
 
-  test('filtro LUNES devuelve solo entries tipo LUNES', () => {
+  test('filtro DIA1 devuelve solo entries tipo DIA1', () => {
     const h = makeHistory();
-    const result = filterHistory(h, 'LUNES');
+    const result = filterHistory(h, 'DIA1');
     expect(result).toHaveLength(1);
-    expect(result[0].type).toBe('LUNES');
+    expect(result[0].type).toBe('DIA1');
   });
 
   test('filtro con tipo inexistente devuelve array vacío', () => {
@@ -56,7 +56,7 @@ describe('filterHistory', () => {
 
   test('history vacío devuelve array vacío', () => {
     expect(filterHistory([], 'TODOS')).toHaveLength(0);
-    expect(filterHistory([], 'LUNES')).toHaveLength(0);
+    expect(filterHistory([], 'DIA1')).toHaveLength(0);
   });
 
   test('no muta el array original', () => {
@@ -84,8 +84,8 @@ describe('sortHistory', () => {
 
   test('entries con misma fecha mantienen orden relativo', () => {
     const h = [
-      makeEntry({ date: '2026-03-25', type: 'LUNES' }),
-      makeEntry({ date: '2026-03-25', type: 'VIERNES' }),
+      makeEntry({ date: '2026-03-25', type: 'DIA1' }),
+      makeEntry({ date: '2026-03-25', type: 'DIA3' }),
     ];
     const sorted = sortHistory(h);
     expect(sorted).toHaveLength(2);

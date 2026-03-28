@@ -12,7 +12,7 @@ test.describe('Gestion de rutina', () => {
     await clearStorage(page);
   });
 
-  async function goToRoutine(page, dayLabel = 'Lunes') {
+  async function goToRoutine(page, dayLabel = 'Día 1') {
     const dayBtn = page.locator('.day-btn', { hasText: dayLabel });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
@@ -25,7 +25,7 @@ test.describe('Gestion de rutina', () => {
     // Get initial routine size from DB
     const initialSize = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
-      return db.routines.LUNES.length;
+      return db.routines.DIA1.length;
     });
 
     // Click add exercise
@@ -40,7 +40,7 @@ test.describe('Gestion de rutina', () => {
     // Verify the routine now has one more exercise in DB
     const newSize = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
-      return db.routines.LUNES.length;
+      return db.routines.DIA1.length;
     });
     expect(newSize).toBe(initialSize + 1);
   });
@@ -50,7 +50,7 @@ test.describe('Gestion de rutina', () => {
 
     const initialSize = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
-      return db.routines.LUNES.length;
+      return db.routines.DIA1.length;
     });
 
     await page.locator('#add-exercise-btn').click();
@@ -69,7 +69,7 @@ test.describe('Gestion de rutina', () => {
     const result = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
       return {
-        routineSize: db.routines.LUNES.length,
+        routineSize: db.routines.DIA1.length,
         hasExercise: !!db.exercises['press_arnold']
       };
     });
@@ -98,7 +98,7 @@ test.describe('Gestion de rutina', () => {
     const searchInput = page.locator('#exercise-search-input');
     await expect(searchInput).toBeVisible();
 
-    // Type a search that should match "Sentadilla" (available for LUNES)
+    // Type a search that should match "Sentadilla" (available for DIA1)
     await searchInput.fill('sentad');
 
     // Only matching exercises should be visible

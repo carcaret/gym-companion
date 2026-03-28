@@ -23,9 +23,9 @@ test.describe('Historial', () => {
   test('filtros por dia funcionan', async ({ page }) => {
     await page.click('[data-view="historial"]');
 
-    const lunesFilter = page.locator('.filter-btn', { hasText: 'Lunes' });
-    if (await lunesFilter.isVisible()) {
-      await lunesFilter.click();
+    const dia1Filter = page.locator('.filter-btn', { hasText: 'Día 1' });
+    if (await dia1Filter.isVisible()) {
+      await dia1Filter.click();
       const entries = page.locator('.historial-entry-btn');
       await expect(entries.first()).toBeVisible();
     }
