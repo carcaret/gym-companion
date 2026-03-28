@@ -1,0 +1,30 @@
+{
+  "name": "gym-companion",
+  "version": "1.0.0",
+  "description": "PWA para seguimiento personal de entrenos de gimnasio. Registra series, pesos y repeticiones, visualiza tu progreso con gráficas y sincroniza tus datos con GitHub.",
+  "main": "app.js",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "npx playwright test",
+    "test:all": "vitest run && npx playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carcaret/gym-companion.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/carcaret/gym-companion/issues"
+  },
+  "homepage": "https://github.com/carcaret/gym-companion#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "playwright": "^1.58.2",
+    "serve": "^14.2.6",
+    "vitest": "^4.1.1"
+  }
+}
