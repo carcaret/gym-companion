@@ -478,11 +478,13 @@
       const last = getLastValuesForExercise(id, dayType);
       const name = getExerciseName(id);
       const weightStr = last.weight > 0 ? `${last.weight} kg · ` : '';
+      const repsFmt = formatRepsInteligente(last.repsActual, last.series, last.repsExpected);
+      const repsPart = repsFmt ? ` · Reps: ${repsFmt}` : '';
       html += `<div class="card compact-card">
       <div class="card-header">
         <div>
           <div class="card-title">${name}</div>
-          <div class="card-subtitle">${weightStr}${last.series}×${last.repsExpected}</div>
+          <div class="card-subtitle">${weightStr}${last.series}×${last.repsExpected}${repsPart}</div>
         </div>
       </div>
     </div>`;
@@ -523,7 +525,10 @@
     const exerciseIds = DB.routines[dayType] || [];
     const logs = exerciseIds.map(id => {
       const last = getLastValuesForExercise(id, dayType);
-      const actual = new Array(last.series).fill(null);
+      const prevActual = last.repsActual || [];
+      const actual = Array.from({ length: last.series }, (_, i) =>
+        i < prevActual.length && prevActual[i] !== null ? prevActual[i] : null
+      );
       return {
         exercise_id: id,
         name: getExerciseName(id),
