@@ -1,0 +1,150 @@
+const { test, expect } = require('@playwright/test');
+const { injectTestSession, clearStorage, fillAllWorkoutReps } = require('./helpers.js');
+
+test.describe('Vista de entreno completado', () => {
+  test.beforeEach(async ({ page }) => {
+    await injectTestSession(page);
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearStorage(page);
+  });
+
+  async function completeWorkout(page) {
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
+    const startBtn = page.locator('#start-workout-btn');
+    const hasDaySelector = await dayBtn.isVisible().catch(() => false);
+    if (hasDaySelector) await dayBtn.click();
+    await expect(startBtn).toBeVisible();
+    await startBtn.click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
+
+    const cards = page.locator('.card-header');
+    const cardCount = await cards.count();
+    for (let i = 0; i < cardCount; i++) {
+      await cards.nth(i).click();
+    }
+    await fillAllWorkoutReps(page);
+    await page.locator('#finish-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('completado');
+  }
+
+  test('el mensaje de completado usa color accent (no verde)', async ({ page }) => {
+    await completeWorkout(page);
+
+    const status = page.locator('.workout-status');
+    // No debe tener estilos inline que fuercen verde
+    const style = await status.getAttribute('style');
+    expect(style).toBeNull();
+
+    // El checkmark debe usar color accent
+    const checkmark = status.locator('span').first();
+    const color = await checkmark.evaluate(el => el.style.color);
+    expect(color).toBe('var(--accent)');
+  });
+
+  test('las cards usan formato de historial (compact-card + card-title/subtitle)', async ({ page }) => {
+    await completeWorkout(page);
+
+    const cards = page.locator('.historial-detail-card');
+    const count = await cards.count();
+    expect(count).toBeGreaterThan(0);
+
+    // Cada card debe ser compact-card
+    for (let i = 0; i < count; i++) {
+      const card = cards.nth(i);
+      await expect(card).toHaveClass(/compact-card/);
+    }
+
+    // Cada card debe tener card-title y card-subtitle
+    const titles = page.locator('.historial-detail-card .card-title');
+    const subtitles = page.locator('.historial-detail-card .card-subtitle');
+    expect(await titles.count()).toBe(count);
+    expect(await subtitles.count()).toBe(count);
+  });
+
+  test('las cards NO tienen botón de editar', async ({ page }) => {
+    await completeWorkout(page);
+
+    const editBtns = page.locator('.historial-detail-card .historial-edit-btn');
+    await expect(editBtns).toHaveCount(0);
+  });
+
+  test('las cards NO usan meta-pills con emojis', async ({ page }) => {
+    await completeWorkout(page);
+
+    const metaPills = page.locator('.meta-pill');
+    await expect(metaPills).toHaveCount(0);
+  });
+
+  test('el subtitle muestra peso, series y reps formateados', async ({ page }) => {
+    await completeWorkout(page);
+
+    // Press Banca should show weight and series info
+    const firstSubtitle = page.locator('.historial-detail-card .card-subtitle').first();
+    const text = await firstSubtitle.textContent();
+    // Should contain series×reps format (e.g. "60 kg · 3×10")
+    expect(text).toMatch(/\d+×\d+/);
+  });
+
+  test('toast de inicio no tiene emoji', async ({ page }) => {
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
+    const startBtn = page.locator('#start-workout-btn');
+    const hasDaySelector = await dayBtn.isVisible().catch(() => false);
+    if (hasDaySelector) await dayBtn.click();
+    await expect(startBtn).toBeVisible();
+
+    // Listen for the toast
+    await startBtn.click();
+    const toast = page.locator('.toast');
+    await expect(toast).toBeVisible();
+    const toastText = await toast.textContent();
+    expect(toastText).not.toContain('💪');
+    expect(toastText).toContain('¡Entreno iniciado!');
+  });
+
+  test('toast de fin no tiene emoji', async ({ page }) => {
+    await completeWorkout(page);
+
+    // The toast should appear after completing
+    const toast = page.locator('.toast');
+    await expect(toast).toBeVisible();
+    const toastText = await toast.textContent();
+    expect(toastText).not.toContain('🎉');
+    expect(toastText).toContain('¡Entreno completado!');
+  });
+
+  test('la vista completada coincide en estructura con el detalle del historial', async ({ page }) => {
+    await completeWorkout(page);
+
+    // Verify completed view structure while it's visible
+    const completedCards = page.locator('#view-hoy .historial-detail-card');
+    const completedCount = await completedCards.count();
+    expect(completedCount).toBeGreaterThan(0);
+
+    const completedClasses = await completedCards.first().getAttribute('class');
+    expect(completedClasses).toContain('compact-card');
+    expect(completedClasses).toContain('historial-detail-card');
+    await expect(page.locator('#view-hoy .historial-detail-card .card-title').first()).toBeVisible();
+    await expect(page.locator('#view-hoy .historial-detail-card .card-subtitle').first()).toBeVisible();
+
+    // Navigate to history and open a detail
+    await page.click('[data-view="historial"]');
+    const historyEntry = page.locator('.historial-entry-btn').first();
+    await expect(historyEntry).toBeVisible();
+    await historyEntry.click();
+
+    // Verify history detail uses same structure
+    const historyCards = page.locator('#view-historial .historial-detail-card');
+    const historyCount = await historyCards.count();
+    expect(historyCount).toBeGreaterThan(0);
+
+    const historyClasses = await historyCards.first().getAttribute('class');
+    expect(historyClasses).toContain('compact-card');
+    expect(historyClasses).toContain('historial-detail-card');
+    await expect(page.locator('#view-historial .historial-detail-card .card-title').first()).toBeVisible();
+    await expect(page.locator('#view-historial .historial-detail-card .card-subtitle').first()).toBeVisible();
+  });
+});

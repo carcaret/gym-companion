@@ -459,7 +459,7 @@ async function startWorkout(dayType) {
   DB.history.push(entry);
   await persistDB();
   renderHoy();
-  toast('💪 ¡Entreno iniciado!');
+  toast('¡Entreno iniciado!');
 }
 
 function renderActiveWorkout(container, entry) {
@@ -575,28 +575,28 @@ async function finishWorkout() {
   finishWorkoutEntry(entry);
   await persistDB();
   renderHoy();
-  toast('🎉 ¡Entreno completado!');
+  toast('¡Entreno completado!');
 }
 
 function renderCompletedToday(container, entry) {
-  let html = `<div class="workout-status" style="background:rgba(0,184,148,0.1);border-color:rgba(0,184,148,0.3);">
-  <span style="color:var(--green);font-size:18px;">✓</span>
+  let html = `<div class="workout-status">
+  <span style="color:var(--accent);font-size:18px;">✓</span>
   <span>Entreno completado</span>
 </div>`;
 
   entry.logs.forEach(log => {
     const name = getExerciseName(log.exercise_id);
-    const reps = log.reps.actual.length > 0 ? log.reps.actual.join(', ') : `${log.reps.expected}×${log.series}`;
-    html += `<div class="card">
-    <div class="exercise-row">
-      <div class="exercise-name">${name}</div>
-      <div class="exercise-meta">
-        ${log.weight > 0 ? `<span class="meta-pill">🏋️ <strong>${log.weight}</strong> kg</span>` : ''}
-        <span class="meta-pill">📊 <strong>${log.series}</strong></span>
-        <span class="meta-pill">🔄 <strong>${reps}</strong></span>
+    const weightStr = log.weight > 0 ? `${log.weight} kg · ` : '';
+    const repsFmt = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected);
+    const repsPart = repsFmt ? ` · ${repsFmt}` : '';
+    html += `<div class="card compact-card historial-detail-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${name}</div>
+          <div class="card-subtitle">${weightStr}${log.series}×${log.reps.expected}${repsPart}</div>
+        </div>
       </div>
-    </div>
-  </div>`;
+    </div>`;
   });
 
   container.innerHTML = html;
