@@ -581,6 +581,11 @@ body {
   line-height: 1;
 }
 
+/* ── Flat matte SVG icons (matches tab bar style) ── */
+.icon-svg { display: inline-block; vertical-align: middle; opacity: 0.5; }
+.btn-icon .icon-svg { opacity: 0.5; }
+.btn-icon:hover .icon-svg, .btn-icon:active .icon-svg { opacity: 0.8; }
+
 .historial-detail-card.editing {
   border-color: var(--accent-glow);
   box-shadow: 0 0 12px var(--accent-glow);

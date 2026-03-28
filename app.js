@@ -824,11 +824,11 @@ function renderHistorial() {
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
     html += `<div class="historial-entry-btn" data-date="${entry.date}">
     <span class="day-info">
-      <span class="day-name">${DAY_LABELS[entry.type] || entry.type}${completed ? '' : ' ⏸️'}</span>
+      <span class="day-name">${DAY_LABELS[entry.type] || entry.type}${completed ? '' : ' <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'}</span>
       <span class="day-exercises">${formatDate(entry.date)} · ${entry.logs.length} ejercicios</span>
       <span class="day-exercises">${preview}</span>
     </span>
-    <button class="btn-icon historial-delete-btn" style="font-size:14px;" data-date="${entry.date}">🗑️</button>
+    <button class="btn-icon historial-delete-btn" data-date="${entry.date}"><svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
   </div>`;
   });
   html += '</div>';
@@ -872,7 +872,7 @@ function renderHistorialDetail(date) {
       <div class="exercise-row" style="flex-direction:column;align-items:stretch;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div class="exercise-name">${name}</div>
-          <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}">✅</button>
+          <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
         </div>
         ${buildParamRowsHtml('h', logIdx, log, 'adjustHistoryParam', 'setHistoryParam', hArgs)}
         <div class="mt-sm"><p class="text-xs text-muted mb-sm">Reps por serie:</p>`;
@@ -888,7 +888,7 @@ function renderHistorialDetail(date) {
           <div class="card-title">${name}</div>
           <div class="card-subtitle">${weightStr}${log.series}×${log.reps.expected}${repsPart}</div>
         </div>
-        <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}">✏️</button>
+        <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
       </div>
     </div>`;
     }
