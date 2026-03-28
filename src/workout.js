@@ -55,7 +55,7 @@ export function buildWorkoutEntry(date, dayType, routineIds, getLastValues, getE
     const last = getLastValues(id, dayType);
     const prevActual = last.repsActual || [];
     const actual = Array.from({ length: last.series }, (_, i) =>
-      i < prevActual.length && prevActual[i] !== null ? prevActual[i] : null
+      i < prevActual.length && prevActual[i] !== null ? prevActual[i] : last.repsExpected
     );
     return {
       exercise_id: id,

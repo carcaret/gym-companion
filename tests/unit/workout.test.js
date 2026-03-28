@@ -86,12 +86,12 @@ describe('buildWorkoutEntry', () => {
     expect(entry.logs[0].reps.actual).toEqual([10, 8]);
   });
 
-  test('si series actual > series previas, rellena con null', () => {
+  test('si series actual > series previas, rellena con repsExpected', () => {
     const getLastValues = stubGetLastValues({
       press_banca: { series: 4, repsExpected: 10, weight: 60, repsActual: [10, 8] }
     });
     const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName());
-    expect(entry.logs[0].reps.actual).toEqual([10, 8, null, null]);
+    expect(entry.logs[0].reps.actual).toEqual([10, 8, 10, 10]);
   });
 
   test('con rutina vacía (0 ejercicios), crea entry con logs=[]', () => {
@@ -109,15 +109,70 @@ describe('buildWorkoutEntry', () => {
     expect(log.weight).toBe(0);
     expect(log.series).toBe(3);
     expect(log.reps.expected).toBe(10);
-    expect(log.reps.actual).toEqual([null, null, null]);
+    expect(log.reps.actual).toEqual([10, 10, 10]);
   });
 
-  test('prevActual con nulls intercalados: copia no-null, null queda null', () => {
+  test('prevActual con nulls intercalados: copia no-null, null se rellena con expected', () => {
     const getLastValues = stubGetLastValues({
       press_banca: { series: 3, repsExpected: 10, weight: 60, repsActual: [10, null, 8] }
     });
     const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName());
-    expect(entry.logs[0].reps.actual).toEqual([10, null, 8]);
+    expect(entry.logs[0].reps.actual).toEqual([10, 10, 8]);
+  });
+
+  test('sin historial previo, reps.actual se pre-rellena con repsExpected (no nulls)', () => {
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], stubGetLastValues(), stubGetExerciseName());
+    const log = entry.logs[0];
+    expect(log.reps.actual).toEqual([10, 10, 10]);
+    expect(log.reps.actual.every(v => v !== null)).toBe(true);
+  });
+
+  test('entry recién creado sin historial pasa validación (bug fix: no debe dar campos vacíos)', () => {
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], stubGetLastValues(), stubGetExerciseName());
+    const { valid } = validateEntry(entry);
+    expect(valid).toBe(true);
+  });
+
+  test('entry con historial parcial (más series que antes) también pasa validación', () => {
+    const getLastValues = stubGetLastValues({
+      press_banca: { series: 5, repsExpected: 8, weight: 60, repsActual: [8, 7, 6] }
+    });
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName());
+    expect(entry.logs[0].reps.actual).toEqual([8, 7, 6, 8, 8]);
+    const { valid } = validateEntry(entry);
+    expect(valid).toBe(true);
+  });
+
+  test('flujo completo build→validate→finish sin historial funciona sin error', () => {
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], stubGetLastValues(), stubGetExerciseName());
+    const { valid } = validateEntry(entry);
+    expect(valid).toBe(true);
+    finishWorkoutEntry(entry);
+    expect(entry.completed).toBe(true);
+    expect(entry.logs[0].reps.actual).toEqual([10, 10, 10]);
+  });
+
+  test('flujo completo build→validate→finish con historial funciona sin error', () => {
+    const getLastValues = stubGetLastValues({
+      press_banca: { series: 3, repsExpected: 10, weight: 60, repsActual: [10, 8, 9] }
+    });
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ['press_banca'], getLastValues, stubGetExerciseName());
+    const { valid } = validateEntry(entry);
+    expect(valid).toBe(true);
+    finishWorkoutEntry(entry);
+    expect(entry.completed).toBe(true);
+    expect(entry.logs[0].reps.actual).toEqual([10, 8, 9]);
+  });
+
+  test('múltiples ejercicios sin historial todos pasan validación', () => {
+    const ids = ['press_banca', 'sentadilla', 'curl_biceps'];
+    const entry = buildWorkoutEntry('2026-03-28', 'DIA1', ids, stubGetLastValues(), stubGetExerciseName());
+    const { valid } = validateEntry(entry);
+    expect(valid).toBe(true);
+    expect(entry.logs).toHaveLength(3);
+    entry.logs.forEach(log => {
+      expect(log.reps.actual.every(v => typeof v === 'number')).toBe(true);
+    });
   });
 });
 
