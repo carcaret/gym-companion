@@ -210,19 +210,70 @@ function showApp() {
   renderHoy();
 }
 
-// ── Workout Card In-Place Update ──
-function buildSeriesRowsHtml(logIdx, log) {
+// ── Shared HTML Builders ──
+
+/**
+ * Build the 3 param rows (weight, series, repsExpected) with +/− buttons.
+ * @param {string} prefix - 'w' (workout) or 'h' (history)
+ * @param {number} logIdx
+ * @param {object} log
+ * @param {string} adjustName - callback name: 'adjustParam' or 'adjustHistoryParam'
+ * @param {string} setName - callback name: 'setParam' or 'setHistoryParam'
+ * @param {string} argsPrefix - args before param-specific: e.g. "0" or "'2026-01-01',0"
+ */
+function buildParamRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix) {
+  return `<div class="param-row">
+    <label>Peso (kg)</label>
+    <div class="flex-center gap-sm">
+      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'weight',-2.5)">−</button>
+      <input id="${prefix}-weight-${logIdx}" class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.${setName}(${argsPrefix},'weight',this.value)">
+      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'weight',2.5)">+</button>
+    </div>
+  </div>
+  <div class="param-row">
+    <label>Series</label>
+    <div class="flex-center gap-sm">
+      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'series',-1)">−</button>
+      <input id="${prefix}-series-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.${setName}(${argsPrefix},'series',this.value)">
+      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'series',1)">+</button>
+    </div>
+  </div>
+  <div class="param-row">
+    <label>Reps obj.</label>
+    <div class="flex-center gap-sm">
+      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'repsExpected',-1)">−</button>
+      <input id="${prefix}-reps-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.${setName}(${argsPrefix},'repsExpected',this.value)">
+      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'repsExpected',1)">+</button>
+    </div>
+  </div>`;
+}
+
+/**
+ * Build per-series rep input rows (S1, S2, ...) with +/− buttons.
+ * @param {string} prefix - 'w' or 'h'
+ * @param {number} logIdx
+ * @param {object} log
+ * @param {string} adjustName - 'adjustRep' or 'adjustHistoryRep'
+ * @param {string} setName - 'setRep' or 'setHistoryRep'
+ * @param {string} argsPrefix - e.g. "0" or "'2026-01-01',0"
+ */
+function buildAllSeriesRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix) {
   let html = '';
   for (let s = 0; s < log.series; s++) {
     const val = log.reps.actual[s];
     html += `<div class="series-row">
       <span class="series-label">S${s + 1}</span>
-      <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},-1)">−</button>
-      <input id="w-rep-${logIdx}-${s}" class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setRep(${logIdx},${s},this.value)">
-      <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},1)">+</button>
+      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},${s},-1)">−</button>
+      <input id="${prefix}-rep-${logIdx}-${s}" class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.${setName}(${argsPrefix},${s},this.value)">
+      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},${s},1)">+</button>
     </div>`;
   }
   return html;
+}
+
+// ── Workout Card In-Place Update ──
+function buildSeriesRowsHtml(logIdx, log) {
+  return buildAllSeriesRowsHtml('w', logIdx, log, 'adjustRep', 'setRep', `${logIdx}`);
 }
 
 function updateWorkoutCardInPlace(logIdx, entry) {
@@ -438,42 +489,12 @@ function renderActiveWorkout(container, entry) {
     <div class="card-body" id="body-${logIdx}">`;
 
     // Weight & series/reps params
-    html += `<div class="param-row">
-    <label>Peso (kg)</label>
-    <div class="flex-center gap-sm">
-      <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'weight',-2.5)">−</button>
-      <input id="w-weight-${logIdx}" class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setParam(${logIdx},'weight',this.value)">
-      <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'weight',2.5)">+</button>
-    </div>
-  </div>
-  <div class="param-row">
-    <label>Series</label>
-    <div class="flex-center gap-sm">
-      <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'series',-1)">−</button>
-      <input id="w-series-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setParam(${logIdx},'series',this.value)">
-      <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'series',1)">+</button>
-    </div>
-  </div>
-  <div class="param-row">
-    <label>Reps obj.</label>
-    <div class="flex-center gap-sm">
-      <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'repsExpected',-1)">−</button>
-      <input id="w-reps-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setParam(${logIdx},'repsExpected',this.value)">
-      <button class="btn-icon" onclick="GymCompanion.adjustParam(${logIdx},'repsExpected',1)">+</button>
-    </div>
-  </div>`;
+    const wArgs = `${logIdx}`;
+    html += buildParamRowsHtml('w', logIdx, log, 'adjustParam', 'setParam', wArgs);
 
     // Per-series rep inputs
     html += `<div class="mt-sm"><p class="text-xs text-muted mb-sm" style="margin-top:8px;">Reps realizadas por serie:</p><div id="w-seriesrows-${logIdx}">`;
-    for (let s = 0; s < log.series; s++) {
-      const val = log.reps.actual[s];
-      html += `<div class="series-row">
-      <span class="series-label">S${s + 1}</span>
-      <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},-1)">−</button>
-      <input id="w-rep-${logIdx}-${s}" class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setRep(${logIdx},${s},this.value)">
-      <button class="btn-icon" onclick="GymCompanion.adjustRep(${logIdx},${s},1)">+</button>
-    </div>`;
-    }
+    html += buildAllSeriesRowsHtml('w', logIdx, log, 'adjustRep', 'setRep', wArgs);
     html += '</div></div>';
 
     // Remove from routine
@@ -853,46 +874,16 @@ function renderHistorialDetail(date) {
     const isEditing = editingHistorialExercise && editingHistorialExercise.date === date && editingHistorialExercise.logIdx === logIdx;
 
     if (isEditing) {
+      const hArgs = `'${date}',${logIdx}`;
       html += `<div class="card historial-detail-card editing">
       <div class="exercise-row" style="flex-direction:column;align-items:stretch;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div class="exercise-name">${name}</div>
           <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}">✅</button>
         </div>
-        <div class="param-row">
-          <label>Peso (kg)</label>
-          <div class="flex-center gap-sm">
-            <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'weight',-2.5)">−</button>
-            <input id="h-weight-${logIdx}" class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'weight',this.value)">
-            <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'weight',2.5)">+</button>
-          </div>
-        </div>
-        <div class="param-row">
-          <label>Series</label>
-          <div class="flex-center gap-sm">
-            <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'series',-1)">−</button>
-            <input id="h-series-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'series',this.value)">
-            <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'series',1)">+</button>
-          </div>
-        </div>
-        <div class="param-row">
-          <label>Reps obj.</label>
-          <div class="flex-center gap-sm">
-            <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'repsExpected',-1)">−</button>
-            <input id="h-reps-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'repsExpected',this.value)">
-            <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'repsExpected',1)">+</button>
-          </div>
-        </div>
+        ${buildParamRowsHtml('h', logIdx, log, 'adjustHistoryParam', 'setHistoryParam', hArgs)}
         <div class="mt-sm"><p class="text-xs text-muted mb-sm">Reps por serie:</p>`;
-      for (let s = 0; s < log.series; s++) {
-        const val = log.reps.actual[s];
-        html += `<div class="series-row">
-          <span class="series-label">S${s + 1}</span>
-          <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${date}',${logIdx},${s},-1)">−</button>
-          <input id="h-rep-${logIdx}-${s}" class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setHistoryRep('${date}',${logIdx},${s},this.value)">
-          <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${date}',${logIdx},${s},1)">+</button>
-        </div>`;
-      }
+      html += buildAllSeriesRowsHtml('h', logIdx, log, 'adjustHistoryRep', 'setHistoryRep', hArgs);
       html += `</div></div></div>`;
     } else {
       const weightStr = log.weight > 0 ? `${log.weight} kg · ` : '';
