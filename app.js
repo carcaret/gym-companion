@@ -77,7 +77,7 @@ async function loadDBFromGitHub(patOverride) {
   } catch { return null; }
 }
 
-async function saveDBToGitHub() {
+async function saveDBToGitHub(options = {}) {
   const cfg = getGithubConfig();
   const pat = getDecryptedPat();
   if (!cfg || !pat || !DB) return false;
@@ -86,11 +86,13 @@ async function saveDBToGitHub() {
       branch: cfg.branch,
       message: `Gym Companion update ${todayStr()}`
     });
-    const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, {
+    const fetchOpts = {
       method: 'PUT',
       headers: { 'Authorization': `Bearer ${pat}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    });
+    };
+    if (options.keepalive) fetchOpts.keepalive = true;
+    const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, fetchOpts);
     if (!res.ok) { console.error('GitHub save failed', res.status); return false; }
     const data = await res.json();
     githubSha = data.content.sha;
@@ -121,7 +123,7 @@ window.addEventListener('beforeunload', () => {
   if (saveTimeout) {
     clearTimeout(saveTimeout);
     saveTimeout = null;
-    saveDBToGitHub();
+    saveDBToGitHub({ keepalive: true });
   }
 });
 
