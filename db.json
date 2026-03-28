@@ -18380,7 +18380,7 @@
           "name": "Extensión de Cuádriceps",
           "series": 4,
           "reps": {
-            "expected": 11,
+            "expected": 12,
             "actual": [
               12,
               null,
