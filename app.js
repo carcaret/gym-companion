@@ -599,7 +599,17 @@ function renderCompletedToday(container, entry) {
     </div>`;
   });
 
+  html += `<div class="routine-actions">
+    <button class="btn-secondary btn-sm" id="completed-close-btn" style="background:rgba(86,156,214,0.12);color:var(--accent);border:1px solid rgba(86,156,214,0.25);">Cerrar</button>
+  </div>`;
+
   container.innerHTML = html;
+
+  document.getElementById('completed-close-btn').onclick = () => {
+    const title = document.getElementById('hoy-title');
+    title.textContent = 'Rutinas';
+    renderDaySelector(container);
+  };
 }
 
 // ── Exercise Management ──

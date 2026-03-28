@@ -147,4 +147,33 @@ test.describe('Vista de entreno completado', () => {
     await expect(page.locator('#view-historial .historial-detail-card .card-title').first()).toBeVisible();
     await expect(page.locator('#view-historial .historial-detail-card .card-subtitle').first()).toBeVisible();
   });
+
+  test('botón Cerrar visible y en tonos azules', async ({ page }) => {
+    await completeWorkout(page);
+
+    const closeBtn = page.locator('#completed-close-btn');
+    await expect(closeBtn).toBeVisible();
+    await expect(closeBtn).toHaveText('Cerrar');
+
+    // Verificar que tiene estilo azul
+    const color = await closeBtn.evaluate(el => el.style.color);
+    expect(color).toBe('var(--accent)');
+  });
+
+  test('botón Cerrar vuelve a la vista de rutinas', async ({ page }) => {
+    await completeWorkout(page);
+
+    const closeBtn = page.locator('#completed-close-btn');
+    await closeBtn.click();
+
+    // Debe mostrar el selector de rutinas
+    await expect(page.locator('.day-selector')).toBeVisible();
+
+    // El título debe ser "Rutinas"
+    const title = page.locator('#hoy-title');
+    await expect(title).toHaveText('Rutinas');
+
+    // Las cards del entreno completado ya no deben estar
+    await expect(page.locator('.historial-detail-card')).toHaveCount(0);
+  });
 });
