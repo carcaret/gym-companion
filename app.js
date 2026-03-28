@@ -1211,9 +1211,6 @@ function setupFilters() {
 
 // ── Default DB (fetch local file) ──
 async function getDefaultDB() {
-  if (typeof defaultDBData !== 'undefined') {
-    return defaultDBData;
-  }
   try {
     const res = await fetch('./db.json');
     if (res.ok) return await res.json();
