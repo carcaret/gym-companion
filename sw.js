@@ -11,6 +11,7 @@ const ASSETS = [
   './src/formatting.js',
   './src/data.js',
   './src/workout.js',
+  './src/history.js',
   './db.json',
   './manifest.json'
 ];

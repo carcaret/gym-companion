@@ -9,6 +9,7 @@ import { computeAvgReps, computeVolume, computeE1RM } from './src/metrics.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords } from './src/data.js';
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords } from './src/workout.js';
+import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
 
 let DB = null;
 let githubSha = null;
@@ -698,55 +699,25 @@ window.GymCompanion = {
   },
 
   adjustHistoryParam: async (date, logIdx, param, delta) => {
-    const entry = DB.history.find(h => h.date === date);
-    if (!entry) return;
-    const log = entry.logs[logIdx];
-    if (param === 'weight') {
-      log.weight = Math.max(0, Math.round((log.weight + delta) * 10) / 10);
-    } else if (param === 'series') {
-      const newSeries = Math.max(1, log.series + delta);
-      while (log.reps.actual.length < newSeries) log.reps.actual.push(null);
-      while (log.reps.actual.length > newSeries) log.reps.actual.pop();
-      log.series = newSeries;
-    } else if (param === 'repsExpected') {
-      log.reps.expected = Math.max(1, log.reps.expected + delta);
-    }
+    if (!_adjustHistoryParam(DB.history, date, logIdx, param, delta)) return;
     await persistDB();
     renderHistorialDetail(date);
   },
 
   setHistoryParam: async (date, logIdx, param, value) => {
-    const entry = DB.history.find(h => h.date === date);
-    if (!entry) return;
-    const log = entry.logs[logIdx];
-    const num = parseFloat(value) || 0;
-    if (param === 'weight') log.weight = Math.max(0, num);
-    else if (param === 'series') {
-      const newSeries = Math.max(1, Math.round(num));
-      while (log.reps.actual.length < newSeries) log.reps.actual.push(null);
-      while (log.reps.actual.length > newSeries) log.reps.actual.pop();
-      log.series = newSeries;
-    } else if (param === 'repsExpected') log.reps.expected = Math.max(1, Math.round(num));
+    if (!_setHistoryParam(DB.history, date, logIdx, param, value)) return;
     await persistDB();
     renderHistorialDetail(date);
   },
 
   adjustHistoryRep: async (date, logIdx, seriesIdx, delta) => {
-    const entry = DB.history.find(h => h.date === date);
-    if (!entry) return;
-    const log = entry.logs[logIdx];
-    const current = log.reps.actual[seriesIdx] !== null ? log.reps.actual[seriesIdx] : log.reps.expected;
-    log.reps.actual[seriesIdx] = Math.max(0, current + delta);
+    if (!_adjustHistoryRep(DB.history, date, logIdx, seriesIdx, delta)) return;
     await persistDB();
     renderHistorialDetail(date);
   },
 
   setHistoryRep: async (date, logIdx, seriesIdx, value) => {
-    const entry = DB.history.find(h => h.date === date);
-    if (!entry) return;
-    const log = entry.logs[logIdx];
-    const num = parseInt(value);
-    log.reps.actual[seriesIdx] = isNaN(num) ? null : Math.max(0, num);
+    if (!_setHistoryRep(DB.history, date, logIdx, seriesIdx, value)) return;
     await persistDB();
   },
 
@@ -782,8 +753,8 @@ function renderHistorial() {
 
   editingHistorialExercise = null;
 
-  const entries = [...DB.history].sort((a, b) => b.date.localeCompare(a.date));
-  const filtered = historialFilter === 'TODOS' ? entries : entries.filter(e => e.type === historialFilter);
+  const entries = _sortHistory(DB.history);
+  const filtered = _filterHistory(entries, historialFilter);
 
   if (filtered.length === 0) {
     content.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>No hay sesiones registradas</p></div>';
