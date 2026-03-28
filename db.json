@@ -18455,8 +18455,8 @@
           "reps": {
             "expected": 10,
             "actual": [
+              10,
               9,
-              null,
               null
             ]
           },
