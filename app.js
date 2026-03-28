@@ -1160,7 +1160,7 @@
 
     const entries = DB.history.filter(h => h.date >= from && h.date <= to).sort((a, b) => a.date.localeCompare(b.date));
 
-    const colors = ['#6c5ce7', '#00cec9', '#fdcb6e', '#e17055', '#00b894', '#a29bfe', '#74b9ff', '#fd79a8'];
+    const colors = ['#569cd6', '#4ec9b0', '#dcdcaa', '#f44747', '#6a9955', '#9cdcfe', '#ce9178', '#c586c0'];
     const datasets = [];
     const weightDatasets = [];
 

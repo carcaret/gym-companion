@@ -4,29 +4,29 @@
    ========================================= */
 
 :root {
-  /* Palette */
-  --bg-deep: #07070d;
-  --bg-primary: #0d0d15;
-  --bg-card: rgba(22, 22, 38, 0.75);
-  --bg-card-solid: #161626;
-  --bg-input: rgba(30, 30, 52, 0.8);
-  --bg-hover: rgba(40, 40, 68, 0.6);
-  --border: rgba(108, 92, 231, 0.15);
-  --border-light: rgba(255, 255, 255, 0.06);
+  /* Palette — VS Code / MacroFactor dark grays */
+  --bg-deep: #1a1a1a;
+  --bg-primary: #1e1e1e;
+  --bg-card: rgba(37, 37, 38, 0.85);
+  --bg-card-solid: #252526;
+  --bg-input: rgba(45, 45, 46, 0.9);
+  --bg-hover: rgba(55, 55, 56, 0.7);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.05);
 
-  --accent: #6c5ce7;
-  --accent-glow: rgba(108, 92, 231, 0.35);
-  --accent-light: #a29bfe;
-  --cyan: #00cec9;
-  --cyan-glow: rgba(0, 206, 201, 0.3);
-  --green: #00b894;
-  --red: #e17055;
-  --orange: #f39c12;
-  --gold: #fdcb6e;
+  --accent: #569cd6;
+  --accent-glow: rgba(86, 156, 214, 0.25);
+  --accent-light: #9cdcfe;
+  --cyan: #4ec9b0;
+  --cyan-glow: rgba(78, 201, 176, 0.25);
+  --green: #6a9955;
+  --red: #f44747;
+  --orange: #ce9178;
+  --gold: #dcdcaa;
 
-  --text-primary: #edf0f7;
-  --text-secondary: rgba(237, 240, 247, 0.55);
-  --text-muted: rgba(237, 240, 247, 0.3);
+  --text-primary: #d4d4d4;
+  --text-secondary: rgba(212, 212, 212, 0.6);
+  --text-muted: rgba(212, 212, 212, 0.35);
 
   /* Typography */
   --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -100,7 +100,7 @@ body {
 .login-title {
   font-size: 32px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent-light), var(--cyan));
+  background: linear-gradient(135deg, var(--accent-light), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -171,7 +171,7 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), #8b7cf7);
+  background: linear-gradient(135deg, var(--accent), #4a8abf);
   color: #fff;
   box-shadow: 0 4px 20px var(--accent-glow);
 }
@@ -185,9 +185,9 @@ body {
 .btn-secondary:active { transform: scale(0.97); }
 
 .btn-danger {
-  background: rgba(225, 112, 85, 0.15);
+  background: rgba(244, 71, 71, 0.12);
   color: var(--red);
-  border: 1px solid rgba(225, 112, 85, 0.3);
+  border: 1px solid rgba(244, 71, 71, 0.25);
 }
 .btn-danger:active { transform: scale(0.97); }
 
@@ -363,7 +363,7 @@ body {
 .meta-pill {
   font-size: 12px;
   color: var(--text-secondary);
-  background: rgba(108, 92, 231, 0.1);
+  background: rgba(86, 156, 214, 0.08);
   padding: 4px 10px;
   border-radius: 12px;
   display: flex;
@@ -484,7 +484,7 @@ body {
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background: rgba(108, 92, 231, 0.1);
+  background: rgba(86, 156, 214, 0.08);
   border: 1px solid var(--accent-glow);
   border-radius: var(--radius-sm);
   margin-bottom: 16px;
@@ -581,9 +581,9 @@ body {
   box-shadow: 0 0 12px var(--accent-glow);
 }
 
-.type-badge.LUNES { background: rgba(108, 92, 231, 0.2); color: var(--accent-light); }
-.type-badge.MIERCOLES { background: rgba(0, 206, 201, 0.15); color: var(--cyan); }
-.type-badge.VIERNES { background: rgba(253, 203, 110, 0.15); color: var(--gold); }
+.type-badge.LUNES { background: rgba(86, 156, 214, 0.15); color: var(--accent-light); }
+.type-badge.MIERCOLES { background: rgba(78, 201, 176, 0.12); color: var(--cyan); }
+.type-badge.VIERNES { background: rgba(220, 220, 170, 0.12); color: var(--gold); }
 
 /* ── Charts ── */
 .graficas-controls {
@@ -682,8 +682,8 @@ body {
   border-radius: var(--radius-xs);
   margin-top: 8px;
 }
-.status-msg.success { color: var(--green); background: rgba(0, 184, 148, 0.1); }
-.status-msg.error { color: var(--red); background: rgba(225, 112, 85, 0.1); }
+.status-msg.success { color: var(--green); background: rgba(106, 153, 85, 0.12); }
+.status-msg.error { color: var(--red); background: rgba(244, 71, 71, 0.1); }
 
 .error-msg {
   color: var(--red);
@@ -700,7 +700,7 @@ body {
   right: 0;
   height: var(--tab-height);
   display: flex;
-  background: rgba(13, 13, 21, 0.92);
+  background: rgba(30, 30, 30, 0.95);
   backdrop-filter: blur(20px);
   border-top: 1px solid var(--border-light);
   z-index: 100;
@@ -866,7 +866,7 @@ body {
   font-size: 11px;
   font-weight: 700;
   color: var(--gold);
-  background: rgba(253, 203, 110, 0.12);
+  background: rgba(220, 220, 170, 0.1);
   padding: 2px 8px;
   border-radius: 10px;
   animation: bounce 0.5s var(--ease);
