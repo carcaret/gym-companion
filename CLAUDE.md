@@ -63,6 +63,16 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - Persistencia siempre vía `saveData()` → localStorage + GitHub sync
 - `db` es la variable global con toda la BD en memoria
 
+## Tests
+
+**Toda funcionalidad nueva DEBE llevar tests exhaustivos asociados.** No se considera terminado un cambio si no tiene tests que cubran:
+
+- Casos normales (happy path)
+- Casos borde (vacíos, nulls, límites, valores negativos)
+- Regresiones (que lo anterior sigue funcionando)
+
+Si la funcionalidad es lógica pura → tests unitarios en `tests/unit/`. Si involucra DOM/interacción → tests E2E en `tests/e2e/`. Idealmente ambos.
+
 ## Filosofía de cambios
 
 **Antes de modificar código, consultar al usuario** si hay más de una forma razonable de resolver el problema. Preferir la solución correcta sobre la rápida.
