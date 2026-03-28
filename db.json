@@ -18373,7 +18373,7 @@
     {
       "date": "2026-03-28",
       "type": "MIERCOLES",
-      "completed": false,
+      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -18482,9 +18482,9 @@
           "reps": {
             "expected": 10,
             "actual": [
-              null,
-              null,
-              null
+              10,
+              10,
+              10
             ]
           },
           "weight": 0
