@@ -18456,8 +18456,8 @@
             "expected": 10,
             "actual": [
               10,
-              9,
-              null
+              10,
+              10
             ]
           },
           "weight": 100
