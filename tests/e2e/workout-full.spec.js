@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { injectTestSession, clearStorage } = require('./helpers.js');
+const { injectTestSession, clearStorage, fillAllWorkoutReps } = require('./helpers.js');
 
 test.describe('Workout flow completo', () => {
   test.beforeEach(async ({ page }) => {
@@ -85,8 +85,16 @@ test.describe('Workout flow completo', () => {
     await expect(repInput).toHaveValue('12');
   });
 
-  test('finalizar entreno rellena reps nulls y marca completado', async ({ page }) => {
+  test('finalizar entreno con reps completas marca completado', async ({ page }) => {
     await selectRoutineAndStart(page);
+
+    // Expand all cards and fill all reps (validation requires all reps filled)
+    const cards = page.locator('.card-header');
+    const cardCount = await cards.count();
+    for (let i = 0; i < cardCount; i++) {
+      await cards.nth(i).click();
+    }
+    await fillAllWorkoutReps(page);
 
     // Click finish
     await page.locator('#finish-workout-btn').click();
@@ -97,6 +105,15 @@ test.describe('Workout flow completo', () => {
 
   test('finalizar entreno y verificar en historial', async ({ page }) => {
     await selectRoutineAndStart(page);
+
+    // Fill all reps before finishing (validation requires it)
+    const cards = page.locator('.card-header');
+    const cardCount = await cards.count();
+    for (let i = 0; i < cardCount; i++) {
+      await cards.nth(i).click();
+    }
+    await fillAllWorkoutReps(page);
+
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
 

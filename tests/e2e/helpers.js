@@ -31,4 +31,17 @@ async function clearStorage(page) {
   await page.evaluate(() => localStorage.clear());
 }
 
-module.exports = { getTestDB, injectTestDB, injectTestSession, clearStorage };
+async function fillAllWorkoutReps(page) {
+  const repInputs = page.locator('input[id^="w-rep-"]');
+  const count = await repInputs.count();
+  for (let i = 0; i < count; i++) {
+    const input = repInputs.nth(i);
+    const val = await input.inputValue();
+    if (!val || val === '') {
+      await input.fill('10');
+      await input.dispatchEvent('change');
+    }
+  }
+}
+
+module.exports = { getTestDB, injectTestDB, injectTestSession, clearStorage, fillAllWorkoutReps };

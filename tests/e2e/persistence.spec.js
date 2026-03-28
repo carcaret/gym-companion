@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { injectTestDB, injectTestSession, clearStorage } = require('./helpers.js');
+const { injectTestDB, injectTestSession, clearStorage, fillAllWorkoutReps } = require('./helpers.js');
 
 test.describe('Persistencia y datos', () => {
   test.afterEach(async ({ page }) => {
@@ -81,6 +81,15 @@ test.describe('Persistencia y datos', () => {
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();
+
+    // Fill all reps before finishing (validation requires it)
+    const cards = page.locator('.card-header');
+    const cardCount = await cards.count();
+    for (let i = 0; i < cardCount; i++) {
+      await cards.nth(i).click();
+    }
+    await fillAllWorkoutReps(page);
+
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
 

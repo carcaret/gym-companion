@@ -7,7 +7,7 @@ import { sha256 } from './src/crypto.js';
 import { todayStr, formatDate, getTodayDayType } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords } from './src/data.js';
-import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords } from './src/workout.js';
+import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords, validateLog, validateEntry } from './src/workout.js';
 import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
 import { encryptPat, decryptPat, validateGitHubConfig, buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets } from './src/charts.js';
@@ -255,6 +255,27 @@ function updateWorkoutCardInPlace(logIdx, entry) {
     return vr || er;
   });
   document.getElementById('hoy-badge').hidden = !hasRecord;
+
+  applyValidationErrors(logIdx, log);
+}
+
+function applyValidationErrors(logIdx, log, prefix = 'w') {
+  const errors = validateLog(log);
+  const errorFields = new Set(errors.map(e => e.field === 'rep' ? `rep-${e.index}` : e.field));
+
+  const weightInput = document.getElementById(`${prefix}-weight-${logIdx}`);
+  if (weightInput) weightInput.classList.toggle('input-error', errorFields.has('weight'));
+
+  const seriesInput = document.getElementById(`${prefix}-series-${logIdx}`);
+  if (seriesInput) seriesInput.classList.toggle('input-error', errorFields.has('series'));
+
+  const repsInput = document.getElementById(`${prefix}-reps-${logIdx}`);
+  if (repsInput) repsInput.classList.toggle('input-error', errorFields.has('repsExpected'));
+
+  for (let s = 0; s < log.series; s++) {
+    const repInput = document.getElementById(`${prefix}-rep-${logIdx}-${s}`);
+    if (repInput) repInput.classList.toggle('input-error', errorFields.has(`rep-${s}`));
+  }
 }
 
 // ── Data Helpers (wrappers que pasan DB global) ──
@@ -503,6 +524,29 @@ function renderActiveWorkout(container, entry) {
 async function finishWorkout() {
   const entry = getTodayEntry();
   if (!entry) return;
+
+  const { valid, errorsByLog } = validateEntry(entry);
+  if (!valid) {
+    errorsByLog.forEach((errors, logIdx) => applyValidationErrors(logIdx, entry.logs[logIdx]));
+
+    const firstErrorIdx = errorsByLog.keys().next().value;
+    const body = document.getElementById(`body-${firstErrorIdx}`);
+    if (body && !body.classList.contains('open')) {
+      body.classList.add('open');
+      const chevron = document.getElementById(`chevron-${firstErrorIdx}`);
+      if (chevron) chevron.classList.add('open');
+    }
+
+    const firstError = errorsByLog.get(firstErrorIdx)[0];
+    const inputId = firstError.field === 'rep'
+      ? `w-rep-${firstErrorIdx}-${firstError.index}`
+      : `w-${firstError.field === 'repsExpected' ? 'reps' : firstError.field}-${firstErrorIdx}`;
+    document.getElementById(inputId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    toast('⚠️ Completa todos los campos antes de finalizar');
+    return;
+  }
+
   finishWorkoutEntry(entry);
   await persistDB();
   renderHoy();
@@ -691,23 +735,32 @@ window.GymCompanion = {
     if (!_adjustHistoryParam(DB.history, date, logIdx, param, delta)) return;
     await persistDB();
     renderHistorialDetail(date);
+    const entry = DB.history.find(h => h.date === date);
+    if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
   },
 
   setHistoryParam: async (date, logIdx, param, value) => {
     if (!_setHistoryParam(DB.history, date, logIdx, param, value)) return;
     await persistDB();
     renderHistorialDetail(date);
+    const entry = DB.history.find(h => h.date === date);
+    if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
   },
 
   adjustHistoryRep: async (date, logIdx, seriesIdx, delta) => {
     if (!_adjustHistoryRep(DB.history, date, logIdx, seriesIdx, delta)) return;
     await persistDB();
     renderHistorialDetail(date);
+    const entry = DB.history.find(h => h.date === date);
+    if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
   },
 
   setHistoryRep: async (date, logIdx, seriesIdx, value) => {
     if (!_setHistoryRep(DB.history, date, logIdx, seriesIdx, value)) return;
     await persistDB();
+    renderHistorialDetail(date);
+    const entry = DB.history.find(h => h.date === date);
+    if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
   },
 
   removeExerciseFromRoutine: (dayType, exerciseId, logIdx) => {
@@ -810,7 +863,7 @@ function renderHistorialDetail(date) {
           <label>Peso (kg)</label>
           <div class="flex-center gap-sm">
             <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'weight',-2.5)">−</button>
-            <input class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'weight',this.value)">
+            <input id="h-weight-${logIdx}" class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'weight',this.value)">
             <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'weight',2.5)">+</button>
           </div>
         </div>
@@ -818,7 +871,7 @@ function renderHistorialDetail(date) {
           <label>Series</label>
           <div class="flex-center gap-sm">
             <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'series',-1)">−</button>
-            <input class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'series',this.value)">
+            <input id="h-series-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'series',this.value)">
             <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'series',1)">+</button>
           </div>
         </div>
@@ -826,7 +879,7 @@ function renderHistorialDetail(date) {
           <label>Reps obj.</label>
           <div class="flex-center gap-sm">
             <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'repsExpected',-1)">−</button>
-            <input class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'repsExpected',this.value)">
+            <input id="h-reps-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.setHistoryParam('${date}',${logIdx},'repsExpected',this.value)">
             <button class="btn-icon" onclick="GymCompanion.adjustHistoryParam('${date}',${logIdx},'repsExpected',1)">+</button>
           </div>
         </div>
@@ -836,7 +889,7 @@ function renderHistorialDetail(date) {
         html += `<div class="series-row">
           <span class="series-label">S${s + 1}</span>
           <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${date}',${logIdx},${s},-1)">−</button>
-          <input class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setHistoryRep('${date}',${logIdx},${s},this.value)">
+          <input id="h-rep-${logIdx}-${s}" class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.setHistoryRep('${date}',${logIdx},${s},this.value)">
           <button class="btn-icon" onclick="GymCompanion.adjustHistoryRep('${date}',${logIdx},${s},1)">+</button>
         </div>`;
       }
@@ -869,6 +922,13 @@ function renderHistorialDetail(date) {
     btn.onclick = () => {
       const logIdx = parseInt(btn.dataset.logidx);
       if (editingHistorialExercise && editingHistorialExercise.date === date && editingHistorialExercise.logIdx === logIdx) {
+        const log = entry.logs[logIdx];
+        const errors = validateLog(log);
+        if (errors.length > 0) {
+          applyValidationErrors(logIdx, log, 'h');
+          toast('⚠️ Corrige los campos marcados antes de guardar');
+          return;
+        }
         editingHistorialExercise = null;
       } else {
         editingHistorialExercise = { date, logIdx };

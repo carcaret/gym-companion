@@ -6,7 +6,9 @@ import {
   setParam,
   adjustRep,
   setRep,
-  detectRecords
+  detectRecords,
+  validateLog,
+  validateEntry
 } from '../../src/workout.js';
 
 // ── Helpers ──
@@ -464,5 +466,146 @@ describe('detectRecords', () => {
     const log = makeLog({ id: exerciseId, weight: 50, series: 3, actual: [10, 10, 10] });
     const result = detectRecords(log, [otherExerciseEntry]);
     expect(result.isVolRecord).toBe(true); // first record for press_banca
+  });
+});
+
+// ════════════════════════════════════════════════
+// VALIDACIÓN — validateLog
+// ════════════════════════════════════════════════
+
+describe('validateLog', () => {
+  test('log válido completo → sin errores', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [10, 8, 9] });
+    expect(validateLog(log)).toEqual([]);
+  });
+
+  test('weight negativo → error en field weight', () => {
+    const log = makeLog({ weight: -5, series: 3, expected: 10, actual: [10, 8, 9] });
+    const errors = validateLog(log);
+    expect(errors).toEqual([{ field: 'weight', message: 'Peso debe ser >= 0' }]);
+  });
+
+  test('weight NaN → error en field weight', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [10, 8, 9] });
+    log.weight = NaN;
+    const errors = validateLog(log);
+    expect(errors.some(e => e.field === 'weight')).toBe(true);
+  });
+
+  test('weight 0 → sin error (bodyweight)', () => {
+    const log = makeLog({ weight: 0, series: 3, expected: 10, actual: [10, 8, 9] });
+    const errors = validateLog(log);
+    expect(errors.filter(e => e.field === 'weight')).toEqual([]);
+  });
+
+  test('series 0 → error en field series', () => {
+    const log = makeLog({ weight: 50, series: 1, expected: 10, actual: [10] });
+    log.series = 0;
+    const errors = validateLog(log);
+    expect(errors.some(e => e.field === 'series')).toBe(true);
+  });
+
+  test('series decimal → error en field series', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [10, 8, 9] });
+    log.series = 2.5;
+    const errors = validateLog(log);
+    expect(errors.some(e => e.field === 'series')).toBe(true);
+  });
+
+  test('repsExpected 0 → error en field repsExpected', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [10, 8, 9] });
+    log.reps.expected = 0;
+    const errors = validateLog(log);
+    expect(errors.some(e => e.field === 'repsExpected')).toBe(true);
+  });
+
+  test('rep null en serie 0 → error con field rep, index 0', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [null, 8, 9] });
+    const errors = validateLog(log);
+    expect(errors).toEqual([{ field: 'rep', index: 0, message: 'Serie 1 no completada' }]);
+  });
+
+  test('rep negativo → error con field rep', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [10, -1, 9] });
+    const errors = validateLog(log);
+    expect(errors.some(e => e.field === 'rep' && e.index === 1)).toBe(true);
+  });
+
+  test('todas las reps completadas → sin errores en reps', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [10, 8, 9] });
+    const errors = validateLog(log);
+    expect(errors.filter(e => e.field === 'rep')).toEqual([]);
+  });
+
+  test('mezcla de reps válidas y null → errores solo en las null', () => {
+    const log = makeLog({ weight: 50, series: 4, expected: 10, actual: [10, null, 8, null] });
+    const errors = validateLog(log);
+    const repErrors = errors.filter(e => e.field === 'rep');
+    expect(repErrors).toHaveLength(2);
+    expect(repErrors[0].index).toBe(1);
+    expect(repErrors[1].index).toBe(3);
+  });
+
+  test('rep undefined → error no completada', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [10, undefined, 9] });
+    const errors = validateLog(log);
+    expect(errors.some(e => e.field === 'rep' && e.index === 1)).toBe(true);
+  });
+
+  test('rep 0 → válido (0 reps completadas)', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [0, 0, 0] });
+    expect(validateLog(log)).toEqual([]);
+  });
+});
+
+// ════════════════════════════════════════════════
+// VALIDACIÓN — validateEntry
+// ════════════════════════════════════════════════
+
+describe('validateEntry', () => {
+  test('entry con todos los logs válidos → valid: true', () => {
+    const entry = makeEntry({
+      logs: [
+        makeLog({ weight: 50, series: 3, expected: 10, actual: [10, 8, 9] }),
+        makeLog({ id: 'sentadilla', weight: 80, series: 3, expected: 8, actual: [8, 7, 6] })
+      ]
+    });
+    const result = validateEntry(entry);
+    expect(result.valid).toBe(true);
+    expect(result.errorsByLog.size).toBe(0);
+  });
+
+  test('entry con un log inválido → valid: false, errorsByLog tiene ese logIdx', () => {
+    const entry = makeEntry({
+      logs: [
+        makeLog({ weight: 50, series: 3, expected: 10, actual: [10, 8, 9] }),
+        makeLog({ id: 'sentadilla', weight: 80, series: 3, expected: 8, actual: [null, 7, 6] })
+      ]
+    });
+    const result = validateEntry(entry);
+    expect(result.valid).toBe(false);
+    expect(result.errorsByLog.has(1)).toBe(true);
+    expect(result.errorsByLog.has(0)).toBe(false);
+  });
+
+  test('entry con múltiples logs inválidos → todos aparecen en errorsByLog', () => {
+    const entry = makeEntry({
+      logs: [
+        makeLog({ weight: -5, series: 3, expected: 10, actual: [10, 8, 9] }),
+        makeLog({ id: 'sentadilla', weight: 80, series: 3, expected: 8, actual: [8, 7, 6] }),
+        makeLog({ id: 'curl', weight: 20, series: 3, expected: 10, actual: [null, null, null] })
+      ]
+    });
+    const result = validateEntry(entry);
+    expect(result.valid).toBe(false);
+    expect(result.errorsByLog.has(0)).toBe(true);
+    expect(result.errorsByLog.has(1)).toBe(false);
+    expect(result.errorsByLog.has(2)).toBe(true);
+  });
+
+  test('entry sin logs → valid: true', () => {
+    const entry = makeEntry({ logs: [] });
+    const result = validateEntry(entry);
+    expect(result.valid).toBe(true);
   });
 });

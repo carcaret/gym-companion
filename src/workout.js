@@ -1,6 +1,47 @@
 import { computeVolume, computeE1RM } from './metrics.js';
 
 /**
+ * Valida un log de ejercicio. Devuelve array de errores.
+ * Cada error: { field: 'weight'|'series'|'repsExpected'|'rep', index?: number, message: string }
+ */
+export function validateLog(log) {
+  const errors = [];
+
+  if (typeof log.weight !== 'number' || isNaN(log.weight) || log.weight < 0) {
+    errors.push({ field: 'weight', message: 'Peso debe ser >= 0' });
+  }
+  if (typeof log.series !== 'number' || !Number.isInteger(log.series) || log.series < 1) {
+    errors.push({ field: 'series', message: 'Series debe ser >= 1' });
+  }
+  if (typeof log.reps.expected !== 'number' || !Number.isInteger(log.reps.expected) || log.reps.expected < 1) {
+    errors.push({ field: 'repsExpected', message: 'Reps objetivo debe ser >= 1' });
+  }
+  for (let i = 0; i < log.series; i++) {
+    const val = log.reps.actual[i];
+    if (val === null || val === undefined || (typeof val === 'number' && isNaN(val))) {
+      errors.push({ field: 'rep', index: i, message: `Serie ${i + 1} no completada` });
+    } else if (typeof val !== 'number' || !Number.isInteger(val) || val < 0) {
+      errors.push({ field: 'rep', index: i, message: `Serie ${i + 1} inválida` });
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Valida todos los logs de un entry.
+ * Devuelve { valid: boolean, errorsByLog: Map<number, Error[]> }
+ */
+export function validateEntry(entry) {
+  const errorsByLog = new Map();
+  entry.logs.forEach((log, idx) => {
+    const errors = validateLog(log);
+    if (errors.length > 0) errorsByLog.set(idx, errors);
+  });
+  return { valid: errorsByLog.size === 0, errorsByLog };
+}
+
+/**
  * Build a new workout entry from routine exercise IDs.
  * @param {string} date - YYYY-MM-DD
  * @param {string} dayType - LUNES|MIERCOLES|VIERNES
@@ -37,6 +78,8 @@ export function buildWorkoutEntry(date, dayType, routineIds, getLastValues, getE
  * Mutates entry in place and returns it.
  */
 export function finishWorkoutEntry(entry) {
+  // Safety net: rellena nulls restantes. En flujo normal, la validación
+  // impide llegar aquí con nulls, pero sync/importación podría.
   entry.logs.forEach(log => {
     log.reps.actual = log.reps.actual.map(v => v !== null ? v : log.reps.expected);
   });
