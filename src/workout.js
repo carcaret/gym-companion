@@ -1,0 +1,129 @@
+import { computeVolume, computeE1RM } from './metrics.js';
+
+/**
+ * Build a new workout entry from routine exercise IDs.
+ * @param {string} date - YYYY-MM-DD
+ * @param {string} dayType - LUNES|MIERCOLES|VIERNES
+ * @param {string[]} routineIds - exercise IDs for this day
+ * @param {function} getLastValues - (exerciseId, dayType) => { series, repsExpected, weight, repsActual }
+ * @param {function} getExerciseName - (exerciseId) => string
+ */
+export function buildWorkoutEntry(date, dayType, routineIds, getLastValues, getExerciseName) {
+  const logs = routineIds.map(id => {
+    const last = getLastValues(id, dayType);
+    const prevActual = last.repsActual || [];
+    const actual = Array.from({ length: last.series }, (_, i) =>
+      i < prevActual.length && prevActual[i] !== null ? prevActual[i] : null
+    );
+    return {
+      exercise_id: id,
+      name: getExerciseName(id),
+      series: last.series,
+      reps: { expected: last.repsExpected, actual },
+      weight: last.weight
+    };
+  });
+
+  return {
+    date,
+    type: dayType,
+    completed: false,
+    logs
+  };
+}
+
+/**
+ * Mark a workout entry as completed, filling null reps with expected.
+ * Mutates entry in place and returns it.
+ */
+export function finishWorkoutEntry(entry) {
+  entry.logs.forEach(log => {
+    log.reps.actual = log.reps.actual.map(v => v !== null ? v : log.reps.expected);
+  });
+  entry.completed = true;
+  return entry;
+}
+
+/**
+ * Adjust a parameter (weight, series, repsExpected) on a log by delta.
+ * Mutates log in place.
+ */
+export function adjustParam(log, param, delta) {
+  if (param === 'weight') {
+    log.weight = Math.max(0, Math.round((log.weight + delta) * 10) / 10);
+  } else if (param === 'series') {
+    const newSeries = Math.max(1, log.series + delta);
+    if (newSeries > log.series) {
+      log.reps.actual.push(null);
+    } else if (newSeries < log.series) {
+      log.reps.actual.pop();
+    }
+    log.series = newSeries;
+  } else if (param === 'repsExpected') {
+    log.reps.expected = Math.max(1, log.reps.expected + delta);
+  }
+}
+
+/**
+ * Set a parameter directly from user input.
+ * Mutates log in place.
+ */
+export function setParam(log, param, value) {
+  const num = parseFloat(value) || 0;
+  if (param === 'weight') {
+    log.weight = Math.max(0, num);
+  } else if (param === 'series') {
+    const newSeries = Math.max(1, Math.round(num));
+    while (log.reps.actual.length < newSeries) log.reps.actual.push(null);
+    while (log.reps.actual.length > newSeries) log.reps.actual.pop();
+    log.series = newSeries;
+  } else if (param === 'repsExpected') {
+    log.reps.expected = Math.max(1, Math.round(num));
+  }
+}
+
+/**
+ * Adjust a single rep value for a specific series.
+ * Mutates log in place.
+ */
+export function adjustRep(log, seriesIdx, delta) {
+  const current = log.reps.actual[seriesIdx] !== null ? log.reps.actual[seriesIdx] : log.reps.expected;
+  log.reps.actual[seriesIdx] = Math.max(0, current + delta);
+}
+
+/**
+ * Set a single rep value directly.
+ * Mutates log in place.
+ */
+export function setRep(log, seriesIdx, value) {
+  const num = parseInt(value);
+  log.reps.actual[seriesIdx] = isNaN(num) ? null : Math.max(0, num);
+}
+
+/**
+ * Detect if current log has volume or e1RM records compared to history.
+ * @param {object} log - current exercise log
+ * @param {object[]} prevHistory - all history entries EXCLUDING today
+ * @returns {{ isVolRecord: boolean, isE1RMRecord: boolean }}
+ */
+export function detectRecords(log, prevHistory) {
+  const currentVol = computeVolume(log);
+  const currentE1RM = computeE1RM(log);
+  const hasActualReps = log.reps.actual.some(r => r !== null);
+
+  let prevMaxVol = 0;
+  let prevMaxE1RM = 0;
+  for (const entry of prevHistory) {
+    for (const l of entry.logs) {
+      if (l.exercise_id === log.exercise_id) {
+        prevMaxVol = Math.max(prevMaxVol, computeVolume(l));
+        prevMaxE1RM = Math.max(prevMaxE1RM, computeE1RM(l));
+      }
+    }
+  }
+
+  return {
+    isVolRecord: currentVol > 0 && currentVol > prevMaxVol && hasActualReps,
+    isE1RMRecord: currentE1RM > 0 && currentE1RM > prevMaxE1RM && hasActualReps
+  };
+}

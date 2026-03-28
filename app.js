@@ -8,6 +8,7 @@ import { todayStr, formatDate, getTodayDayType } from './src/dates.js';
 import { computeAvgReps, computeVolume, computeE1RM } from './src/metrics.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords } from './src/data.js';
+import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords } from './src/workout.js';
 
 let DB = null;
 let githubSha = null;
@@ -384,28 +385,8 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
 }
 
 async function startWorkout(dayType) {
-  const exerciseIds = DB.routines[dayType] || [];
-  const logs = exerciseIds.map(id => {
-    const last = getLastValuesForExercise(id, dayType);
-    const prevActual = last.repsActual || [];
-    const actual = Array.from({ length: last.series }, (_, i) =>
-      i < prevActual.length && prevActual[i] !== null ? prevActual[i] : null
-    );
-    return {
-      exercise_id: id,
-      name: getExerciseName(id),
-      series: last.series,
-      reps: { expected: last.repsExpected, actual },
-      weight: last.weight
-    };
-  });
-
-  const entry = {
-    date: todayStr(),
-    type: dayType,
-    completed: false,
-    logs
-  };
+  const routineIds = DB.routines[dayType] || [];
+  const entry = buildWorkoutEntry(todayStr(), dayType, routineIds, getLastValuesForExercise, getExerciseName);
 
   // Remove existing today entry if any
   DB.history = DB.history.filter(h => h.date !== todayStr());
@@ -427,22 +408,8 @@ function renderActiveWorkout(container, entry) {
     const name = getExerciseName(log.exercise_id);
 
     // Check for records
-    const hist = getHistoricalRecords(log.exercise_id);
-    // Exclude current entry from historical comparison
-    const currentVol = computeVolume(log);
-    const currentE1RM = computeE1RM(log);
-    // Compare with previous historical max (excluding today)
     const prevEntries = DB.history.filter(h => h.date !== entry.date);
-    let prevMaxVol = 0, prevMaxE1RM = 0;
-    prevEntries.forEach(e => {
-      e.logs.filter(l => l.exercise_id === log.exercise_id).forEach(l => {
-        prevMaxVol = Math.max(prevMaxVol, computeVolume(l));
-        prevMaxE1RM = Math.max(prevMaxE1RM, computeE1RM(l));
-      });
-    });
-
-    const isVolRecord = currentVol > 0 && currentVol > prevMaxVol && log.reps.actual.some(r => r !== null);
-    const isE1RMRecord = currentE1RM > 0 && currentE1RM > prevMaxE1RM && log.reps.actual.some(r => r !== null);
+    const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
     if (isVolRecord || isE1RMRecord) hasRecord = true;
 
     html += `<div class="card" id="exercise-card-${logIdx}">
@@ -546,11 +513,7 @@ function renderActiveWorkout(container, entry) {
 async function finishWorkout() {
   const entry = getTodayEntry();
   if (!entry) return;
-  // Fill null reps with expected
-  entry.logs.forEach(log => {
-    log.reps.actual = log.reps.actual.map((v, i) => v !== null ? v : log.reps.expected);
-  });
-  entry.completed = true;
+  finishWorkoutEntry(entry);
   await persistDB();
   renderHoy();
   toast('🎉 ¡Entreno completado!');
@@ -682,20 +645,7 @@ window.GymCompanion = {
   adjustParam: async (logIdx, param, delta) => {
     const entry = getTodayEntry();
     if (!entry) return;
-    const log = entry.logs[logIdx];
-    if (param === 'weight') {
-      log.weight = Math.max(0, Math.round((log.weight + delta) * 10) / 10);
-    } else if (param === 'series') {
-      const newSeries = Math.max(1, log.series + delta);
-      if (newSeries > log.series) {
-        log.reps.actual.push(null);
-      } else if (newSeries < log.series) {
-        log.reps.actual.pop();
-      }
-      log.series = newSeries;
-    } else if (param === 'repsExpected') {
-      log.reps.expected = Math.max(1, log.reps.expected + delta);
-    }
+    _adjustParam(entry.logs[logIdx], param, delta);
     await persistDB();
     updateWorkoutCardInPlace(logIdx, entry);
   },
@@ -703,16 +653,7 @@ window.GymCompanion = {
   setParam: async (logIdx, param, value) => {
     const entry = getTodayEntry();
     if (!entry) return;
-    const log = entry.logs[logIdx];
-    const num = parseFloat(value) || 0;
-    if (param === 'weight') log.weight = Math.max(0, num);
-    else if (param === 'series') {
-      const newSeries = Math.max(1, Math.round(num));
-      while (log.reps.actual.length < newSeries) log.reps.actual.push(null);
-      while (log.reps.actual.length > newSeries) log.reps.actual.pop();
-      log.series = newSeries;
-    }
-    else if (param === 'repsExpected') log.reps.expected = Math.max(1, Math.round(num));
+    _setParam(entry.logs[logIdx], param, value);
     await persistDB();
     updateWorkoutCardInPlace(logIdx, entry);
   },
@@ -720,21 +661,17 @@ window.GymCompanion = {
   adjustRep: async (logIdx, seriesIdx, delta) => {
     const entry = getTodayEntry();
     if (!entry) return;
-    const log = entry.logs[logIdx];
-    const current = log.reps.actual[seriesIdx] !== null ? log.reps.actual[seriesIdx] : log.reps.expected;
-    log.reps.actual[seriesIdx] = Math.max(0, current + delta);
+    _adjustRep(entry.logs[logIdx], seriesIdx, delta);
     await persistDB();
     const input = document.getElementById(`w-rep-${logIdx}-${seriesIdx}`);
-    if (input) input.value = log.reps.actual[seriesIdx];
+    if (input) input.value = entry.logs[logIdx].reps.actual[seriesIdx];
     updateWorkoutCardInPlace(logIdx, entry);
   },
 
   setRep: async (logIdx, seriesIdx, value) => {
     const entry = getTodayEntry();
     if (!entry) return;
-    const log = entry.logs[logIdx];
-    const num = parseInt(value);
-    log.reps.actual[seriesIdx] = isNaN(num) ? null : Math.max(0, num);
+    _setRep(entry.logs[logIdx], seriesIdx, value);
     await persistDB();
     updateWorkoutCardInPlace(logIdx, entry);
   },
