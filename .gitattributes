@@ -1,0 +1,15 @@
+# Normalizar saltos de línea: LF en el repo, nativo en working tree
+* text=auto eol=lf
+
+# Forzar LF en ficheros de texto
+*.js    text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+
+# Binarios — no tocar
+*.png   binary
+*.jpg   binary
+*.ico   binary
+*.woff2 binary
