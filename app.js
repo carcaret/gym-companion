@@ -1404,34 +1404,27 @@
       document.getElementById('set-new-pass').value = '';
     };
 
-    document.getElementById('export-btn').onclick = () => {
-      const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gym_companion_backup_${todayStr()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast('📦 JSON exportado');
-    };
-
-    document.getElementById('import-file').onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+    document.getElementById('sync-github-btn').onclick = async () => {
+      const statusEl = document.getElementById('sync-status');
+      statusEl.hidden = false;
+      statusEl.textContent = 'Descargando desde GitHub...';
+      statusEl.className = 'status-msg';
       try {
-        const text = await file.text();
-        const data = JSON.parse(text);
-        if (!data.exercises || !data.history || !data.auth) {
-          toast('⚠️ Formato de JSON inválido');
+        const data = await loadDBFromGitHub();
+        if (!data || !data.exercises || !data.history || !data.auth) {
+          statusEl.textContent = '❌ No se pudo descargar o formato inválido';
+          statusEl.className = 'status-msg error';
           return;
         }
         DB = data;
         githubSha = null;
         await persistDB();
-        toast('✅ JSON importado correctamente');
         renderHoy();
-      } catch {
-        toast('❌ Error al importar');
+        statusEl.textContent = '✅ Datos sincronizados desde GitHub';
+        statusEl.className = 'status-msg success';
+      } catch (err) {
+        statusEl.textContent = '❌ Error: ' + err.message;
+        statusEl.className = 'status-msg error';
       }
     };
 
