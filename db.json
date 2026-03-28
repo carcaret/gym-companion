@@ -18414,8 +18414,8 @@
             "actual": [
               10,
               10,
-              11,
-              11
+              10,
+              10
             ]
           },
           "weight": 59
@@ -18441,7 +18441,7 @@
           "reps": {
             "expected": 12,
             "actual": [
-              null,
+              13,
               null,
               null
             ]
