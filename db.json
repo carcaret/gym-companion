@@ -18327,18 +18327,18 @@
           "weight": 68
         },
         {
-          "exercise_id": "reverse_delt_fly",
-          "name": "Reverse Delt Fly",
+          "exercise_id": "reverse_delt_con_mancuernas",
+          "name": "Reverse Delt con Mancuernas",
           "series": 3,
           "reps": {
-            "expected": 10,
+            "expected": 12,
             "actual": [
-              10,
-              10,
-              10
+              12,
+              12,
+              12
             ]
           },
-          "weight": 10.35
+          "weight": 12
         },
         {
           "exercise_id": "extensiones_de_espalda",
