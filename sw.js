@@ -12,6 +12,7 @@ const ASSETS = [
   './src/data.js',
   './src/workout.js',
   './src/history.js',
+  './src/github.js',
   './db.json',
   './manifest.json'
 ];

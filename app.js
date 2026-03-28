@@ -3,13 +3,14 @@
  ========================================= */
 
 import { SALT, DAY_MAP, DAY_LABELS, SESSION_KEY, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
-import { sha256, xorEncrypt, xorDecrypt } from './src/crypto.js';
+import { sha256 } from './src/crypto.js';
 import { todayStr, formatDate, getTodayDayType } from './src/dates.js';
 import { computeAvgReps, computeVolume, computeE1RM } from './src/metrics.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords } from './src/data.js';
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords } from './src/workout.js';
 import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
+import { encryptPat, decryptPat, validateGitHubConfig, buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 
 let DB = null;
 let githubSha = null;
@@ -56,8 +57,7 @@ function getGithubConfig() {
 
 function getDecryptedPat() {
   const enc = localStorage.getItem(PAT_KEY);
-  if (!enc || !currentPassword) return null;
-  try { return xorDecrypt(enc, currentPassword); } catch { return null; }
+  return decryptPat(enc, currentPassword);
 }
 
 async function loadDBFromGitHub(patOverride) {
@@ -70,9 +70,10 @@ async function loadDBFromGitHub(patOverride) {
     });
     if (!res.ok) return null;
     const data = await res.json();
-    githubSha = data.sha;
-    const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, '')), c => c.charCodeAt(0));
-    return JSON.parse(new TextDecoder().decode(bytes));
+    const parsed = parseGitHubResponse(data);
+    if (!parsed) return null;
+    githubSha = parsed.sha;
+    return parsed.db;
   } catch { return null; }
 }
 
@@ -81,13 +82,10 @@ async function saveDBToGitHub() {
   const pat = getDecryptedPat();
   if (!cfg || !pat || !DB) return false;
   try {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(DB, null, 2))));
-    const body = {
-      message: `Gym Companion update ${todayStr()}`,
-      content,
-      branch: cfg.branch
-    };
-    if (githubSha) body.sha = githubSha;
+    const body = buildGitHubPayload(DB, githubSha, {
+      branch: cfg.branch,
+      message: `Gym Companion update ${todayStr()}`
+    });
     const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, {
       method: 'PUT',
       headers: { 'Authorization': `Bearer ${pat}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
@@ -1112,7 +1110,7 @@ function setupSettings() {
     if (!await confirmPasswordIfNeeded()) return;
 
     localStorage.setItem(GITHUB_KEY, JSON.stringify({ repo, branch, path }));
-    localStorage.setItem(PAT_KEY, xorEncrypt(pat, currentPassword));
+    localStorage.setItem(PAT_KEY, encryptPat(pat, currentPassword));
     toast('✅ Configuración guardada — sincronizando...');
     persistDB();
   };
@@ -1161,7 +1159,7 @@ function setupSettings() {
 
     // Re-encrypt PAT with new password
     const pat = document.getElementById('set-pat').value.trim();
-    if (pat) localStorage.setItem(PAT_KEY, xorEncrypt(pat, currentPassword));
+    if (pat) localStorage.setItem(PAT_KEY, encryptPat(pat, currentPassword));
 
     // Update session
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
