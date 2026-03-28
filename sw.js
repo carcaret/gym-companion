@@ -11,6 +11,7 @@ const ASSETS = [
   './src/formatting.js',
   './src/data.js',
   './src/workout.js',
+  './src/log-mutations.js',
   './src/history.js',
   './src/github.js',
   './src/charts.js',
