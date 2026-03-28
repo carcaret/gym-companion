@@ -11,6 +11,7 @@ import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, g
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords } from './src/workout.js';
 import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
 import { encryptPat, decryptPat, validateGitHubConfig, buildGitHubPayload, parseGitHubResponse } from './src/github.js';
+import { getExercisesInRange, buildChartDatasets } from './src/charts.js';
 
 let DB = null;
 let githubSha = null;
@@ -900,14 +901,10 @@ function initCharts() {
 function updateChartExercises() {
   const from = document.getElementById('chart-from').value;
   const to = document.getElementById('chart-to').value;
-  const entries = DB.history.filter(h => h.date >= from && h.date <= to);
-  const exerciseSet = new Set();
-
-  entries.forEach(e => e.logs.forEach(l => exerciseSet.add(l.exercise_id)));
 
   const select = document.getElementById('chart-exercise-select');
   const currentVal = select.value;
-  const exerciseIds = [...exerciseSet].sort((a, b) => getExerciseName(a).localeCompare(getExerciseName(b), 'es'));
+  const exerciseIds = getExercisesInRange(DB.history, from, to, getExerciseName);
 
   let html = '<option value="">-- Selecciona un ejercicio --</option>';
   html += exerciseIds.map(id => `<option value="${id}">${getExerciseName(id)}</option>`).join('');
@@ -931,69 +928,7 @@ function renderChart() {
     return;
   }
 
-  const entries = DB.history.filter(h => h.date >= from && h.date <= to).sort((a, b) => a.date.localeCompare(b.date));
-
-  const colors = ['#569cd6', '#4ec9b0', '#dcdcaa', '#f44747', '#6a9955', '#9cdcfe', '#ce9178', '#c586c0'];
-  const datasets = [];
-  const weightDatasets = [];
-
-  selectedExercises.forEach((exerciseId, idx) => {
-    const color = colors[idx % colors.length];
-    const volData = [];
-    const e1rmData = [];
-    const weightData = [];
-
-    entries.forEach(entry => {
-      const log = entry.logs.find(l => l.exercise_id === exerciseId);
-      if (log) {
-        const vol = computeVolume(log);
-        const e1rm = computeE1RM(log);
-        volData.push({ x: entry.date, y: Math.round(vol * 10) / 10 });
-        if (e1rm > 0) e1rmData.push({ x: entry.date, y: Math.round(e1rm * 10) / 10 });
-        if (log.weight > 0) weightData.push({ x: entry.date, y: log.weight });
-      }
-    });
-
-    const name = getExerciseName(exerciseId);
-
-    datasets.push({
-      label: `${name} — Volumen`,
-      data: volData,
-      borderColor: color,
-      backgroundColor: color + '33',
-      tension: 0.3,
-      fill: chartType === 'line',
-      yAxisID: 'y',
-      type: chartType
-    });
-
-    if (e1rmData.length > 0) {
-      datasets.push({
-        label: `${name} — e1RM`,
-        data: e1rmData,
-        borderColor: color,
-        backgroundColor: color + '88',
-        borderDash: [5, 5],
-        tension: 0.3,
-        fill: false,
-        yAxisID: 'y1',
-        type: 'line'
-      });
-    }
-
-    if (weightData.length > 0) {
-      weightDatasets.push({
-        label: `${name} — Peso`,
-        data: weightData,
-        borderColor: color,
-        backgroundColor: color + '33',
-        tension: 0.3,
-        fill: chartType === 'line',
-        yAxisID: 'y',
-        type: chartType
-      });
-    }
-  });
+  const { datasets, weightDatasets } = buildChartDatasets(DB.history, selectedExercises, from, to, getExerciseName, chartType);
 
   if (currentChart) currentChart.destroy();
   if (currentWeightChart) currentWeightChart.destroy();
