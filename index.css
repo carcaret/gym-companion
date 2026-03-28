@@ -5,12 +5,12 @@
 
 :root {
   /* Palette — VS Code / MacroFactor dark grays */
-  --bg-deep: #1a1a1a;
-  --bg-primary: #1e1e1e;
-  --bg-card: rgba(37, 37, 38, 0.85);
-  --bg-card-solid: #252526;
-  --bg-input: rgba(45, 45, 46, 0.9);
-  --bg-hover: rgba(55, 55, 56, 0.7);
+  --bg-deep: #101010;
+  --bg-primary: #141414;
+  --bg-card: rgba(28, 28, 30, 0.85);
+  --bg-card-solid: #1c1c1e;
+  --bg-input: rgba(36, 36, 38, 0.9);
+  --bg-hover: rgba(46, 46, 48, 0.7);
   --border: rgba(255, 255, 255, 0.08);
   --border-light: rgba(255, 255, 255, 0.05);
 

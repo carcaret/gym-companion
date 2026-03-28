@@ -4,7 +4,7 @@
   "description": "App de seguimiento de entrenamiento en el gimnasio",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#1a1a1a",
+  "background_color": "#101010",
   "theme_color": "#569cd6",
   "orientation": "portrait",
   "lang": "es",
