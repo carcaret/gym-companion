@@ -51,11 +51,11 @@ test.describe('Botones de navegación en vistas (Volver + Ejercicio)', () => {
     await expect(buttons.nth(1)).toHaveAttribute('id', 'add-exercise-btn');
   });
 
-  test('routine preview: botón Volver tiene texto "← Volver" y estilo btn-primary', async ({ page }) => {
+  test('routine preview: botón Volver tiene texto "← Volver" y estilo btn-secondary', async ({ page }) => {
     await goToRoutinePreview(page);
     const backBtn = page.locator('#back-to-selector-btn');
     await expect(backBtn).toContainText('← Volver');
-    await expect(backBtn).toHaveClass(/btn-primary/);
+    await expect(backBtn).toHaveClass(/btn-secondary/);
   });
 
   test('routine preview: botón Ejercicio tiene texto "+ Ejercicio" y estilo btn-primary', async ({ page }) => {
@@ -102,11 +102,11 @@ test.describe('Botones de navegación en vistas (Volver + Ejercicio)', () => {
     await expect(container.locator('#historial-back-btn')).toBeVisible();
   });
 
-  test('history detail: botón Volver tiene texto "← Volver" y estilo btn-primary', async ({ page }) => {
+  test('history detail: botón Volver tiene texto "← Volver" y estilo btn-secondary', async ({ page }) => {
     await goToHistoryDetail(page);
     const backBtn = page.locator('#historial-back-btn');
     await expect(backBtn).toContainText('← Volver');
-    await expect(backBtn).toHaveClass(/btn-primary/);
+    await expect(backBtn).toHaveClass(/btn-secondary/);
   });
 
   test('history detail: botón Volver vuelve a la lista de historial', async ({ page }) => {
