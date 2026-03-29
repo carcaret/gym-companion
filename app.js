@@ -882,7 +882,7 @@ function renderHistorialDetail(date) {
       <div class="exercise-row" style="flex-direction:column;align-items:stretch;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div class="exercise-name">${name}</div>
-          <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
         </div>
         ${buildParamRowsHtml('h', logIdx, log, 'adjustHistoryParam', 'setHistoryParam', hArgs)}
         <div class="mt-sm"><p class="text-xs text-muted mb-sm">Reps por serie:</p>`;
@@ -898,7 +898,7 @@ function renderHistorialDetail(date) {
           <div class="card-title">${name}</div>
           <div class="card-subtitle">${weightStr}${log.series}×${log.reps.expected}${repsPart}</div>
         </div>
-        <button class="btn-icon historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+        <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
       </div>
     </div>`;
     }
