@@ -39,10 +39,12 @@ test.describe('Vista de entreno completado', () => {
     const style = await status.getAttribute('style');
     expect(style).toBeNull();
 
-    // El checkmark debe usar color accent
-    const checkmark = status.locator('span').first();
-    const color = await checkmark.evaluate(el => el.style.color);
-    expect(color).toBe('var(--accent)');
+    // El checkmark usa clase CSS con color accent (no inline style)
+    const checkmark = status.locator('.workout-status-icon');
+    await expect(checkmark).toHaveCount(1);
+    const color = await checkmark.evaluate(el => getComputedStyle(el).color);
+    // --accent: #569cd6 → rgb(86, 156, 214)
+    expect(color).toBe('rgb(86, 156, 214)');
   });
 
   test('las cards usan formato de historial (compact-card + card-title/subtitle)', async ({ page }) => {

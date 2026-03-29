@@ -230,7 +230,7 @@ function buildParamRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix
     <label>Peso (kg)</label>
     <div class="flex-center gap-sm">
       <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'weight',-2.5)">−</button>
-      <input id="${prefix}-weight-${logIdx}" class="param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.${setName}(${argsPrefix},'weight',this.value)">
+      <input id="${prefix}-weight-${logIdx}" class="input-compact param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.${setName}(${argsPrefix},'weight',this.value)">
       <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'weight',2.5)">+</button>
     </div>
   </div>
@@ -238,7 +238,7 @@ function buildParamRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix
     <label>Series</label>
     <div class="flex-center gap-sm">
       <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'series',-1)">−</button>
-      <input id="${prefix}-series-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.${setName}(${argsPrefix},'series',this.value)">
+      <input id="${prefix}-series-${logIdx}" class="input-compact param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.${setName}(${argsPrefix},'series',this.value)">
       <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'series',1)">+</button>
     </div>
   </div>
@@ -246,7 +246,7 @@ function buildParamRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix
     <label>Reps obj.</label>
     <div class="flex-center gap-sm">
       <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'repsExpected',-1)">−</button>
-      <input id="${prefix}-reps-${logIdx}" class="param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.${setName}(${argsPrefix},'repsExpected',this.value)">
+      <input id="${prefix}-reps-${logIdx}" class="input-compact param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.${setName}(${argsPrefix},'repsExpected',this.value)">
       <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'repsExpected',1)">+</button>
     </div>
   </div>`;
@@ -268,7 +268,7 @@ function buildAllSeriesRowsHtml(prefix, logIdx, log, adjustName, setName, argsPr
     html += `<div class="series-row">
       <span class="series-label">S${s + 1}</span>
       <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},${s},-1)">−</button>
-      <input id="${prefix}-rep-${logIdx}-${s}" class="series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.${setName}(${argsPrefix},${s},this.value)">
+      <input id="${prefix}-rep-${logIdx}-${s}" class="input-compact series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.${setName}(${argsPrefix},${s},this.value)">
       <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},${s},1)">+</button>
     </div>`;
   }
@@ -380,7 +380,7 @@ function renderDaySelector(container) {
   for (const type of ROUTINE_KEYS) {
     const exercises = (DB.routines[type] || []).map(id => getExerciseName(id));
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
-    html += `<button class="day-btn" data-day="${type}">
+    html += `<button class="list-btn day-btn" data-day="${type}">
     <span class="day-info">
       <span class="day-name">${DAY_LABELS[type]}</span>
       <span class="day-exercises">${exercises.length} ejercicios · ${preview}</span>
@@ -425,7 +425,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   </div>`;
     html += `<div class="view-nav-actions">
     <button class="btn-secondary" id="back-to-selector-btn">← Volver</button>
-    <button class="btn-primary" id="add-exercise-btn">+ Ejercicio</button>
+    <button class="btn-accent-subtle" id="add-exercise-btn">+ Ejercicio</button>
   </div>`;
   }
 
@@ -497,7 +497,7 @@ function renderActiveWorkout(container, entry) {
     html += buildParamRowsHtml('w', logIdx, log, 'adjustParam', 'setParam', wArgs);
 
     // Per-series rep inputs
-    html += `<div class="mt-sm"><p class="text-xs text-muted mb-sm" style="margin-top:8px;">Reps realizadas por serie:</p><div id="w-seriesrows-${logIdx}">`;
+    html += `<div class="mt-sm"><p class="text-xs text-muted mb-sm" >Reps realizadas por serie:</p><div id="w-seriesrows-${logIdx}">`;
     html += buildAllSeriesRowsHtml('w', logIdx, log, 'adjustRep', 'setRep', wArgs);
     html += '</div></div>';
 
@@ -580,7 +580,7 @@ async function finishWorkout() {
 
 function renderCompletedToday(container, entry) {
   let html = `<div class="workout-status">
-  <span style="color:var(--accent);font-size:18px;">✓</span>
+  <span class="workout-status-icon">✓</span>
   <span>Entreno completado</span>
 </div>`;
 
@@ -617,7 +617,7 @@ function showAddExerciseModal(dayType) {
   const allExercises = Object.values(DB.exercises).sort((a, b) => a.name.localeCompare(b.name, 'es'));
   const available = allExercises.filter(e => !currentIds.includes(e.id));
 
-  let bodyHtml = `<input type="text" class="exercise-search" id="exercise-search-input" placeholder="Buscar ejercicio...">
+  let bodyHtml = `<div class="input-group"><input type="text" class="exercise-search" id="exercise-search-input" placeholder="Buscar ejercicio..."></div>
   <div class="exercise-list" id="exercise-modal-list">`;
   available.forEach(e => {
     bodyHtml += `<div class="exercise-list-item" data-id="${e.id}"><span>${e.name}</span><span class="add-icon">+</span></div>`;
@@ -832,7 +832,7 @@ function renderHistorial() {
     const completed = entry.completed !== false;
     const exercises = entry.logs.map(l => getExerciseName(l.exercise_id));
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
-    html += `<div class="historial-entry-btn" data-date="${entry.date}">
+    html += `<div class="list-btn historial-entry-btn" data-date="${entry.date}">
     <span class="day-info">
       <span class="day-name">${DAY_LABELS[entry.type] || entry.type}${completed ? '' : ' <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'}</span>
       <span class="day-exercises">${formatDate(entry.date)} · ${entry.logs.length} ejercicios</span>
@@ -879,8 +879,8 @@ function renderHistorialDetail(date) {
     if (isEditing) {
       const hArgs = `'${date}',${logIdx}`;
       html += `<div class="card historial-detail-card editing">
-      <div class="exercise-row" style="flex-direction:column;align-items:stretch;gap:8px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="exercise-row exercise-row--editing">
+        <div class="exercise-row-controls">
           <div class="exercise-name">${name}</div>
           <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
         </div>

@@ -58,11 +58,11 @@ test.describe('Botones de navegación en vistas (Volver + Ejercicio)', () => {
     await expect(backBtn).toHaveClass(/btn-secondary/);
   });
 
-  test('routine preview: botón Ejercicio tiene texto "+ Ejercicio" y estilo btn-primary', async ({ page }) => {
+  test('routine preview: botón Ejercicio tiene texto "+ Ejercicio" y estilo btn-accent-subtle', async ({ page }) => {
     await goToRoutinePreview(page);
     const addBtn = page.locator('#add-exercise-btn');
     await expect(addBtn).toContainText('+ Ejercicio');
-    await expect(addBtn).toHaveClass(/btn-primary/);
+    await expect(addBtn).toHaveClass(/btn-accent-subtle/);
   });
 
   test('routine preview: botón Volver vuelve al selector de rutinas', async ({ page }) => {

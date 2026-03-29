@@ -265,23 +265,30 @@ body {
 }
 .filter-bar::-webkit-scrollbar { display: none; }
 
-.filter-btn {
-  padding: 8px 18px;
+/* ── Chip Button (shared base for filter-btn & toggle-btn) ── */
+.chip-btn {
+  padding: 8px;
   border: 1px solid var(--border);
-  border-radius: 20px;
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 500;
   cursor: pointer;
-  white-space: nowrap;
   transition: all 0.2s var(--ease);
 }
-.filter-btn.active {
+.chip-btn.active {
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
+}
+
+.filter-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.filter-btn.active {
   box-shadow: 0 2px 12px var(--accent-glow);
 }
 
@@ -355,6 +362,9 @@ body {
 }
 .exercise-row:last-child { border-bottom: none; }
 
+.exercise-row--editing { align-items: stretch; }
+.exercise-row-controls { display: flex; justify-content: space-between; align-items: center; }
+
 .exercise-name {
   font-size: 14px;
   font-weight: 600;
@@ -398,8 +408,8 @@ body {
   min-width: 22px;
 }
 
-.series-input {
-  width: 56px;
+/* ── Compact Input (shared base for series-input & param-input) ── */
+.input-compact {
   text-align: center;
   padding: 8px 4px;
   background: var(--bg-input);
@@ -407,12 +417,14 @@ body {
   border-radius: var(--radius-xs);
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 16px;
   font-weight: 600;
   outline: none;
   transition: border-color 0.2s;
 }
-.series-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.input-compact:focus { border-color: var(--accent); }
+
+.series-input { width: 56px; font-size: 16px; }
+.series-input:focus { box-shadow: 0 0 0 2px var(--accent-glow); }
 
 /* ── Param edit row ── */
 .param-row {
@@ -429,20 +441,7 @@ body {
   font-weight: 500;
 }
 
-.param-input {
-  width: 72px;
-  text-align: center;
-  padding: 8px 6px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xs);
-  color: var(--text-primary);
-  font-family: var(--font);
-  font-size: 15px;
-  font-weight: 600;
-  outline: none;
-}
-.param-input:focus { border-color: var(--accent); }
+.param-input { width: 72px; font-size: 15px; padding: 8px 6px; }
 
 /* ── Day Selector (non-training day) ── */
 .day-selector {
@@ -459,8 +458,8 @@ body {
   margin-bottom: 8px;
 }
 
-.day-btn {
-  padding: 20px;
+/* ── List Button (shared base for day-btn & historial-entry-btn) ── */
+.list-btn {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-card);
@@ -474,19 +473,21 @@ body {
   gap: 14px;
   transition: all 0.2s var(--ease);
 }
-.day-btn:active { transform: scale(0.97); }
-.day-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+.list-btn:active { transform: scale(0.97); }
+.list-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
 
-.day-btn .day-icon { font-size: 28px; }
-.day-btn .day-info { text-align: left; }
-.day-btn .day-name { display: block; }
-.day-btn .day-exercises {
+.list-btn .day-icon { font-size: 28px; }
+.list-btn .day-info { text-align: left; }
+.list-btn .day-name { display: block; }
+.list-btn .day-exercises {
   display: block;
   font-size: 12px;
   font-weight: 400;
   color: var(--text-secondary);
   margin-top: 2px;
 }
+
+.day-btn { padding: 20px; }
 
 /* ── Workout Active ── */
 .workout-status {
@@ -501,6 +502,8 @@ body {
   font-size: 14px;
   font-weight: 500;
 }
+
+.workout-status-icon { color: var(--accent); font-size: 18px; }
 
 .workout-status .pulse-dot {
   width: 10px;
@@ -534,31 +537,9 @@ body {
 
 .historial-entry-btn {
   padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font-family: var(--font);
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  transition: all 0.2s var(--ease);
 }
-.historial-entry-btn:active { transform: scale(0.97); }
-.historial-entry-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
-
-.historial-entry-btn .day-icon { font-size: 28px; }
-.historial-entry-btn .day-info { text-align: left; flex: 1; min-width: 0; }
-.historial-entry-btn .day-name { display: block; }
+.historial-entry-btn .day-info { flex: 1; min-width: 0; }
 .historial-entry-btn .day-exercises {
-  display: block;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-secondary);
-  margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -619,20 +600,7 @@ body {
 
 .toggle-btn {
   flex: 1;
-  padding: 8px;
-  border: 1px solid var(--border);
   border-radius: var(--radius-xs);
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.toggle-btn.active {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
 }
 
 .chart-container {
@@ -642,7 +610,7 @@ body {
   background: var(--bg-card);
   border-radius: var(--radius);
   padding: 12px;
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 /* ── Settings ── */
@@ -650,7 +618,7 @@ body {
 
 .settings-section {
   background: var(--bg-card);
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: var(--radius);
   padding: 20px 16px;
   margin-bottom: 16px;
@@ -758,19 +726,7 @@ body {
 .modal-actions button { flex: 1; }
 
 /* Searchable exercise list in modal */
-.exercise-search {
-  width: 100%;
-  padding: 12px 14px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-family: var(--font);
-  font-size: 14px;
-  outline: none;
-  margin-bottom: 12px;
-}
-.exercise-search:focus { border-color: var(--accent); }
+.exercise-search { font-size: 14px; padding: 12px 14px; }
 
 .exercise-list {
   max-height: 300px;
@@ -860,14 +816,12 @@ body {
 }
 
 /* ── Misc ── */
-.flex-between { display: flex; justify-content: space-between; align-items: center; }
 .flex-center { display: flex; align-items: center; justify-content: center; }
 .gap-sm { gap: 6px; }
-.gap-md { gap: 10px; }
 .mt-sm { margin-top: 8px; }
 .mt-md { margin-top: 16px; }
 .mb-sm { margin-bottom: 8px; }
-.text-center { text-align: center; }
+.mb-md { margin-bottom: 24px; }
 .text-sm { font-size: 13px; }
 .text-xs { font-size: 11px; }
 .text-muted { color: var(--text-secondary); }
@@ -900,36 +854,20 @@ body {
   font-size: 13px;
   box-shadow: none;
 }
-.view-nav-actions .btn-primary {
+.btn-accent-subtle {
   background: rgba(86, 156, 214, 0.12);
   color: var(--accent-light);
   border: 1px solid rgba(86, 156, 214, 0.25);
-}
-
-/* ── Inline edit toggle ── */
-.edit-toggle {
-  font-size: 12px;
-  color: var(--accent-light);
-  background: none;
-  border: none;
-  cursor: pointer;
+  border-radius: var(--radius-sm);
   font-family: var(--font);
+  font-size: 15px;
   font-weight: 600;
-  padding: 4px 8px;
-}
-
-/* Remove exercise button */
-.remove-exercise-btn {
-  background: none;
-  border: none;
-  color: var(--red);
-  font-size: 18px;
   cursor: pointer;
-  padding: 4px;
-  opacity: 0.7;
-  transition: opacity 0.15s;
+  padding: 14px;
+  transition: transform 0.15s var(--ease), background 0.2s;
 }
-.remove-exercise-btn:hover { opacity: 1; }
+.btn-accent-subtle:active { transform: scale(0.97); }
+
 
 /* ── Media query for larger screens ── */
 @media (min-width: 600px) {

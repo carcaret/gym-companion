@@ -58,10 +58,10 @@
         <h2>Historial</h2>
       </header>
       <div id="historial-filters" class="filter-bar">
-        <button class="filter-btn active" data-filter="TODOS">Todos</button>
-        <button class="filter-btn" data-filter="DIA1">Día 1</button>
-        <button class="filter-btn" data-filter="DIA2">Día 2</button>
-        <button class="filter-btn" data-filter="DIA3">Día 3</button>
+        <button class="chip-btn filter-btn active" data-filter="TODOS">Todos</button>
+        <button class="chip-btn filter-btn" data-filter="DIA1">Día 1</button>
+        <button class="chip-btn filter-btn" data-filter="DIA2">Día 2</button>
+        <button class="chip-btn filter-btn" data-filter="DIA3">Día 3</button>
       </div>
       <div id="historial-content" class="view-body"></div>
     </div>
@@ -87,13 +87,13 @@
           <select id="chart-exercise-select"></select>
         </div>
         <div class="chart-toggle">
-          <button class="toggle-btn active" data-chart="line">Líneas</button>
-          <button class="toggle-btn" data-chart="bar">Barras</button>
+          <button class="chip-btn toggle-btn active" data-chart="line">Líneas</button>
+          <button class="chip-btn toggle-btn" data-chart="bar">Barras</button>
         </div>
       </div>
       <div id="graficas-content" class="view-body">
         <h3 class="chart-section-title">Volumen y e1RM</h3>
-        <div class="chart-container" style="margin-bottom: 24px;"><canvas id="chart-canvas"></canvas></div>
+        <div class="chart-container mb-md"><canvas id="chart-canvas"></canvas></div>
         <h3 class="chart-section-title">Evolución del Peso</h3>
         <div class="chart-container"><canvas id="chart-canvas-weight"></canvas></div>
       </div>
@@ -149,9 +149,7 @@
           <button class="btn-primary" id="sync-github-btn">Sincronizar con GitHub</button>
           <p id="sync-status" class="status-msg" hidden></p>
         </section>
-        <section class="settings-section">
-          <button class="btn-danger" id="logout-btn">Cerrar sesión</button>
-        </section>
+        <button class="btn-danger" id="logout-btn">Cerrar sesión</button>
       </div>
     </div>
 
