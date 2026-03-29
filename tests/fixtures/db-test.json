@@ -30,6 +30,14 @@
       "logs": [
         { "exercise_id": "sentadilla", "name": "Sentadilla", "series": 3, "reps": { "expected": 8, "actual": [8, 8, 8] }, "weight": 100 }
       ]
+    },
+    {
+      "date": "2024-01-05",
+      "type": "DIA1",
+      "completed": true,
+      "logs": [
+        { "exercise_id": "press_banca", "name": "Press Banca", "series": 3, "reps": { "expected": 10, "actual": [] }, "weight": 50 }
+      ]
     }
   ]
 }

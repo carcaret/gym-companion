@@ -81,6 +81,31 @@ test.describe('Validación en edición de Historial', () => {
     await expect(page.locator('.historial-detail-card.editing')).not.toBeVisible();
   });
 
+  test('entry con reps.actual vacío → al editar se rellenan con expected y se puede guardar', async ({ page }) => {
+    // The fixture has an entry on 2024-01-05 with reps.actual = []
+    // It should appear last (sorted desc by date, so it's the last entry)
+    const entries = page.locator('.historial-entry-btn');
+    const lastEntry = entries.last();
+    await lastEntry.click();
+
+    // Click edit
+    const editBtn = page.locator('.historial-edit-btn').first();
+    await editBtn.click();
+    await expect(page.locator('.historial-detail-card.editing')).toBeVisible();
+
+    // Rep inputs should be pre-filled with expected value (10), not empty
+    const repInput = page.locator('#h-rep-0-0');
+    await expect(repInput).toHaveValue('10');
+
+    // +/- buttons should work
+    await page.locator('.historial-detail-card.editing .series-row .btn-icon >> text="+"').first().click();
+    await expect(repInput).toHaveValue('11');
+
+    // Save should work
+    await page.locator('.historial-detail-card.editing .historial-edit-btn').click();
+    await expect(page.locator('.historial-detail-card.editing')).not.toBeVisible();
+  });
+
   test('editar entry → toast de warning al intentar guardar con errores', async ({ page }) => {
     await openFirstEntryAndEdit(page);
 

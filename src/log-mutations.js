@@ -52,7 +52,7 @@ export function setLogParam(log, param, value) {
  * @param {number} delta
  */
 export function adjustLogRep(log, seriesIdx, delta) {
-  const current = log.reps.actual[seriesIdx] !== null ? log.reps.actual[seriesIdx] : log.reps.expected;
+  const current = log.reps.actual[seriesIdx] != null ? log.reps.actual[seriesIdx] : log.reps.expected;
   log.reps.actual[seriesIdx] = Math.max(0, current + delta);
 }
 

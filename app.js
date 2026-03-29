@@ -925,6 +925,11 @@ function renderHistorialDetail(date) {
         }
         editingHistorialExercise = null;
       } else {
+        // Normalizar reps.actual: rellenar huecos con expected
+        const log = entry.logs[logIdx];
+        log.reps.actual = Array.from({ length: log.series }, (_, i) =>
+          log.reps.actual[i] != null ? log.reps.actual[i] : log.reps.expected
+        );
         editingHistorialExercise = { date, logIdx };
       }
       renderHistorialDetail(date);

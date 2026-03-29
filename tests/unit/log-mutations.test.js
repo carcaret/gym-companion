@@ -208,6 +208,18 @@ describe('adjustLogRep', () => {
     adjustLogRep(log, 0, 0);
     expect(log.reps.actual[0]).toBe(12);
   });
+
+  test('si reps.actual es array vacío, parte del expected', () => {
+    const log = makeLog({ series: 3, expected: 10, actual: [] });
+    adjustLogRep(log, 0, 1);
+    expect(log.reps.actual[0]).toBe(11);
+  });
+
+  test('si reps.actual tiene menos elementos que series, parte del expected', () => {
+    const log = makeLog({ series: 3, expected: 8, actual: [10] });
+    adjustLogRep(log, 2, -1);
+    expect(log.reps.actual[2]).toBe(7);
+  });
 });
 
 // ── setLogRep ──
