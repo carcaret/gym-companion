@@ -891,6 +891,18 @@ body {
   padding: 7px 14px;
 }
 
+/* ── View navigation buttons (Volver + action) ── */
+.view-nav-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  margin-bottom: 10px;
+}
+.view-nav-actions button {
+  flex: 1;
+  margin-bottom: 0;
+}
+
 /* ── Inline edit toggle ── */
 .edit-toggle {
   font-size: 12px;

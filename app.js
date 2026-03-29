@@ -423,9 +423,9 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
     html += `<div class="workout-actions">
     <button class="btn-primary" id="start-workout-btn">Iniciar entreno</button>
   </div>`;
-    html += `<div class="routine-actions">
-    <button class="btn-secondary btn-sm" id="add-exercise-btn">+ Añadir ejercicio</button>
-    <button class="btn-secondary btn-sm" id="back-to-selector-btn">← Cambiar día</button>
+    html += `<div class="view-nav-actions">
+    <button class="btn-primary" id="back-to-selector-btn">← Volver</button>
+    <button class="btn-primary" id="add-exercise-btn">+ Ejercicio</button>
   </div>`;
   }
 
@@ -904,8 +904,8 @@ function renderHistorialDetail(date) {
     }
   });
 
-  html += `<div class="routine-actions">
-    <button class="btn-secondary btn-sm" id="historial-back-btn">← Volver al historial</button>
+  html += `<div class="view-nav-actions">
+    <button class="btn-primary" id="historial-back-btn">← Volver</button>
   </div>`;
 
   content.innerHTML = html;
