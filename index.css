@@ -901,6 +901,8 @@ body {
 .view-nav-actions button {
   flex: 1;
   margin-bottom: 0;
+  padding: 8px 16px;
+  font-size: 13px;
   background: rgba(86, 156, 214, 0.12);
   color: var(--accent-light);
   border: 1px solid rgba(86, 156, 214, 0.25);
