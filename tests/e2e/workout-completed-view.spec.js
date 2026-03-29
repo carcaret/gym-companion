@@ -148,16 +148,13 @@ test.describe('Vista de entreno completado', () => {
     await expect(page.locator('#view-historial .historial-detail-card .card-subtitle').first()).toBeVisible();
   });
 
-  test('botón Cerrar visible y en tonos azules', async ({ page }) => {
+  test('botón Cerrar visible y con estilo btn-primary', async ({ page }) => {
     await completeWorkout(page);
 
     const closeBtn = page.locator('#completed-close-btn');
     await expect(closeBtn).toBeVisible();
     await expect(closeBtn).toHaveText('Cerrar');
-
-    // Verificar que tiene estilo azul
-    const color = await closeBtn.evaluate(el => el.style.color);
-    expect(color).toBe('var(--accent)');
+    await expect(closeBtn).toHaveClass(/btn-primary/);
   });
 
   test('botón Cerrar vuelve a la vista de rutinas', async ({ page }) => {
@@ -175,5 +172,22 @@ test.describe('Vista de entreno completado', () => {
 
     // Las cards del entreno completado ya no deben estar
     await expect(page.locator('.historial-detail-card')).toHaveCount(0);
+  });
+
+  test('al volver de otra pestaña tras cerrar, sigue en rutinas (no vuelve a completado)', async ({ page }) => {
+    await completeWorkout(page);
+
+    // Cerrar la vista completada
+    await page.locator('#completed-close-btn').click();
+    await expect(page.locator('.day-selector')).toBeVisible();
+
+    // Navegar a historial y volver
+    await page.click('[data-view="historial"]');
+    await expect(page.locator('#view-historial')).toBeVisible();
+    await page.click('[data-view="hoy"]');
+
+    // Debe seguir en el selector de rutinas, no en la vista completada
+    await expect(page.locator('.day-selector')).toBeVisible();
+    await expect(page.locator('#completed-close-btn')).toHaveCount(0);
   });
 });

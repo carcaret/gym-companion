@@ -357,7 +357,7 @@ function renderHoy() {
   }
 
   // If today's workout is completed
-  if (todayEntry && todayEntry.completed) {
+  if (todayEntry && todayEntry.completed && completedDismissed !== todayStr()) {
     title.textContent = `${DAY_LABELS[todayEntry.type]} ✓`;
     renderCompletedToday(content, todayEntry);
     return;
@@ -600,15 +600,14 @@ function renderCompletedToday(container, entry) {
   });
 
   html += `<div class="routine-actions">
-    <button class="btn-secondary btn-sm" id="completed-close-btn" style="background:rgba(86,156,214,0.12);color:var(--accent);border:1px solid rgba(86,156,214,0.25);">Cerrar</button>
+    <button class="btn-primary" id="completed-close-btn">Cerrar</button>
   </div>`;
 
   container.innerHTML = html;
 
   document.getElementById('completed-close-btn').onclick = () => {
-    const title = document.getElementById('hoy-title');
-    title.textContent = 'Rutinas';
-    renderDaySelector(container);
+    completedDismissed = todayStr();
+    renderHoy();
   };
 }
 
@@ -809,6 +808,7 @@ window.GymCompanion = {
 // ── View: Historial ──
 let historialFilter = 'TODOS';
 let editingHistorialExercise = null; // { date, logIdx } or null
+let completedDismissed = null; // date string when user dismissed completed view
 
 function renderHistorial() {
   const content = document.getElementById('historial-content');
