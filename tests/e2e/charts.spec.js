@@ -18,15 +18,16 @@ test.describe('Graficas', () => {
     // Adjust date range to include fixture data (Jan 2024)
     await page.fill('#chart-from', '2024-01-01');
     await page.fill('#chart-to', '2024-12-31');
-    // Trigger change event
     await page.locator('#chart-from').dispatchEvent('change');
 
-    const select = page.locator('#chart-exercise-select');
-    await expect(select).toBeVisible();
-
-    // Wait for options to populate
-    await expect(select.locator('option')).not.toHaveCount(1);
-    await select.selectOption({ index: 1 });
+    // Open searchable dropdown and pick first exercise
+    const searchInput = page.locator('#chart-exercise-search');
+    await searchInput.click();
+    const list = page.locator('#chart-exercise-list');
+    await expect(list).toBeVisible();
+    const firstItem = list.locator('.searchable-select-item').first();
+    await expect(firstItem).toBeVisible();
+    await firstItem.click();
 
     const canvas = page.locator('canvas');
     await expect(canvas.first()).toBeVisible();

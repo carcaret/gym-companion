@@ -947,21 +947,86 @@ function initCharts() {
   updateChartExercises();
 }
 
+let chartExerciseIds = [];
+
 function updateChartExercises() {
   const from = document.getElementById('chart-from').value;
   const to = document.getElementById('chart-to').value;
+  const hiddenSelect = document.getElementById('chart-exercise-select');
+  const currentVal = hiddenSelect.value;
 
-  const select = document.getElementById('chart-exercise-select');
-  const currentVal = select.value;
-  const exerciseIds = getExercisesInRange(DB.history, from, to, getExerciseName);
+  chartExerciseIds = getExercisesInRange(DB.history, from, to, getExerciseName);
 
-  let html = '<option value="">-- Selecciona un ejercicio --</option>';
-  html += exerciseIds.map(id => `<option value="${id}">${getExerciseName(id)}</option>`).join('');
-  select.innerHTML = html;
-
-  if (currentVal && exerciseIds.includes(currentVal)) {
-    select.value = currentVal;
+  if (currentVal && chartExerciseIds.includes(currentVal)) {
+    hiddenSelect.value = currentVal;
+  } else {
+    hiddenSelect.value = '';
+    document.getElementById('chart-exercise-search').value = '';
   }
+  renderExerciseDropdown('');
+}
+
+function renderExerciseDropdown(filter) {
+  const list = document.getElementById('chart-exercise-list');
+  const selectedVal = document.getElementById('chart-exercise-select').value;
+  const lowerFilter = filter.toLowerCase();
+  const filtered = chartExerciseIds.filter(id => getExerciseName(id).toLowerCase().includes(lowerFilter));
+
+  list.innerHTML = filtered.map(id => {
+    const name = getExerciseName(id);
+    const cls = id === selectedVal ? 'searchable-select-item selected' : 'searchable-select-item';
+    return `<div class="${cls}" data-value="${id}">${name}</div>`;
+  }).join('') || '<div class="searchable-select-item" style="color:var(--text-muted);pointer-events:none">Sin resultados</div>';
+}
+
+function updateClearButton() {
+  const clearBtn = document.getElementById('chart-exercise-clear');
+  const searchInput = document.getElementById('chart-exercise-search');
+  clearBtn.classList.toggle('visible', !!searchInput.value);
+}
+
+function initExerciseSearchDropdown() {
+  const searchInput = document.getElementById('chart-exercise-search');
+  const hiddenSelect = document.getElementById('chart-exercise-select');
+  const list = document.getElementById('chart-exercise-list');
+  const clearBtn = document.getElementById('chart-exercise-clear');
+
+  searchInput.addEventListener('focus', () => {
+    renderExerciseDropdown(searchInput.value);
+    list.hidden = false;
+  });
+
+  searchInput.addEventListener('input', () => {
+    renderExerciseDropdown(searchInput.value);
+    list.hidden = false;
+    updateClearButton();
+  });
+
+  list.addEventListener('click', (e) => {
+    const item = e.target.closest('.searchable-select-item');
+    if (!item || !item.dataset.value) return;
+    hiddenSelect.value = item.dataset.value;
+    searchInput.value = item.textContent;
+    list.hidden = true;
+    updateClearButton();
+    renderChart();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    hiddenSelect.value = '';
+    clearBtn.classList.remove('visible');
+    renderExerciseDropdown('');
+    list.hidden = false;
+    searchInput.focus();
+    renderChart();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#chart-exercise-wrapper')) {
+      list.hidden = true;
+    }
+  });
 }
 
 function renderChart() {
@@ -992,10 +1057,10 @@ function renderChart() {
     plugins: {
       legend: { display: true, labels: { color: '#edf0f7', font: { size: 11, family: 'Inter' }, boxWidth: 12 } },
       tooltip: {
-        backgroundColor: '#161626',
-        titleColor: '#edf0f7',
-        bodyColor: '#edf0f7',
-        borderColor: 'rgba(108,92,231,0.3)',
+        backgroundColor: '#1c1c1e',
+        titleColor: '#d4d4d4',
+        bodyColor: '#d4d4d4',
+        borderColor: 'rgba(255,255,255,0.22)',
         borderWidth: 1,
         cornerRadius: 8,
         padding: 10
@@ -1213,7 +1278,7 @@ function setupFilters() {
   // Chart controls
   document.getElementById('chart-from')?.addEventListener('change', () => { updateChartExercises(); renderChart(); });
   document.getElementById('chart-to')?.addEventListener('change', () => { updateChartExercises(); renderChart(); });
-  document.getElementById('chart-exercise-select')?.addEventListener('change', renderChart);
+  initExerciseSearchDropdown();
 
   document.querySelectorAll('.toggle-btn').forEach(btn => {
     btn.onclick = () => {

@@ -83,8 +83,13 @@
           </div>
         </div>
         <div class="input-group">
-          <label for="chart-exercise-select">Ejercicio</label>
-          <select id="chart-exercise-select"></select>
+          <label>Ejercicio</label>
+          <div class="searchable-select" id="chart-exercise-wrapper">
+            <input type="text" id="chart-exercise-search" placeholder="Buscar ejercicio..." autocomplete="off">
+            <button type="button" class="searchable-select-clear" id="chart-exercise-clear" aria-label="Limpiar selección">✕</button>
+            <input type="hidden" id="chart-exercise-select">
+            <div class="searchable-select-list" id="chart-exercise-list" hidden></div>
+          </div>
         </div>
         <div class="chart-toggle">
           <button class="chip-btn toggle-btn active" data-chart="line">Líneas</button>

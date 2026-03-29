@@ -603,6 +603,59 @@ body {
   border-radius: var(--radius-xs);
 }
 
+/* ── Searchable Select ── */
+.searchable-select {
+  position: relative;
+}
+.searchable-select input[type="text"] { padding-right: 36px; }
+.searchable-select-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+  display: none;
+}
+.searchable-select-clear.visible { display: flex; }
+.searchable-select-clear:hover { color: var(--text-primary); }
+
+.searchable-select-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--bg-card-solid);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-xs);
+  margin-top: 4px;
+}
+.searchable-select-item {
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.searchable-select-item:hover,
+.searchable-select-item.active {
+  background: var(--bg-hover);
+}
+.searchable-select-item.selected {
+  color: var(--accent-light);
+}
+
 .chart-container {
   position: relative;
   width: 100%;

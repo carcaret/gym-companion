@@ -41,10 +41,8 @@ export function buildChartDatasets(history, exerciseIds, from, to, getExerciseNa
       }
     });
 
-    const name = getExerciseName(exerciseId);
-
     datasets.push({
-      label: `${name} — Volumen`,
+      label: 'Volumen',
       data: volData,
       borderColor: color,
       backgroundColor: color + '33',
@@ -56,7 +54,7 @@ export function buildChartDatasets(history, exerciseIds, from, to, getExerciseNa
 
     if (e1rmData.length > 0) {
       datasets.push({
-        label: `${name} — e1RM`,
+        label: 'e1RM',
         data: e1rmData,
         borderColor: color,
         backgroundColor: color + '88',
@@ -70,7 +68,7 @@ export function buildChartDatasets(history, exerciseIds, from, to, getExerciseNa
 
     if (weightData.length > 0) {
       weightDatasets.push({
-        label: `${name} — Peso`,
+        label: 'Peso (kg)',
         data: weightData,
         borderColor: color,
         backgroundColor: color + '33',
