@@ -4,7 +4,7 @@
 
 import { SALT, DAY_MAP, DAY_LABELS, ROUTINE_KEYS, SESSION_KEY, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
 import { sha256 } from './src/crypto.js';
-import { todayStr, formatDate, getTodayDayType } from './src/dates.js';
+import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords } from './src/data.js';
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords, validateLog, validateEntry } from './src/workout.js';
@@ -291,7 +291,11 @@ function updateWorkoutCardInPlace(logIdx, entry) {
   if (title) title.innerHTML = `${name}${isVolRecord ? ' <span class="record-badge">🏆 Volumen</span>' : ''}${isE1RMRecord ? ' <span class="record-badge">🏆 e1RM</span>' : ''}`;
 
   const subtitle = document.getElementById(`w-subtitle-${logIdx}`);
-  if (subtitle) subtitle.textContent = `${log.series}×${log.reps.expected} · ${log.weight > 0 ? log.weight + ' kg' : 'Sin peso'}`;
+  if (subtitle) {
+    const repsFmt = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected);
+    const repsPart = repsFmt ? ` · ${repsFmt}` : '';
+    subtitle.textContent = `${log.weight > 0 ? log.weight + ' kg · ' : ''}${log.series}×${log.reps.expected}${repsPart}`;
+  }
 
   const weightInput = document.getElementById(`w-weight-${logIdx}`);
   if (weightInput) weightInput.value = log.weight;
@@ -347,7 +351,6 @@ function renderHoy() {
   badge.hidden = true;
 
   const todayEntry = getTodayEntry();
-  const dayType = getTodayDayType();
 
   // If there's an active (uncompleted) workout today
   if (todayEntry && !todayEntry.completed) {
@@ -363,14 +366,7 @@ function renderHoy() {
     return;
   }
 
-  // If today is a training day
-  if (dayType && DB.routines[dayType]) {
-    title.textContent = `Rutina de ${DAY_LABELS[dayType]}`;
-    renderRoutinePreview(content, dayType, true);
-    return;
-  }
-
-  // NOT a training day — show day selector
+  // Show day selector with all routines
   title.textContent = 'Rutinas';
   renderDaySelector(content);
 }
@@ -486,7 +482,7 @@ function renderActiveWorkout(container, entry) {
           ${isVolRecord ? '<span class="record-badge">🏆 Volumen</span>' : ''}
           ${isE1RMRecord ? '<span class="record-badge">🏆 e1RM</span>' : ''}
         </div>
-        <div class="card-subtitle" id="w-subtitle-${logIdx}">${log.weight > 0 ? log.weight + ' kg · ' : ''}${log.series}×${log.reps.expected}</div>
+        <div class="card-subtitle" id="w-subtitle-${logIdx}">${log.weight > 0 ? log.weight + ' kg · ' : ''}${log.series}×${log.reps.expected}${(() => { const r = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected); return r ? ' · ' + r : ''; })()}</div>
       </div>
       <span class="card-chevron" id="chevron-${logIdx}">▼</span>
     </div>
@@ -516,30 +512,38 @@ function renderActiveWorkout(container, entry) {
   <button class="btn-primary" id="finish-workout-btn">Finalizar entreno</button>
 </div>`;
 
-  const openIndices = new Set();
-  container.querySelectorAll('.card-body.open').forEach(body => {
-    openIndices.add(body.id.replace('body-', ''));
-  });
+  let openIdx = null;
+  const prevOpen = container.querySelector('.card-body.open');
+  if (prevOpen) openIdx = prevOpen.id.replace('body-', '');
 
   container.innerHTML = html;
 
-  // Expand/collapse handlers
+  // Accordion: only one card open at a time
   container.querySelectorAll('.card-header').forEach(header => {
     header.onclick = () => {
       const idx = header.dataset.idx;
       const body = document.getElementById(`body-${idx}`);
       const chevron = document.getElementById(`chevron-${idx}`);
-      body.classList.toggle('open');
-      chevron.classList.toggle('open');
+      const wasOpen = body.classList.contains('open');
+
+      // Close all cards
+      container.querySelectorAll('.card-body.open').forEach(b => b.classList.remove('open'));
+      container.querySelectorAll('.card-chevron.open').forEach(c => c.classList.remove('open'));
+
+      // If it was closed, open this one
+      if (!wasOpen) {
+        body.classList.add('open');
+        chevron.classList.add('open');
+      }
     };
   });
 
-  openIndices.forEach(idx => {
-    const body = document.getElementById(`body-${idx}`);
-    const chevron = document.getElementById(`chevron-${idx}`);
+  if (openIdx !== null) {
+    const body = document.getElementById(`body-${openIdx}`);
+    const chevron = document.getElementById(`chevron-${openIdx}`);
     if (body) body.classList.add('open');
     if (chevron) chevron.classList.add('open');
-  });
+  }
 
   document.getElementById('finish-workout-btn').onclick = () => finishWorkout();
   const addMidBtn = document.getElementById('add-exercise-mid-btn');
@@ -555,8 +559,11 @@ async function finishWorkout() {
     errorsByLog.forEach((errors, logIdx) => applyValidationErrors(logIdx, entry.logs[logIdx]));
 
     const firstErrorIdx = errorsByLog.keys().next().value;
+    // Accordion: close all before opening the error card
+    document.querySelectorAll('.card-body.open').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.card-chevron.open').forEach(c => c.classList.remove('open'));
     const body = document.getElementById(`body-${firstErrorIdx}`);
-    if (body && !body.classList.contains('open')) {
+    if (body) {
       body.classList.add('open');
       const chevron = document.getElementById(`chevron-${firstErrorIdx}`);
       if (chevron) chevron.classList.add('open');

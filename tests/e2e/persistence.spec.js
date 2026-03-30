@@ -82,12 +82,7 @@ test.describe('Persistencia y datos', () => {
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();
 
-    // Fill all reps before finishing (validation requires it)
-    const cards = page.locator('.card-header');
-    const cardCount = await cards.count();
-    for (let i = 0; i < cardCount; i++) {
-      await cards.nth(i).click();
-    }
+    // Fill all reps (helper expands each card via accordion)
     await fillAllWorkoutReps(page);
 
     await page.locator('#finish-workout-btn').click();

@@ -88,12 +88,7 @@ test.describe('Workout flow completo', () => {
   test('finalizar entreno con reps completas marca completado', async ({ page }) => {
     await selectRoutineAndStart(page);
 
-    // Expand all cards and fill all reps (validation requires all reps filled)
-    const cards = page.locator('.card-header');
-    const cardCount = await cards.count();
-    for (let i = 0; i < cardCount; i++) {
-      await cards.nth(i).click();
-    }
+    // Fill all reps (helper expands each card via accordion)
     await fillAllWorkoutReps(page);
 
     // Click finish
@@ -106,12 +101,7 @@ test.describe('Workout flow completo', () => {
   test('finalizar entreno y verificar en historial', async ({ page }) => {
     await selectRoutineAndStart(page);
 
-    // Fill all reps before finishing (validation requires it)
-    const cards = page.locator('.card-header');
-    const cardCount = await cards.count();
-    for (let i = 0; i < cardCount; i++) {
-      await cards.nth(i).click();
-    }
+    // Fill all reps (helper expands each card via accordion)
     await fillAllWorkoutReps(page);
 
     await page.locator('#finish-workout-btn').click();

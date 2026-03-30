@@ -13,26 +13,15 @@ test.describe('Workout flow', () => {
   });
 
   test('iniciar y finalizar entrenamiento', async ({ page }) => {
-    const startBtn = page.locator('#start-workout-btn');
-    const hasRoutine = await startBtn.isVisible().catch(() => false);
+    // Select routine from day selector
+    await page.locator('.day-btn', { hasText: 'Día 1' }).click();
+    await page.locator('#start-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
 
-    if (hasRoutine) {
-      await startBtn.click();
-      await expect(page.locator('.workout-status')).toBeVisible();
-      await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
+    // Fill all reps (helper expands each card via accordion)
+    await fillAllWorkoutReps(page);
 
-      // Fill all reps before finishing (validation requires it)
-      const cards = page.locator('.card-header');
-      const cardCount = await cards.count();
-      for (let i = 0; i < cardCount; i++) {
-        await cards.nth(i).click();
-      }
-      await fillAllWorkoutReps(page);
-
-      const finishBtn = page.locator('#finish-workout-btn');
-      await finishBtn.click();
-
-      await expect(page.locator('.workout-status')).toContainText('completado');
-    }
+    await page.locator('#finish-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('completado');
   });
 });

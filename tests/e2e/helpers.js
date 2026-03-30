@@ -32,14 +32,23 @@ async function clearStorage(page) {
 }
 
 async function fillAllWorkoutReps(page) {
-  const repInputs = page.locator('input[id^="w-rep-"]');
-  const count = await repInputs.count();
-  for (let i = 0; i < count; i++) {
-    const input = repInputs.nth(i);
-    const val = await input.inputValue();
-    if (!val || val === '') {
-      await input.fill('10');
-      await input.dispatchEvent('change');
+  const cards = page.locator('.card-header');
+  const cardCount = await cards.count();
+  for (let c = 0; c < cardCount; c++) {
+    // Expand this card (accordion closes others)
+    const body = page.locator(`#body-${c}`);
+    if (!await body.evaluate(el => el.classList.contains('open'))) {
+      await cards.nth(c).click();
+    }
+    const repInputs = page.locator(`#body-${c} input[id^="w-rep-"]`);
+    const count = await repInputs.count();
+    for (let i = 0; i < count; i++) {
+      const input = repInputs.nth(i);
+      const val = await input.inputValue();
+      if (!val || val === '') {
+        await input.fill('10');
+        await input.dispatchEvent('change');
+      }
     }
   }
 }

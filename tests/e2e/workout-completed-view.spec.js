@@ -21,11 +21,6 @@ test.describe('Vista de entreno completado', () => {
     await startBtn.click();
     await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
 
-    const cards = page.locator('.card-header');
-    const cardCount = await cards.count();
-    for (let i = 0; i < cardCount; i++) {
-      await cards.nth(i).click();
-    }
     await fillAllWorkoutReps(page);
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
