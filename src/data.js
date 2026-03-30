@@ -16,11 +16,19 @@ export function isWorkoutActive(db, today) {
 }
 
 export function getLastValuesForExercise(db, exerciseId, dayType) {
-  const entries = db.history
+  // First try: same dayType
+  const sameDay = db.history
     .filter(h => h.type === dayType)
     .sort((a, b) => a.date.localeCompare(b.date));
-  for (let i = entries.length - 1; i >= 0; i--) {
-    const log = entries[i].logs.find(l => l.exercise_id === exerciseId);
+  for (let i = sameDay.length - 1; i >= 0; i--) {
+    const log = sameDay[i].logs.find(l => l.exercise_id === exerciseId);
+    if (log) return { series: log.series, repsExpected: log.reps.expected, weight: log.weight, repsActual: log.reps.actual || [] };
+  }
+  // Fallback: any dayType
+  const allEntries = db.history
+    .sort((a, b) => a.date.localeCompare(b.date));
+  for (let i = allEntries.length - 1; i >= 0; i--) {
+    const log = allEntries[i].logs.find(l => l.exercise_id === exerciseId);
     if (log) return { series: log.series, repsExpected: log.reps.expected, weight: log.weight, repsActual: log.reps.actual || [] };
   }
   return { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
