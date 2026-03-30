@@ -6,7 +6,7 @@ import { SALT, DAY_MAP, DAY_LABELS, ROUTINE_KEYS, SESSION_KEY, GITHUB_KEY, DB_LO
 import { sha256 } from './src/crypto.js';
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords } from './src/data.js';
+import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords, isWorkoutActive as _isWorkoutActive } from './src/data.js';
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords, validateLog, validateEntry } from './src/workout.js';
 import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
 import { encryptPat, decryptPat, validateGitHubConfig, buildGitHubPayload, parseGitHubResponse } from './src/github.js';
@@ -108,8 +108,9 @@ function saveDBLocal() {
   }
 }
 
-async function persistDB() {
+async function persistDB({ forceGitHub = false } = {}) {
   saveDBLocal();
+  if (_isWorkoutActive(DB, todayStr()) && !forceGitHub) return;
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async () => {
     saveTimeout = null;
@@ -580,7 +581,7 @@ async function finishWorkout() {
   }
 
   finishWorkoutEntry(entry);
-  await persistDB();
+  await persistDB({ forceGitHub: true });
   renderHoy();
   toast('¡Entreno completado!');
 }

@@ -8,6 +8,13 @@ export function getTodayEntry(db, today) {
   return db.history.find(h => h.date === today);
 }
 
+export function isWorkoutActive(db, today) {
+  const entry = db && db.history
+    ? db.history.find(h => h.date === today)
+    : null;
+  return entry ? entry.completed === false : false;
+}
+
 export function getLastValuesForExercise(db, exerciseId, dayType) {
   const entries = db.history
     .filter(h => h.type === dayType)

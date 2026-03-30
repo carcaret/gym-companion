@@ -83,7 +83,7 @@ test.describe('GitHub sync (mock)', () => {
     await clearStorage(page);
   });
 
-  test('guardar datos intercepta PUT a api.github.com con payload correcto', async ({ page }) => {
+  test('guardar datos intercepta PUT a api.github.com al finalizar entreno', async ({ page }) => {
     await setupDBWithGitHub(page);
 
     let capturedRequest = null;
@@ -108,21 +108,47 @@ test.describe('GitHub sync (mock)', () => {
     await page.goto('/');
     await loginManually(page);
 
-    // Start a workout to trigger a save (persistDB is called after startWorkout)
+    // Start a workout
     const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
 
-    // Wait for the debounced save (1200ms + buffer)
+    // Wait — during active workout, NO PUT should happen
+    await page.waitForTimeout(1500);
+    expect(capturedRequest).toBeNull();
+
+    // Fill reps and finish workout
+    const cards = page.locator('.card-header');
+    const cardCount = await cards.count();
+    for (let c = 0; c < cardCount; c++) {
+      const body = page.locator(`#body-${c}`);
+      if (!await body.evaluate(el => el.classList.contains('open'))) {
+        await cards.nth(c).click();
+      }
+      const repInputs = page.locator(`#body-${c} input[id^="w-rep-"]`);
+      const count = await repInputs.count();
+      for (let i = 0; i < count; i++) {
+        const input = repInputs.nth(i);
+        const val = await input.inputValue();
+        if (!val || val === '') {
+          await input.fill('10');
+          await input.dispatchEvent('change');
+        }
+      }
+    }
+    await page.locator('#finish-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('completado');
+
+    // Wait for debounced GitHub save after finishing
     await page.waitForTimeout(2500);
 
-    // Verify the PUT was intercepted
+    // NOW the PUT should have been made
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest.method).toBe('PUT');
     expect(capturedRequest.body.content).toBeDefined();
     expect(capturedRequest.body.branch).toBe('main');
-    // Content should be valid base64
     expect(capturedRequest.body.content).toMatch(/^[A-Za-z0-9+/]+=*$/);
   });
 
@@ -241,13 +267,34 @@ test.describe('GitHub sync (mock)', () => {
     // Save initial state
     const initialDB = await page.evaluate(() => localStorage.getItem('gym_companion_db'));
 
-    // Start a workout (triggers save)
+    // Start a workout and finish it to trigger GitHub save
     const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();
 
-    // Wait for debounced save
+    // Fill reps and finish
+    const cards = page.locator('.card-header');
+    const cardCount = await cards.count();
+    for (let c = 0; c < cardCount; c++) {
+      const body = page.locator(`#body-${c}`);
+      if (!await body.evaluate(el => el.classList.contains('open'))) {
+        await cards.nth(c).click();
+      }
+      const repInputs = page.locator(`#body-${c} input[id^="w-rep-"]`);
+      const count = await repInputs.count();
+      for (let i = 0; i < count; i++) {
+        const input = repInputs.nth(i);
+        const val = await input.inputValue();
+        if (!val || val === '') {
+          await input.fill('10');
+          await input.dispatchEvent('change');
+        }
+      }
+    }
+    await page.locator('#finish-workout-btn').click();
+
+    // Wait for debounced save (which will fail with 409)
     await page.waitForTimeout(2000);
 
     // Local DB should still have data (workout was added locally)
