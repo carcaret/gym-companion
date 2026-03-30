@@ -330,13 +330,22 @@ body {
   font-size: 12px;
   font-weight: 400;
   color: var(--text-secondary);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.day-date {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
 }
 .card-subtitle {
   margin-top: 4px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
+  white-space: normal;
 }
 
 .card-body {
@@ -485,14 +494,15 @@ body {
 .list-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
 
 .list-btn .day-icon { font-size: 28px; }
-.list-btn .day-info { text-align: left; }
-.list-btn .day-name { display: block; }
-.list-btn .day-exercises {
+.list-btn .day-info { text-align: left; min-width: 0; overflow: hidden; }
+.list-btn .day-name,
+.historial-entry-btn .day-name {
   display: block;
+  font-size: 16px;
+  font-weight: 600;
+}
+.list-btn .day-exercises {
   margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .day-btn { padding: 20px; }
@@ -551,11 +561,12 @@ body {
   cursor: pointer;
   margin-bottom: 0;
 }
-.historial-entry-btn .day-info { flex: 1; min-width: 0; }
+.historial-entry-btn .day-info { flex: 1; min-width: 0; overflow: hidden; }
 .historial-entry-btn .day-exercises {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
 }
 
 .historial-delete-btn {
