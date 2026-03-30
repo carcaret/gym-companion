@@ -832,7 +832,7 @@ function renderHistorial() {
     const completed = entry.completed !== false;
     const exercises = entry.logs.map(l => getExerciseName(l.exercise_id));
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
-    html += `<div class="list-btn historial-entry-btn" data-date="${entry.date}">
+    html += `<div class="card historial-entry-btn" data-date="${entry.date}">
     <span class="day-info">
       <span class="day-name">${DAY_LABELS[entry.type] || entry.type}${completed ? '' : ' <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'}</span>
       <span class="day-exercises">${formatDate(entry.date)} · ${entry.logs.length} ejercicios</span>

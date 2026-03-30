@@ -537,6 +537,11 @@ body {
 
 .historial-entry-btn {
   padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  margin-bottom: 0;
 }
 .historial-entry-btn .day-info { flex: 1; min-width: 0; }
 .historial-entry-btn .day-exercises {
