@@ -660,6 +660,16 @@ body {
 .searchable-select-item.selected {
   color: var(--accent-light);
 }
+.searchable-select-item.disabled {
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.chart-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
 
 .chart-container {
   position: relative;

@@ -976,7 +976,7 @@ function renderExerciseDropdown(filter) {
     const name = getExerciseName(id);
     const cls = id === selectedVal ? 'searchable-select-item selected' : 'searchable-select-item';
     return `<div class="${cls}" data-value="${id}">${name}</div>`;
-  }).join('') || '<div class="searchable-select-item" style="color:var(--text-muted);pointer-events:none">Sin resultados</div>';
+  }).join('') || '<div class="searchable-select-item disabled">Sin resultados</div>';
 }
 
 function updateClearButton() {
