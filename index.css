@@ -325,9 +325,13 @@ body {
   gap: 8px;
 }
 
-.card-subtitle {
+.card-subtitle,
+.day-exercises {
   font-size: 12px;
+  font-weight: 400;
   color: var(--text-secondary);
+}
+.card-subtitle {
   margin-top: 4px;
 }
 
@@ -481,9 +485,6 @@ body {
 .list-btn .day-name { display: block; }
 .list-btn .day-exercises {
   display: block;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-secondary);
   margin-top: 2px;
 }
 
