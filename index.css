@@ -333,6 +333,10 @@ body {
 }
 .card-subtitle {
   margin-top: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-body {
@@ -486,6 +490,9 @@ body {
 .list-btn .day-exercises {
   display: block;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .day-btn { padding: 20px; }
