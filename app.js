@@ -377,12 +377,14 @@ function renderDaySelector(container) {
   for (const type of ROUTINE_KEYS) {
     const exercises = (DB.routines[type] || []).map(id => getExerciseName(id));
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
-    html += `<button class="list-btn day-btn" data-day="${type}">
-    <span class="day-info">
-      <span class="day-name">${DAY_LABELS[type]}</span>
-      <span class="day-exercises">${exercises.length} ejercicios · ${preview}</span>
-    </span>
-  </button>`;
+    html += `<div class="card day-btn" data-day="${type}">
+    <div class="card-header">
+      <div>
+        <div class="card-title">${DAY_LABELS[type]}</div>
+        <div class="card-subtitle">${exercises.length} ejercicios · ${preview}</div>
+      </div>
+    </div>
+  </div>`;
   }
   html += '</div>';
   container.innerHTML = html;

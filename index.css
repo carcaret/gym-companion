@@ -475,37 +475,18 @@ body {
   margin-bottom: 8px;
 }
 
-/* ── List Button (shared base for day-btn & historial-entry-btn) ── */
-.list-btn {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font-family: var(--font);
-  font-size: 16px;
-  font-weight: 600;
+.day-btn {
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  transition: all 0.2s var(--ease);
+  padding: 20px;
+  margin-bottom: 0;
 }
-.list-btn:active { transform: scale(0.97); }
-.list-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+.day-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
 
-.list-btn .day-icon { font-size: 28px; }
-.list-btn .day-info { text-align: left; min-width: 0; overflow: hidden; }
-.list-btn .day-name,
 .historial-entry-btn .day-name {
   display: block;
   font-size: 16px;
   font-weight: 600;
 }
-.list-btn .day-exercises {
-  margin-top: 2px;
-}
-
-.day-btn { padding: 20px; }
 
 /* ── Workout Active ── */
 .workout-status {
