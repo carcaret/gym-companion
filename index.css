@@ -583,18 +583,20 @@ body {
 
 .date-range {
   display: flex;
-  justify-content: space-between;
   gap: 8px;
   margin-bottom: 12px;
 }
 
 .date-range .input-group.small {
-  width: 46%;
+  flex: 1;
+  min-width: 0;
 }
 
 .date-range input[type="date"] {
   padding: 10px 8px;
   font-size: 13px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .chart-toggle {
