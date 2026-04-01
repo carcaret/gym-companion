@@ -591,14 +591,18 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
-  width: auto;
+  width: 0;
   min-width: 0;
+  overflow: hidden;
 }
 
 .date-range input[type="date"] {
   padding: 10px 8px;
   font-size: 13px;
   min-width: 0;
+  max-width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .chart-toggle {
