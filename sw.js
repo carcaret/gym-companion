@@ -16,7 +16,8 @@ const ASSETS = [
   './src/github.js',
   './src/charts.js',
   './db.json',
-  './manifest.json'
+  './manifest.json',
+  'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js'
 ];
 
 self.addEventListener('install', e => {

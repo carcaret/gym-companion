@@ -121,6 +121,22 @@ export function setRep(log, seriesIdx, value) {
 }
 
 /**
+ * Mueve un elemento de fromIndex a toIndex en una copia del array.
+ * Inmutable: devuelve nuevo array, no muta el original.
+ * @param {Array} arr - array de origen
+ * @param {number} fromIndex - índice del elemento a mover
+ * @param {number} toIndex - índice destino
+ * @returns {Array} nuevo array reordenado
+ */
+export function reorderByIndex(arr, fromIndex, toIndex) {
+  if (arr.length === 0 || fromIndex === toIndex) return [...arr];
+  const result = [...arr];
+  const [item] = result.splice(fromIndex, 1);
+  result.splice(toIndex, 0, item);
+  return result;
+}
+
+/**
  * Detect if current log has volume or e1RM records compared to history.
  * @param {object} log - current exercise log
  * @param {object[]} prevHistory - all history entries EXCLUDING today

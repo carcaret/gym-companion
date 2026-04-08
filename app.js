@@ -7,7 +7,7 @@ import { sha256 } from './src/crypto.js';
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords, isWorkoutActive as _isWorkoutActive } from './src/data.js';
-import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords, validateLog, validateEntry } from './src/workout.js';
+import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords, validateLog, validateEntry, reorderByIndex } from './src/workout.js';
 import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
 import { encryptPat, decryptPat, validateGitHubConfig, buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets } from './src/charts.js';
@@ -465,7 +465,8 @@ function renderActiveWorkout(container, entry) {
   let html = `<div class="workout-status">
   <span class="pulse-dot"></span>
   <span>Entreno en curso — ${DAY_LABELS[entry.type]}</span>
-</div>`;
+</div>
+<div id="workout-cards-list">`;
 
   let hasRecord = false;
 
@@ -479,6 +480,7 @@ function renderActiveWorkout(container, entry) {
 
     html += `<div class="card" id="exercise-card-${logIdx}">
     <div class="card-header" data-idx="${logIdx}">
+      <span class="drag-handle" title="Reordenar">&#9776;</span>
       <div>
         <div class="card-title" id="w-title-${logIdx}">
           ${name}
@@ -508,6 +510,8 @@ function renderActiveWorkout(container, entry) {
     html += '</div></div>';
   });
 
+  html += '</div>';
+
   document.getElementById('hoy-badge').hidden = !hasRecord;
 
   html += `<div class="workout-actions">
@@ -521,9 +525,10 @@ function renderActiveWorkout(container, entry) {
 
   container.innerHTML = html;
 
-  // Accordion: only one card open at a time
+  // Accordion: only one card open at a time; drag-handle clicks don't toggle
   container.querySelectorAll('.card-header').forEach(header => {
-    header.onclick = () => {
+    header.onclick = (e) => {
+      if (e.target.closest('.drag-handle')) return;
       const idx = header.dataset.idx;
       const body = document.getElementById(`body-${idx}`);
       const chevron = document.getElementById(`chevron-${idx}`);
@@ -551,6 +556,22 @@ function renderActiveWorkout(container, entry) {
   document.getElementById('finish-workout-btn').onclick = () => finishWorkout();
   const addMidBtn = document.getElementById('add-exercise-mid-btn');
   if (addMidBtn) addMidBtn.onclick = () => showAddExerciseModal(entry.type);
+
+  // Drag & drop reorder via SortableJS
+  const cardsList = document.getElementById('workout-cards-list');
+  if (cardsList && typeof Sortable !== 'undefined') {
+    Sortable.create(cardsList, {
+      handle: '.drag-handle',
+      animation: 150,
+      ghostClass: 'drag-ghost',
+      chosenClass: 'drag-chosen',
+      onEnd: (evt) => {
+        if (evt.oldIndex !== evt.newIndex) {
+          GymCompanion.reorderExercises(entry.type, evt.oldIndex, evt.newIndex);
+        }
+      }
+    });
+  }
 }
 
 async function finishWorkout() {
@@ -795,6 +816,21 @@ window.GymCompanion = {
 
   setHistoryRep: (date, logIdx, seriesIdx, value) =>
     withHistoryUpdate(() => _setHistoryRep(DB.history, date, logIdx, seriesIdx, value), date, logIdx),
+
+  reorderExercises: async (dayType, fromIndex, toIndex) => {
+    // 1. Reordenar rutina permanente
+    DB.routines[dayType] = reorderByIndex(DB.routines[dayType], fromIndex, toIndex);
+
+    // 2. Reordenar logs del entreno activo (mantener invariante)
+    const entry = getTodayEntry();
+    if (entry && !entry.completed) {
+      entry.logs = reorderByIndex(entry.logs, fromIndex, toIndex);
+    }
+
+    // 3. Persistir (localStorage + GitHub sync)
+    await persistDB();
+    toast('Orden actualizado');
+  },
 
   removeExerciseFromRoutine: (dayType, exerciseId, logIdx) => {
     showModal('¿Quitar ejercicio?', `<p class="text-sm">Se eliminará <strong>${getExerciseName(exerciseId)}</strong> de la rutina de ${DAY_LABELS[dayType]}. Los registros históricos se conservarán.</p>`, [
