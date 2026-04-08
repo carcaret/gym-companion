@@ -303,6 +303,52 @@ describe('adjustParam — repsExpected', () => {
     adjustParam(log, 'repsExpected', -1);
     expect(log.reps.expected).toBe(1);
   });
+
+  test('sincroniza todas las reps actuales al nuevo expected (actuales con valores)', () => {
+    const log = makeLog({ expected: 11, series: 3, actual: [11, 11, 9] });
+    adjustParam(log, 'repsExpected', 1);
+    expect(log.reps.expected).toBe(12);
+    expect(log.reps.actual).toEqual([12, 12, 12]);
+  });
+
+  test('sincroniza todas las reps actuales al bajar expected', () => {
+    const log = makeLog({ expected: 11, series: 3, actual: [11, 11, 9] });
+    adjustParam(log, 'repsExpected', -3);
+    expect(log.reps.expected).toBe(8);
+    expect(log.reps.actual).toEqual([8, 8, 8]);
+  });
+
+  test('sincroniza reps actuales que eran null', () => {
+    const log = makeLog({ expected: 10, series: 3, actual: [null, null, null] });
+    adjustParam(log, 'repsExpected', 1);
+    expect(log.reps.actual).toEqual([11, 11, 11]);
+  });
+
+  test('sincroniza reps actuales mixtas (con valores y nulls)', () => {
+    const log = makeLog({ expected: 10, series: 3, actual: [10, null, 8] });
+    adjustParam(log, 'repsExpected', 2);
+    expect(log.reps.actual).toEqual([12, 12, 12]);
+  });
+
+  test('al llegar al clamp (1), reps actuales también se ponen a 1', () => {
+    const log = makeLog({ expected: 1, series: 3, actual: [1, 1, 1] });
+    adjustParam(log, 'repsExpected', -1);
+    expect(log.reps.expected).toBe(1);
+    expect(log.reps.actual).toEqual([1, 1, 1]);
+  });
+
+  test('cambiar weight NO toca reps.actual', () => {
+    const log = makeLog({ weight: 50, expected: 10, series: 3, actual: [11, 9, 10] });
+    adjustParam(log, 'weight', 5);
+    expect(log.reps.actual).toEqual([11, 9, 10]);
+  });
+
+  test('cambiar series NO sincroniza reps.actual al expected', () => {
+    const log = makeLog({ expected: 10, series: 3, actual: [11, 9, 10] });
+    adjustParam(log, 'series', 1);
+    // nueva serie se añade como null, las demás quedan intactas
+    expect(log.reps.actual).toEqual([11, 9, 10, null]);
+  });
 });
 
 // ════════════════════════════════════════════════
@@ -365,6 +411,39 @@ describe('setParam', () => {
     const log = makeLog({ expected: 10 });
     setParam(log, 'repsExpected', '0');
     expect(log.reps.expected).toBe(1);
+  });
+
+  test('setParam repsExpected sincroniza todas las reps actuales al nuevo valor', () => {
+    const log = makeLog({ expected: 11, series: 3, actual: [11, 11, 9] });
+    setParam(log, 'repsExpected', '12');
+    expect(log.reps.expected).toBe(12);
+    expect(log.reps.actual).toEqual([12, 12, 12]);
+  });
+
+  test('setParam repsExpected sincroniza al bajar', () => {
+    const log = makeLog({ expected: 11, series: 3, actual: [11, 11, 9] });
+    setParam(log, 'repsExpected', '8');
+    expect(log.reps.expected).toBe(8);
+    expect(log.reps.actual).toEqual([8, 8, 8]);
+  });
+
+  test('setParam repsExpected sincroniza reps null', () => {
+    const log = makeLog({ expected: 10, series: 3, actual: [null, null, null] });
+    setParam(log, 'repsExpected', '15');
+    expect(log.reps.actual).toEqual([15, 15, 15]);
+  });
+
+  test('setParam repsExpected con clamp a 1 sincroniza actuales a 1', () => {
+    const log = makeLog({ expected: 5, series: 2, actual: [5, 4] });
+    setParam(log, 'repsExpected', '0');
+    expect(log.reps.expected).toBe(1);
+    expect(log.reps.actual).toEqual([1, 1]);
+  });
+
+  test('setParam weight NO toca reps.actual', () => {
+    const log = makeLog({ weight: 50, expected: 10, series: 3, actual: [11, 9, 10] });
+    setParam(log, 'weight', '60');
+    expect(log.reps.actual).toEqual([11, 9, 10]);
   });
 });
 

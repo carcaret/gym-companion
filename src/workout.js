@@ -91,17 +91,25 @@ export function finishWorkoutEntry(entry) {
 /**
  * Adjust a parameter (weight, series, repsExpected) on a log by delta.
  * Delegates to log-mutations.js. Mutates log in place.
+ * When repsExpected changes, all reps.actual are synced to the new expected value.
  */
 export function adjustParam(log, param, delta) {
   adjustLogParam(log, param, delta);
+  if (param === 'repsExpected') {
+    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
+  }
 }
 
 /**
  * Set a parameter directly from user input.
  * Delegates to log-mutations.js. Mutates log in place.
+ * When repsExpected changes, all reps.actual are synced to the new expected value.
  */
 export function setParam(log, param, value) {
   setLogParam(log, param, value);
+  if (param === 'repsExpected') {
+    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
+  }
 }
 
 /**
