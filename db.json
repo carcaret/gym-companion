@@ -17865,7 +17865,12 @@
           "series": 4,
           "reps": {
             "expected": 10,
-            "actual": []
+            "actual": [
+              10,
+              10,
+              9,
+              9
+            ]
           },
           "weight": 59
         },
@@ -18131,7 +18136,12 @@
           "series": 4,
           "reps": {
             "expected": 10,
-            "actual": []
+            "actual": [
+              10,
+              10,
+              9,
+              9
+            ]
           },
           "weight": 59
         },
@@ -18155,9 +18165,13 @@
           "series": 3,
           "reps": {
             "expected": 12,
-            "actual": []
+            "actual": [
+              12,
+              10,
+              10
+            ]
           },
-          "weight": 57.5
+          "weight": 55
         },
         {
           "exercise_id": "encogimiento_trapecio_barra",
@@ -18740,6 +18754,100 @@
             ]
           },
           "weight": 16.5
+        }
+      ]
+    },
+    {
+      "date": "2026-04-10",
+      "type": "DIA3",
+      "completed": false,
+      "logs": [
+        {
+          "exercise_id": "extension_de_cuadriceps",
+          "name": "Extensión de Cuádriceps",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11,
+              10
+            ]
+          },
+          "weight": 97
+        },
+        {
+          "exercise_id": "press_inclinado_maquina",
+          "name": "Press Inclinado en Máquina",
+          "series": 4,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12,
+              11
+            ]
+          },
+          "weight": 30
+        },
+        {
+          "exercise_id": "pullover_polea",
+          "name": "Pullover en Polea",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              9,
+              9
+            ]
+          },
+          "weight": 59
+        },
+        {
+          "exercise_id": "press_de_hombros_mancuernas_sentado",
+          "name": "Press de Hombros con Mancuernas Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              9
+            ]
+          },
+          "weight": 18
+        },
+        {
+          "exercise_id": "hip_thrust",
+          "name": "Hip Thrust",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              10,
+              10
+            ]
+          },
+          "weight": 55
+        },
+        {
+          "exercise_id": "encogimiento_trapecio_barra",
+          "name": "Encogimiento de Trapecios con Barra",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              10,
+              10
+            ]
+          },
+          "weight": 100
         }
       ]
     }
