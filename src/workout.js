@@ -1,5 +1,5 @@
 import { computeVolume, computeE1RM, getMaxMetrics } from './metrics.js';
-import { adjustLogParam, setLogParam, adjustLogRep, setLogRep } from './log-mutations.js';
+import { adjustLogParamWithSync, setLogParamWithSync, adjustLogRep, setLogRep } from './log-mutations.js';
 
 /**
  * Valida un log de ejercicio. Devuelve array de errores.
@@ -94,10 +94,7 @@ export function finishWorkoutEntry(entry) {
  * When repsExpected changes, all reps.actual are synced to the new expected value.
  */
 export function adjustParam(log, param, delta) {
-  adjustLogParam(log, param, delta);
-  if (param === 'repsExpected') {
-    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
-  }
+  adjustLogParamWithSync(log, param, delta);
 }
 
 /**
@@ -106,10 +103,7 @@ export function adjustParam(log, param, delta) {
  * When repsExpected changes, all reps.actual are synced to the new expected value.
  */
 export function setParam(log, param, value) {
-  setLogParam(log, param, value);
-  if (param === 'repsExpected') {
-    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
-  }
+  setLogParamWithSync(log, param, value);
 }
 
 /**

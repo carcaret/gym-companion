@@ -184,6 +184,26 @@ describe('adjustHistoryParam — repsExpected', () => {
     adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', -1);
     expect(h[0].logs[0].reps.expected).toBe(1);
   });
+
+  test('sincroniza reps actual al nuevo expected (caso clave: 11→12 con [11,11,9])', () => {
+    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 11, actual: [11, 11, 9] })] })];
+    adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', 1);
+    expect(h[0].logs[0].reps.expected).toBe(12);
+    expect(h[0].logs[0].reps.actual).toEqual([12, 12, 12]);
+  });
+
+  test('sincroniza reps actual al decrementar expected', () => {
+    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10, actual: [10, 8, 10] })] })];
+    adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', -1);
+    expect(h[0].logs[0].reps.expected).toBe(9);
+    expect(h[0].logs[0].reps.actual).toEqual([9, 9, 9]);
+  });
+
+  test('sincroniza reps actual con nulls al nuevo expected', () => {
+    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10 })] })];
+    adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', 2);
+    expect(h[0].logs[0].reps.actual).toEqual([12, 12, 12]);
+  });
 });
 
 describe('adjustHistoryParam — edge cases', () => {
@@ -253,6 +273,25 @@ describe('setHistoryParam', () => {
     const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10 })] })];
     setHistoryParam(h, '2026-03-25', 0, 'repsExpected', '0');
     expect(h[0].logs[0].reps.expected).toBe(1);
+  });
+
+  test('setear repsExpected sincroniza reps actual al nuevo valor', () => {
+    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10, actual: [10, 10, 8] })] })];
+    setHistoryParam(h, '2026-03-25', 0, 'repsExpected', '12');
+    expect(h[0].logs[0].reps.expected).toBe(12);
+    expect(h[0].logs[0].reps.actual).toEqual([12, 12, 12]);
+  });
+
+  test('setear weight NO sincroniza reps actual', () => {
+    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ weight: 50, actual: [10, 8, 9] })] })];
+    setHistoryParam(h, '2026-03-25', 0, 'weight', '60');
+    expect(h[0].logs[0].reps.actual).toEqual([10, 8, 9]);
+  });
+
+  test('setear series NO sincroniza reps actual', () => {
+    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3, actual: [10, 8, 9] })] })];
+    setHistoryParam(h, '2026-03-25', 0, 'series', '4');
+    expect(h[0].logs[0].reps.actual).toEqual([10, 8, 9, null]);
   });
 
   test('con fecha inexistente retorna null', () => {

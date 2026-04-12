@@ -2,7 +2,7 @@
  * Pure history logic — no DOM, no persistence.
  * Operates on history arrays and entry objects passed as arguments.
  */
-import { adjustLogParam, setLogParam, adjustLogRep, setLogRep } from './log-mutations.js';
+import { adjustLogParamWithSync, setLogParamWithSync, adjustLogRep, setLogRep } from './log-mutations.js';
 
 /**
  * Filter history entries by day type.
@@ -42,7 +42,7 @@ function findEntryLog(history, date, logIdx) {
 export function adjustHistoryParam(history, date, logIdx, param, delta) {
   const found = findEntryLog(history, date, logIdx);
   if (!found) return null;
-  adjustLogParam(found.log, param, delta);
+  adjustLogParamWithSync(found.log, param, delta);
   return found.entry;
 }
 
@@ -53,7 +53,7 @@ export function adjustHistoryParam(history, date, logIdx, param, delta) {
 export function setHistoryParam(history, date, logIdx, param, value) {
   const found = findEntryLog(history, date, logIdx);
   if (!found) return null;
-  setLogParam(found.log, param, value);
+  setLogParamWithSync(found.log, param, value);
   return found.entry;
 }
 

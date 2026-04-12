@@ -66,3 +66,31 @@ export function setLogRep(log, seriesIdx, value) {
   const num = parseInt(value);
   log.reps.actual[seriesIdx] = isNaN(num) ? null : Math.max(0, num);
 }
+
+/**
+ * Adjust a parameter and sync actual reps to expected when repsExpected changes.
+ * Used by both workout and history contexts.
+ * @param {object} log
+ * @param {string} param
+ * @param {number} delta
+ */
+export function adjustLogParamWithSync(log, param, delta) {
+  adjustLogParam(log, param, delta);
+  if (param === 'repsExpected') {
+    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
+  }
+}
+
+/**
+ * Set a parameter and sync actual reps to expected when repsExpected changes.
+ * Used by both workout and history contexts.
+ * @param {object} log
+ * @param {string} param
+ * @param {*} value
+ */
+export function setLogParamWithSync(log, param, value) {
+  setLogParam(log, param, value);
+  if (param === 'repsExpected') {
+    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
+  }
+}
