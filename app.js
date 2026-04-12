@@ -1247,13 +1247,21 @@ function setupSettings() {
       return;
     }
 
+    if (!newPass.trim()) {
+      statusEl.textContent = '❌ La contraseña nueva no puede estar vacía';
+      statusEl.className = 'status-msg error';
+      return;
+    }
+
+    // Decrypt stored PAT with old password BEFORE changing currentPassword
+    const storedPat = getDecryptedPat();
+
     const newHash = await sha256(SALT + newPass);
     DB.auth.passwordHash = newHash;
     currentPassword = newPass;
 
     // Re-encrypt PAT with new password
-    const pat = document.getElementById('set-pat').value.trim();
-    if (pat) localStorage.setItem(PAT_KEY, encryptPat(pat, currentPassword));
+    if (storedPat) localStorage.setItem(PAT_KEY, encryptPat(storedPat, currentPassword));
 
     // Update session
     const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
