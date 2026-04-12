@@ -153,10 +153,10 @@ describe('adjustHistoryParam — series', () => {
     expect(h[0].logs[0].series).toBe(1);
   });
 
-  test('al incrementar, añade null a reps.actual', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3, actual: [10, 10, 10] })] })];
+  test('al incrementar, añade reps.expected a reps.actual', () => {
+    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3, expected: 10, actual: [10, 10, 10] })] })];
     adjustHistoryParam(h, '2026-03-25', 0, 'series', 1);
-    expect(h[0].logs[0].reps.actual).toEqual([10, 10, 10, null]);
+    expect(h[0].logs[0].reps.actual).toEqual([10, 10, 10, 10]);
   });
 
   test('al decrementar, elimina último de reps.actual', () => {
@@ -244,10 +244,10 @@ describe('setHistoryParam', () => {
   });
 
   test('establece series con resize de reps.actual (expand)', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 2, actual: [10, 10] })] })];
+    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 2, expected: 10, actual: [10, 10] })] })];
     setHistoryParam(h, '2026-03-25', 0, 'series', '4');
     expect(h[0].logs[0].series).toBe(4);
-    expect(h[0].logs[0].reps.actual).toEqual([10, 10, null, null]);
+    expect(h[0].logs[0].reps.actual).toEqual([10, 10, 10, 10]);
   });
 
   test('establece series con resize de reps.actual (truncate)', () => {
@@ -288,10 +288,10 @@ describe('setHistoryParam', () => {
     expect(h[0].logs[0].reps.actual).toEqual([10, 8, 9]);
   });
 
-  test('setear series NO sincroniza reps actual', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3, actual: [10, 8, 9] })] })];
+  test('setear series NO sincroniza reps actual (añade reps.expected)', () => {
+    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3, expected: 10, actual: [10, 8, 9] })] })];
     setHistoryParam(h, '2026-03-25', 0, 'series', '4');
-    expect(h[0].logs[0].reps.actual).toEqual([10, 8, 9, null]);
+    expect(h[0].logs[0].reps.actual).toEqual([10, 8, 9, 10]);
   });
 
   test('con fecha inexistente retorna null', () => {

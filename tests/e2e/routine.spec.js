@@ -77,7 +77,7 @@ test.describe('Gestion de rutina', () => {
     expect(result.hasExercise).toBe(true);
   });
 
-  test('crear ejercicio con nombre duplicado muestra warning', async ({ page }) => {
+  test('crear ejercicio con nombre duplicado muestra warning y modal sigue abierto', async ({ page }) => {
     await goToRoutine(page);
 
     await page.locator('#add-exercise-btn').click();
@@ -89,6 +89,25 @@ test.describe('Gestion de rutina', () => {
 
     // Should show toast with warning
     await expect(page.locator('#toast')).toContainText('Ya existe');
+
+    // Modal should still be open (not closed)
+    await expect(page.locator('#modal-overlay')).not.toHaveAttribute('hidden');
+
+    // Input should still have the text the user typed
+    await expect(page.locator('#new-exercise-name')).toHaveValue('Press Banca');
+  });
+
+  test('crear ejercicio nuevo cierra el modal tras éxito', async ({ page }) => {
+    await goToRoutine(page);
+
+    await page.locator('#add-exercise-btn').click();
+    await page.locator('#create-exercise-btn').click();
+
+    await page.fill('#new-exercise-name', 'Ejercicio Único XYZ');
+    await page.locator('#modal-actions .btn-primary').click();
+
+    // Modal should be closed after success
+    await expect(page.locator('#modal-overlay')).toHaveAttribute('hidden', '');
   });
 
   test('buscar ejercicio en modal filtra correctamente', async ({ page }) => {

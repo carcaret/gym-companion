@@ -1,5 +1,11 @@
 import { getMaxMetrics } from './metrics.js';
 
+export function ensureHistorySorted(db) {
+  if (db && db.history) {
+    db.history.sort((a, b) => a.date.localeCompare(b.date));
+  }
+}
+
 export function getExerciseName(db, id) {
   return db.exercises[id] ? db.exercises[id].name : id;
 }
@@ -25,7 +31,7 @@ export function getLastValuesForExercise(db, exerciseId, dayType) {
     if (log) return { series: log.series, repsExpected: log.reps.expected, weight: log.weight, repsActual: log.reps.actual || [] };
   }
   // Fallback: any dayType
-  const allEntries = db.history
+  const allEntries = [...db.history]
     .sort((a, b) => a.date.localeCompare(b.date));
   for (let i = allEntries.length - 1; i >= 0; i--) {
     const log = allEntries[i].logs.find(l => l.exercise_id === exerciseId);

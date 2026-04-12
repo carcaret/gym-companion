@@ -56,12 +56,12 @@ describe('adjustLogParam', () => {
   });
 
   describe('series', () => {
-    test('incrementa series y añade slot', () => {
-      const log = makeLog({ series: 3 });
+    test('incrementa series y añade slot con reps.expected', () => {
+      const log = makeLog({ series: 3, expected: 10 });
       adjustLogParam(log, 'series', 1);
       expect(log.series).toBe(4);
       expect(log.reps.actual).toHaveLength(4);
-      expect(log.reps.actual[3]).toBeNull();
+      expect(log.reps.actual[3]).toBe(10);
     });
 
     test('decrementa series y elimina slot', () => {
@@ -134,13 +134,13 @@ describe('setLogParam', () => {
   });
 
   describe('series', () => {
-    test('establece series y ajusta array de reps', () => {
-      const log = makeLog({ series: 2, actual: [10, 10] });
+    test('establece series y ajusta array de reps con reps.expected', () => {
+      const log = makeLog({ series: 2, expected: 10, actual: [10, 10] });
       setLogParam(log, 'series', '4');
       expect(log.series).toBe(4);
       expect(log.reps.actual).toHaveLength(4);
-      expect(log.reps.actual[2]).toBeNull();
-      expect(log.reps.actual[3]).toBeNull();
+      expect(log.reps.actual[2]).toBe(10);
+      expect(log.reps.actual[3]).toBe(10);
     });
 
     test('reduce series y recorta array', () => {
@@ -181,6 +181,28 @@ describe('setLogParam', () => {
     const log = makeLog({ weight: 50 });
     setLogParam(log, 'noexiste', '999');
     expect(log.weight).toBe(50);
+  });
+});
+
+describe('adjustLogParam — series con reps.expected', () => {
+  test('nueva serie toma el valor de reps.expected, no null', () => {
+    const log = makeLog({ series: 2, expected: 8, actual: [8, 8] });
+    adjustLogParam(log, 'series', 1);
+    expect(log.reps.actual[2]).toBe(8);
+  });
+
+  test('decrementar y volver a incrementar → nuevo slot usa reps.expected actual', () => {
+    const log = makeLog({ series: 3, expected: 12, actual: [12, 12, 12] });
+    adjustLogParam(log, 'series', -1);
+    adjustLogParam(log, 'series', 1);
+    expect(log.reps.actual[2]).toBe(12);
+  });
+
+  test('setLogParam al ampliar series usa reps.expected', () => {
+    const log = makeLog({ series: 1, expected: 15, actual: [15] });
+    setLogParam(log, 'series', '3');
+    expect(log.reps.actual[1]).toBe(15);
+    expect(log.reps.actual[2]).toBe(15);
   });
 });
 
@@ -303,11 +325,11 @@ describe('adjustLogParamWithSync', () => {
     expect(log.reps.actual).toEqual([10, 8, 9]);
   });
 
-  test('cambiar series NO sincroniza reps actual (solo añade/quita slot)', () => {
-    const log = makeLog({ series: 3, actual: [10, 8, 9] });
+  test('cambiar series NO sincroniza reps actual (añade slot con reps.expected)', () => {
+    const log = makeLog({ series: 3, expected: 10, actual: [10, 8, 9] });
     adjustLogParamWithSync(log, 'series', 1);
     expect(log.series).toBe(4);
-    expect(log.reps.actual).toEqual([10, 8, 9, null]);
+    expect(log.reps.actual).toEqual([10, 8, 9, 10]);
   });
 });
 
@@ -342,10 +364,10 @@ describe('setLogParamWithSync', () => {
     expect(log.reps.actual).toEqual([10, 8, 9]);
   });
 
-  test('setear series NO sincroniza reps actual', () => {
-    const log = makeLog({ series: 3, actual: [10, 8, 9] });
+  test('setear series NO sincroniza reps actual (añade slot con reps.expected)', () => {
+    const log = makeLog({ series: 3, expected: 10, actual: [10, 8, 9] });
     setLogParamWithSync(log, 'series', '4');
     expect(log.series).toBe(4);
-    expect(log.reps.actual).toEqual([10, 8, 9, null]);
+    expect(log.reps.actual).toEqual([10, 8, 9, 10]);
   });
 });

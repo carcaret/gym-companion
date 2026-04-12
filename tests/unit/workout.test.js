@@ -272,10 +272,10 @@ describe('adjustParam — series', () => {
     expect(log.series).toBe(1);
   });
 
-  test('al incrementar, añade null a reps.actual', () => {
-    const log = makeLog({ series: 2, actual: [10, 8] });
+  test('al incrementar, añade reps.expected a reps.actual', () => {
+    const log = makeLog({ series: 2, expected: 10, actual: [10, 8] });
     adjustParam(log, 'series', 1);
-    expect(log.reps.actual).toEqual([10, 8, null]);
+    expect(log.reps.actual).toEqual([10, 8, 10]);
   });
 
   test('al decrementar, elimina último de reps.actual', () => {
@@ -343,11 +343,11 @@ describe('adjustParam — repsExpected', () => {
     expect(log.reps.actual).toEqual([11, 9, 10]);
   });
 
-  test('cambiar series NO sincroniza reps.actual al expected', () => {
+  test('cambiar series NO sincroniza reps.actual al expected (añade reps.expected)', () => {
     const log = makeLog({ expected: 10, series: 3, actual: [11, 9, 10] });
     adjustParam(log, 'series', 1);
-    // nueva serie se añade como null, las demás quedan intactas
-    expect(log.reps.actual).toEqual([11, 9, 10, null]);
+    // nueva serie toma reps.expected, las demás quedan intactas
+    expect(log.reps.actual).toEqual([11, 9, 10, 10]);
   });
 });
 
@@ -381,10 +381,10 @@ describe('setParam', () => {
   });
 
   test('setParam series con valor válido', () => {
-    const log = makeLog({ series: 3, actual: [10, 8, 9] });
+    const log = makeLog({ series: 3, expected: 10, actual: [10, 8, 9] });
     setParam(log, 'series', '4');
     expect(log.series).toBe(4);
-    expect(log.reps.actual).toEqual([10, 8, 9, null]);
+    expect(log.reps.actual).toEqual([10, 8, 9, 10]);
   });
 
   test('setParam series ajusta array de reps.actual (truncate)', () => {

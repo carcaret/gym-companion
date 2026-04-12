@@ -6,7 +6,7 @@ import { SALT, DAY_MAP, DAY_LABELS, ROUTINE_KEYS, SESSION_KEY, GITHUB_KEY, DB_LO
 import { sha256 } from './src/crypto.js';
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords, isWorkoutActive as _isWorkoutActive } from './src/data.js';
+import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords, validateLog, validateEntry, reorderByIndex } from './src/workout.js';
 import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
 import { encryptPat, decryptPat, validateGitHubConfig, buildGitHubPayload, parseGitHubResponse } from './src/github.js';
@@ -39,7 +39,7 @@ function showModal(title, bodyHtml, actions) {
     const btn = document.createElement('button');
     btn.className = a.className || 'btn-secondary btn-sm';
     btn.textContent = a.label;
-    btn.onclick = () => { a.action(); hideModal(); };
+    btn.onclick = async () => { const result = await a.action(); if (result !== false) hideModal(); };
     actionsEl.appendChild(btn);
   });
   overlay.hidden = false;
@@ -165,6 +165,7 @@ async function handleLogin(e) {
   }
 
   DB = data;
+  ensureHistorySorted(DB);
   const hash = await sha256(SALT + pass);
 
   if (DB.auth.username.toLowerCase() !== user.toLowerCase() || DB.auth.passwordHash !== hash) {
@@ -193,6 +194,7 @@ async function tryAutoLogin() {
   if (local) {
     try { DB = JSON.parse(local); } catch { return false; }
     if (DB.auth && DB.auth.username === session.user && DB.auth.passwordHash === session.hash) {
+      ensureHistorySorted(DB);
       showApp();
       return true;
     }
@@ -361,7 +363,7 @@ function renderHoy() {
   }
 
   // If today's workout is completed
-  if (todayEntry && todayEntry.completed && completedDismissed !== todayStr()) {
+  if (todayEntry && todayEntry.completed) {
     title.textContent = `${DAY_LABELS[todayEntry.type]} ✓`;
     renderCompletedToday(content, todayEntry);
     return;
@@ -456,6 +458,7 @@ async function startWorkout(dayType) {
   // Remove existing today entry if any
   DB.history = DB.history.filter(h => h.date !== todayStr());
   DB.history.push(entry);
+  ensureHistorySorted(DB);
   await persistDB();
   renderHoy();
   toast('¡Entreno iniciado!');
@@ -630,16 +633,7 @@ function renderCompletedToday(container, entry) {
     </div>`;
   });
 
-  html += `<div class="routine-actions">
-    <button class="btn-primary" id="completed-close-btn">Cerrar</button>
-  </div>`;
-
   container.innerHTML = html;
-
-  document.getElementById('completed-close-btn').onclick = () => {
-    completedDismissed = todayStr();
-    renderHoy();
-  };
 }
 
 // ── Exercise Management ──
@@ -722,7 +716,7 @@ function showCreateExerciseModal(dayType) {
         const name = document.getElementById('new-exercise-name').value.trim();
         if (!name) return;
         const id = slugifyExerciseName(name);
-        if (DB.exercises[id]) { toast('⚠️ Ya existe ese ejercicio'); return; }
+        if (DB.exercises[id]) { toast('⚠️ Ya existe ese ejercicio'); return false; }
         DB.exercises[id] = { id, name };
         if (!DB.routines[dayType]) DB.routines[dayType] = [];
         DB.routines[dayType].push(id);
@@ -854,7 +848,6 @@ window.GymCompanion = {
 // ── View: Historial ──
 let historialFilter = 'TODOS';
 let editingHistorialExercise = null; // { date, logIdx } or null
-let completedDismissed = null; // date string when user dismissed completed view
 
 function renderHistorial() {
   const content = document.getElementById('historial-content');
@@ -1227,6 +1220,7 @@ function setupSettings() {
       statusEl.textContent = '✅ Conexión exitosa. DB cargada.';
       statusEl.classList.add('success');
       DB = ok;
+      ensureHistorySorted(DB);
       saveDBLocal();
     } else {
       statusEl.textContent = '❌ No se pudo conectar. Verifica repo, PAT y rama.';
@@ -1287,6 +1281,7 @@ function setupSettings() {
         return;
       }
       DB = data;
+      ensureHistorySorted(DB);
       saveDBLocal();
       renderHoy();
       statusEl.textContent = '✅ Datos sincronizados desde GitHub';

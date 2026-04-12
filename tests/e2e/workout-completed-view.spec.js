@@ -145,46 +145,41 @@ test.describe('Vista de entreno completado', () => {
     await expect(page.locator('#view-historial .historial-detail-card .card-subtitle').first()).toBeVisible();
   });
 
-  test('botón Cerrar visible y con estilo btn-primary', async ({ page }) => {
+  test('no hay botón Cerrar en la vista de completado', async ({ page }) => {
     await completeWorkout(page);
 
-    const closeBtn = page.locator('#completed-close-btn');
-    await expect(closeBtn).toBeVisible();
-    await expect(closeBtn).toHaveText('Cerrar');
-    await expect(closeBtn).toHaveClass(/btn-primary/);
+    await expect(page.locator('#completed-close-btn')).toHaveCount(0);
   });
 
-  test('botón Cerrar vuelve a la vista de rutinas', async ({ page }) => {
+  test('navegar entre múltiples pestañas y volver siempre muestra el resumen completado', async ({ page }) => {
     await completeWorkout(page);
 
-    const closeBtn = page.locator('#completed-close-btn');
-    await closeBtn.click();
+    // Navegar a ajustes y volver
+    await page.click('[data-view="ajustes"]');
+    await page.click('[data-view="hoy"]');
+    await expect(page.locator('.workout-status')).toContainText('completado');
 
-    // Debe mostrar el selector de rutinas
-    await expect(page.locator('.day-selector')).toBeVisible();
+    // Navegar a gráficas y volver
+    await page.click('[data-view="graficas"]');
+    await page.click('[data-view="hoy"]');
+    await expect(page.locator('.workout-status')).toContainText('completado');
 
-    // El título debe ser "Rutinas"
-    const title = page.locator('#hoy-title');
-    await expect(title).toHaveText('Rutinas');
-
-    // Las cards del entreno completado ya no deben estar
-    await expect(page.locator('.historial-detail-card')).toHaveCount(0);
+    // Nunca aparece el selector de rutinas ni el botón Cerrar
+    await expect(page.locator('.day-selector')).toHaveCount(0);
+    await expect(page.locator('#completed-close-btn')).toHaveCount(0);
   });
 
-  test('al volver de otra pestaña tras cerrar, sigue en rutinas (no vuelve a completado)', async ({ page }) => {
+  test('navegar a otra pestaña y volver sigue mostrando el resumen completado', async ({ page }) => {
     await completeWorkout(page);
-
-    // Cerrar la vista completada
-    await page.locator('#completed-close-btn').click();
-    await expect(page.locator('.day-selector')).toBeVisible();
 
     // Navegar a historial y volver
     await page.click('[data-view="historial"]');
     await expect(page.locator('#view-historial')).toBeVisible();
     await page.click('[data-view="hoy"]');
 
-    // Debe seguir en el selector de rutinas, no en la vista completada
-    await expect(page.locator('.day-selector')).toBeVisible();
-    await expect(page.locator('#completed-close-btn')).toHaveCount(0);
+    // Debe seguir mostrando el resumen completado
+    await expect(page.locator('.workout-status')).toContainText('completado');
+    await expect(page.locator('.historial-detail-card')).not.toHaveCount(0);
+    await expect(page.locator('.day-selector')).toHaveCount(0);
   });
 });

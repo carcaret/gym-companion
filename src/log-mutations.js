@@ -15,7 +15,7 @@ export function adjustLogParam(log, param, delta) {
   } else if (param === 'series') {
     const newSeries = Math.max(1, log.series + delta);
     if (newSeries > log.series) {
-      log.reps.actual.push(null);
+      log.reps.actual.push(log.reps.expected);
     } else if (newSeries < log.series) {
       log.reps.actual.pop();
     }
@@ -37,7 +37,7 @@ export function setLogParam(log, param, value) {
     log.weight = Math.max(0, num);
   } else if (param === 'series') {
     const newSeries = Math.max(1, Math.round(num));
-    while (log.reps.actual.length < newSeries) log.reps.actual.push(null);
+    while (log.reps.actual.length < newSeries) log.reps.actual.push(log.reps.expected);
     while (log.reps.actual.length > newSeries) log.reps.actual.pop();
     log.series = newSeries;
   } else if (param === 'repsExpected') {

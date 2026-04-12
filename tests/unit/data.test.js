@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getExerciseName, getTodayEntry, getLastValuesForExercise, getHistoricalRecords } from '../../src/data.js';
+import { getExerciseName, getTodayEntry, getLastValuesForExercise, getHistoricalRecords, ensureHistorySorted } from '../../src/data.js';
 
 const DB_FIXTURE = {
   exercises: {
@@ -325,5 +325,83 @@ describe('getLastValuesForExercise (fallback cross-dayType)', () => {
     const last = getLastValuesForExercise(db, 'press_banca', 'DIA1');
     expect(last.weight).toBe(50);
     expect(last.repsActual).toEqual([]);
+  });
+});
+
+describe('getLastValuesForExercise — no muta DB.history', () => {
+  test('el orden de db.history no cambia tras llamar getLastValuesForExercise', () => {
+    const db = {
+      exercises: DB_FIXTURE.exercises,
+      routines: DB_FIXTURE.routines,
+      history: [
+        { date: '2024-03-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 80 }] },
+        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
+        { date: '2024-02-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 70 }] },
+      ],
+    };
+    const originalOrder = db.history.map(h => h.date);
+    getLastValuesForExercise(db, 'press_banca', 'DIA1');
+    const afterOrder = db.history.map(h => h.date);
+    expect(afterOrder).toEqual(originalOrder);
+  });
+
+  test('el fallback (allEntries) no muta db.history', () => {
+    const db = {
+      exercises: DB_FIXTURE.exercises,
+      routines: DB_FIXTURE.routines,
+      history: [
+        { date: '2024-03-01', type: 'DIA2', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 80 }] },
+        { date: '2024-01-01', type: 'DIA2', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
+      ],
+    };
+    const originalOrder = db.history.map(h => h.date);
+    getLastValuesForExercise(db, 'press_banca', 'DIA1'); // triggers fallback path
+    const afterOrder = db.history.map(h => h.date);
+    expect(afterOrder).toEqual(originalOrder);
+  });
+});
+
+describe('ensureHistorySorted', () => {
+  test('ordena history ascendente por fecha', () => {
+    const db = {
+      history: [
+        { date: '2024-03-01', type: 'DIA1', completed: true, logs: [] },
+        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [] },
+        { date: '2024-02-01', type: 'DIA1', completed: true, logs: [] },
+      ],
+    };
+    ensureHistorySorted(db);
+    expect(db.history.map(h => h.date)).toEqual(['2024-01-01', '2024-02-01', '2024-03-01']);
+  });
+
+  test('array ya ordenado no cambia', () => {
+    const db = {
+      history: [
+        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [] },
+        { date: '2024-02-01', type: 'DIA1', completed: true, logs: [] },
+      ],
+    };
+    ensureHistorySorted(db);
+    expect(db.history.map(h => h.date)).toEqual(['2024-01-01', '2024-02-01']);
+  });
+
+  test('array vacío no lanza error', () => {
+    const db = { history: [] };
+    expect(() => ensureHistorySorted(db)).not.toThrow();
+    expect(db.history).toEqual([]);
+  });
+
+  test('array de un elemento no cambia', () => {
+    const db = { history: [{ date: '2024-01-01', type: 'DIA1', completed: true, logs: [] }] };
+    ensureHistorySorted(db);
+    expect(db.history).toHaveLength(1);
+  });
+
+  test('db null no lanza error', () => {
+    expect(() => ensureHistorySorted(null)).not.toThrow();
+  });
+
+  test('db sin history no lanza error', () => {
+    expect(() => ensureHistorySorted({})).not.toThrow();
   });
 });
