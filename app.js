@@ -2,6 +2,8 @@
  Gym Companion — Main Application
  ========================================= */
 
+const APP_VERSION = '1.0.0';
+
 import { SALT, DAY_MAP, DAY_LABELS, ROUTINE_KEYS, SESSION_KEY, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
 import { sha256 } from './src/crypto.js';
 import { todayStr, formatDate } from './src/dates.js';
@@ -1352,6 +1354,11 @@ async function init() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => { });
   }
+
+  // Show version
+  const versionText = `v${APP_VERSION}`;
+  document.getElementById('login-version').textContent = versionText;
+  document.getElementById('settings-version').textContent = versionText;
 
   // Setup event listeners
   document.getElementById('login-form').addEventListener('submit', handleLogin);

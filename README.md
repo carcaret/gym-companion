@@ -25,3 +25,11 @@ El devcontainer redirige automáticamente el puerto. Abre la URL que aparece en 
 ## Despliegue
 
 GitHub Pages — rama `master`, raíz del repositorio.
+
+## Configuración inicial (una vez por clon)
+
+Activa el hook que auto-incrementa la versión en cada push:
+
+```bash
+git config core.hooksPath .hooks
+```
