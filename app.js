@@ -12,7 +12,7 @@ import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, g
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords, validateLog, validateEntry, reorderByIndex } from './src/workout.js';
 import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
 import { encryptPat, decryptPat, validateGitHubConfig, buildGitHubPayload, parseGitHubResponse } from './src/github.js';
-import { getExercisesInRange, buildChartDatasets } from './src/charts.js';
+import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
 
 let DB = null;
 let githubSha = null;
@@ -980,9 +980,9 @@ function renderHistorialDetail(date) {
 // ── View: Gráficas ──
 function initCharts() {
   const now = new Date();
-  const threeMonthsAgo = new Date(now);
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-  document.getElementById('chart-from').value = threeMonthsAgo.toISOString().split('T')[0];
+  const oneYearAgo = new Date(now);
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  document.getElementById('chart-from').value = oneYearAgo.toISOString().split('T')[0];
   document.getElementById('chart-to').value = todayStr();
   updateChartExercises();
 }
@@ -1012,11 +1012,28 @@ function renderExerciseDropdown(filter) {
   const lowerFilter = filter.toLowerCase();
   const filtered = chartExerciseIds.filter(id => getExerciseName(id).toLowerCase().includes(lowerFilter));
 
-  list.innerHTML = filtered.map(id => {
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="searchable-select-item disabled">Sin resultados</div>';
+    return;
+  }
+
+  const routineExerciseIds = Object.values(DB.routines).flat();
+  const { inRoutine, others } = sortExercisesForDropdown(filtered, routineExerciseIds, getExerciseName);
+
+  const toItem = id => {
     const name = getExerciseName(id);
     const cls = id === selectedVal ? 'searchable-select-item selected' : 'searchable-select-item';
     return `<div class="${cls}" data-value="${id}">${name}</div>`;
-  }).join('') || '<div class="searchable-select-item disabled">Sin resultados</div>';
+  };
+
+  const parts = [];
+  if (inRoutine.length > 0) parts.push(...inRoutine.map(toItem));
+  if (inRoutine.length > 0 && others.length > 0) {
+    parts.push('<div class="searchable-select-separator"></div>');
+  }
+  if (others.length > 0) parts.push(...others.map(toItem));
+
+  list.innerHTML = parts.join('');
 }
 
 function updateClearButton() {

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getExercisesInRange, buildChartDatasets } from '../../src/charts.js';
+import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from '../../src/charts.js';
 
 // ── Helpers ──
 
@@ -215,5 +215,79 @@ describe('buildChartDatasets', () => {
     expect(e1rmDs.borderDash).toEqual([5, 5]);
     expect(e1rmDs.yAxisID).toBe('y1');
     expect(e1rmDs.type).toBe('line');
+  });
+});
+
+// ── sortExercisesForDropdown ──
+
+describe('sortExercisesForDropdown', () => {
+  test('separa en inRoutine y others según routineExerciseIds', () => {
+    const ids = ['press_banca', 'curl_biceps', 'sentadilla', 'zancadas'];
+    const routine = ['press_banca', 'sentadilla'];
+    const { inRoutine, others } = sortExercisesForDropdown(ids, routine, getName);
+    expect(inRoutine).toContain('press_banca');
+    expect(inRoutine).toContain('sentadilla');
+    expect(others).toContain('curl_biceps');
+    expect(others).toContain('zancadas');
+    expect(inRoutine.length).toBe(2);
+    expect(others.length).toBe(2);
+  });
+
+  test('inRoutine y others están ordenados alfabéticamente en español', () => {
+    const ids = ['zancadas', 'curl_biceps', 'sentadilla', 'press_banca'];
+    const routine = ['zancadas', 'press_banca'];
+    const { inRoutine, others } = sortExercisesForDropdown(ids, routine, getName);
+    // Press banca < Zancadas
+    expect(inRoutine).toEqual(['press_banca', 'zancadas']);
+    // Curl bíceps < Sentadilla
+    expect(others).toEqual(['curl_biceps', 'sentadilla']);
+  });
+
+  test('todos en rutina → others vacío', () => {
+    const ids = ['press_banca', 'curl_biceps'];
+    const routine = ['press_banca', 'curl_biceps'];
+    const { inRoutine, others } = sortExercisesForDropdown(ids, routine, getName);
+    expect(inRoutine).toEqual(['curl_biceps', 'press_banca']);
+    expect(others).toEqual([]);
+  });
+
+  test('ninguno en rutina → inRoutine vacío', () => {
+    const ids = ['press_banca', 'curl_biceps'];
+    const routine = [];
+    const { inRoutine, others } = sortExercisesForDropdown(ids, routine, getName);
+    expect(inRoutine).toEqual([]);
+    expect(others).toEqual(['curl_biceps', 'press_banca']);
+  });
+
+  test('ejercicios vacíos → ambos grupos vacíos', () => {
+    const { inRoutine, others } = sortExercisesForDropdown([], ['press_banca'], getName);
+    expect(inRoutine).toEqual([]);
+    expect(others).toEqual([]);
+  });
+
+  test('acepta routineExerciseIds como Set', () => {
+    const ids = ['press_banca', 'curl_biceps'];
+    const routine = new Set(['press_banca']);
+    const { inRoutine, others } = sortExercisesForDropdown(ids, routine, getName);
+    expect(inRoutine).toEqual(['press_banca']);
+    expect(others).toEqual(['curl_biceps']);
+  });
+
+  test('IDs en rutina pero sin datos en rango no aparecen en inRoutine', () => {
+    // exerciseIds ya viene filtrado por rango, por lo que si un ejercicio de rutina
+    // no tiene datos, no estará en la lista de entrada
+    const ids = ['curl_biceps']; // press_banca está en rutina pero no en rango
+    const routine = ['press_banca'];
+    const { inRoutine, others } = sortExercisesForDropdown(ids, routine, getName);
+    expect(inRoutine).toEqual([]);
+    expect(others).toEqual(['curl_biceps']);
+  });
+
+  test('ejercicio en rutina duplicado en routineExerciseIds solo aparece una vez', () => {
+    const ids = ['press_banca', 'curl_biceps'];
+    const routine = ['press_banca', 'press_banca']; // duplicado
+    const { inRoutine, others } = sortExercisesForDropdown(ids, routine, getName);
+    expect(inRoutine).toEqual(['press_banca']);
+    expect(others).toEqual(['curl_biceps']);
   });
 });

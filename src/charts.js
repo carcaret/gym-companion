@@ -12,6 +12,29 @@ export function getExercisesInRange(history, from, to, getExerciseName) {
 }
 
 /**
+ * Splits exerciseIds into two groups for dropdown display:
+ * - inRoutine: IDs present in routineExerciseIds, sorted alphabetically (Spanish locale)
+ * - others: remaining IDs, sorted alphabetically (Spanish locale)
+ *
+ * @param {string[]} exerciseIds - All exercise IDs to display (already filtered by date range)
+ * @param {string[]|Set<string>} routineExerciseIds - Exercise IDs currently in any routine day
+ * @param {function} getExerciseName - Maps ID to display name
+ * @returns {{ inRoutine: string[], others: string[] }}
+ */
+export function sortExercisesForDropdown(exerciseIds, routineExerciseIds, getExerciseName) {
+  const routineSet = new Set(routineExerciseIds);
+  const inRoutine = [];
+  const others = [];
+  for (const id of exerciseIds) {
+    (routineSet.has(id) ? inRoutine : others).push(id);
+  }
+  const byName = (a, b) => getExerciseName(a).localeCompare(getExerciseName(b), 'es');
+  inRoutine.sort(byName);
+  others.sort(byName);
+  return { inRoutine, others };
+}
+
+/**
  * Builds chart datasets (volume, e1RM, weight) for given exercise IDs within [from, to].
  * Returns { datasets, weightDatasets } with data points { x: date, y: value }.
  */
