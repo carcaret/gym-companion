@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 
 import { SALT, DAY_MAP, DAY_LABELS, ROUTINE_KEYS, SESSION_KEY, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
 import { sha256 } from './src/crypto.js';
