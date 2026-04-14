@@ -18920,11 +18920,11 @@
           "name": "Curl Femoral Sentado",
           "series": 3,
           "reps": {
-            "expected": 10,
+            "expected": 11,
             "actual": [
-              10,
-              10,
-              10
+              11,
+              11,
+              11
             ]
           },
           "weight": 90
