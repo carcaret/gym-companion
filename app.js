@@ -4,22 +4,28 @@
 
 const APP_VERSION = '1.0.3';
 
-import { SALT, DAY_MAP, DAY_LABELS, ROUTINE_KEYS, SESSION_KEY, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
-import { sha256 } from './src/crypto.js';
+import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, DB_BACKUP_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getHistoricalRecords as _getHistoricalRecords, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
+import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords, validateLog, validateEntry, reorderByIndex } from './src/workout.js';
 import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
-import { encryptPat, decryptPat, validateGitHubConfig, buildGitHubPayload, parseGitHubResponse } from './src/github.js';
+import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
+import { mergeDBs } from './src/merge.js';
 
 let DB = null;
 let githubSha = null;
 let currentChart = null;
 let currentWeightChart = null;
 let saveTimeout = null;
-let currentPassword = '';
+
+// ── sync state: 'none' | 'ok' | 'pending' | 'error' ──────────────────────────
+let syncState = 'none';
+let syncPending = false;
+let syncRetryCount = 0;
+const SYNC_MAX_RETRIES = 3;
+const SYNC_BACKOFF_MS = [1000, 3000, 9000];
 
 // ── Utility ──
 function toast(msg, duration = 2500) {
@@ -28,6 +34,30 @@ function toast(msg, duration = 2500) {
   t.hidden = false;
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.hidden = true, duration);
+}
+
+// ── Sync status indicator ──────────────────────────────────────────────────────
+const SYNC_ICONS = { ok: '✓', pending: '⏳', error: '✗', none: '○' };
+const SYNC_MSGS = {
+  ok:      '✓ Sincronizado con GitHub',
+  pending: '⏳ Pendiente de subir a GitHub',
+  error:   '✗ Error al guardar en GitHub — datos seguros en local',
+  none:    'GitHub no configurado'
+};
+
+function setSyncState(state) {
+  syncState = state;
+  const btn = document.getElementById('sync-status-btn');
+  const icon = document.getElementById('sync-status-icon');
+  if (!btn || !icon) return;
+  btn.dataset.state = state;
+  icon.textContent = SYNC_ICONS[state] || '○';
+}
+
+function setupSyncIndicator() {
+  const btn = document.getElementById('sync-status-btn');
+  if (btn) btn.onclick = () => toast(SYNC_MSGS[syncState] || '');
+  setSyncState(getGithubConfig() ? 'none' : 'none');
 }
 
 // ── Modal ──
@@ -57,14 +87,36 @@ function getGithubConfig() {
   try { return JSON.parse(localStorage.getItem(GITHUB_KEY)); } catch { return null; }
 }
 
-function getDecryptedPat() {
-  const enc = localStorage.getItem(PAT_KEY);
-  return decryptPat(enc, currentPassword);
+function getPat() {
+  return localStorage.getItem(PAT_KEY) || null;
+}
+
+/**
+ * Migración: si el PAT almacenado parece un valor XOR cifrado (hex puro, longitud par > 40),
+ * no podemos descifrarlo → lo borramos y pedimos al usuario que lo reintroduzca.
+ */
+function migrateLegacyPat() {
+  // Check both old key name and current key
+  const oldKey = 'gym_companion_pat_enc';
+  for (const key of [oldKey, PAT_KEY]) {
+    const stored = localStorage.getItem(key);
+    if (stored && /^[0-9a-f]+$/.test(stored) && stored.length >= 40 && stored.length % 2 === 0) {
+      localStorage.removeItem(key);
+      if (key === oldKey) localStorage.removeItem(PAT_KEY);
+      toast('⚠️ PAT antiguo no recuperable — introdúcelo de nuevo en Ajustes', 5000);
+      return;
+    }
+    // Migrate old key name to new key name
+    if (key === oldKey && stored && stored.length > 0) {
+      localStorage.setItem(PAT_KEY, stored);
+      localStorage.removeItem(oldKey);
+    }
+  }
 }
 
 async function loadDBFromGitHub(patOverride) {
   const cfg = getGithubConfig();
-  const pat = patOverride || getDecryptedPat();
+  const pat = patOverride || getPat();
   if (!cfg || !pat) return null;
   try {
     const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`, {
@@ -81,7 +133,7 @@ async function loadDBFromGitHub(patOverride) {
 
 async function saveDBToGitHub(options = {}) {
   const cfg = getGithubConfig();
-  const pat = getDecryptedPat();
+  const pat = getPat();
   if (!cfg || !pat || !DB) return false;
   try {
     const body = buildGitHubPayload(DB, githubSha, {
@@ -95,18 +147,51 @@ async function saveDBToGitHub(options = {}) {
     };
     if (options.keepalive) fetchOpts.keepalive = true;
     const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, fetchOpts);
-    if (!res.ok) { console.error('GitHub save failed', res.status); return false; }
+
+    if (res.status === 409) {
+      // Conflicto de SHA — obtener versión remota, hacer merge y reintentar
+      if (options._conflictRetry) {
+        console.error('GitHub save: 409 tras retry, abortando');
+        setSyncState('error');
+        return false;
+      }
+      const remote = await loadDBFromGitHub();
+      if (remote) {
+        DB = mergeDBs(DB, remote);
+        saveDBLocal();
+      }
+      return saveDBToGitHub({ ...options, _conflictRetry: true });
+    }
+
+    if (!res.ok) {
+      console.error('GitHub save failed', res.status);
+      setSyncState('error');
+      return false;
+    }
+
     const data = await res.json();
     githubSha = data.content.sha;
+    setSyncState('ok');
+    syncPending = false;
+    syncRetryCount = 0;
     return true;
-  } catch (e) { console.error('GitHub save error', e); return false; }
+  } catch (e) {
+    console.error('GitHub save error', e);
+    setSyncState('error');
+    return false;
+  }
 }
 
 function saveDBLocal() {
   if (DB) {
-    try {
-      localStorage.setItem(DB_LOCAL_KEY, JSON.stringify(DB));
-    } catch (e) { }
+    try { localStorage.setItem(DB_LOCAL_KEY, JSON.stringify(DB)); } catch (e) { }
+  }
+}
+
+function saveBackup() {
+  const current = localStorage.getItem(DB_LOCAL_KEY);
+  if (current) {
+    try { localStorage.setItem(DB_BACKUP_KEY, current); } catch (e) { }
   }
 }
 
@@ -116,11 +201,50 @@ async function persistDB({ forceGitHub = false } = {}) {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async () => {
     saveTimeout = null;
+    if (!getGithubConfig() || !getPat()) {
+      setSyncState('none');
+      return;
+    }
+    setSyncState('pending');
+    syncPending = true;
     const ok = await saveDBToGitHub();
-    if (ok) toast('💾 Guardado');
-    else if (getGithubConfig()) toast('⚠️ Guardado local (sin GitHub)');
+    if (ok) {
+      toast('💾 Guardado');
+      syncPending = false;
+    } else if (getGithubConfig()) {
+      // Retry con backoff
+      scheduleRetry();
+    }
   }, 500);
 }
+
+function scheduleRetry() {
+  if (syncRetryCount >= SYNC_MAX_RETRIES) {
+    setSyncState('error');
+    toast('⚠️ Guardado local (sin GitHub)', 4000);
+    return;
+  }
+  const delay = SYNC_BACKOFF_MS[syncRetryCount] || 9000;
+  syncRetryCount++;
+  setTimeout(async () => {
+    if (!syncPending) return;
+    const ok = await saveDBToGitHub();
+    if (ok) {
+      toast('💾 Guardado en GitHub');
+    } else {
+      scheduleRetry();
+    }
+  }, delay);
+}
+
+window.addEventListener('online', () => {
+  if (syncPending && getGithubConfig() && getPat()) {
+    syncRetryCount = 0;
+    saveDBToGitHub().then(ok => {
+      if (ok) toast('💾 Guardado en GitHub (recuperado tras reconexión)');
+    });
+  }
+});
 
 window.addEventListener('beforeunload', () => {
   if (saveTimeout) {
@@ -131,90 +255,34 @@ window.addEventListener('beforeunload', () => {
 });
 
 async function loadDB() {
-  let data = await loadDBFromGitHub();
-  if (!data) {
-    const local = localStorage.getItem(DB_LOCAL_KEY);
-    if (local) {
-      try { data = JSON.parse(local); } catch { /* JSON corrupto — tratar como sin datos */ }
-    }
-  }
-  return data;
-}
-
-// ── Auth ──
-async function handleLogin(e) {
-  e.preventDefault();
-  const user = document.getElementById('login-user').value.trim();
-  const pass = document.getElementById('login-pass').value.trim();
-  const errEl = document.getElementById('login-error');
-  errEl.hidden = true;
-
-  currentPassword = pass;
-
-  // Try loading DB first
-  let data = await loadDB();
-
-  // If no DB from GitHub, check if we have embedded fallback
-  if (!data) {
-    // Use inline default DB
-    data = await getDefaultDB();
+  // Lee local
+  let localData = null;
+  const localRaw = localStorage.getItem(DB_LOCAL_KEY);
+  if (localRaw) {
+    try { localData = JSON.parse(localRaw); } catch { /* JSON corrupto */ }
   }
 
-  if (!data) {
-    errEl.textContent = 'No se pudo cargar la base de datos';
-    errEl.hidden = false;
-    return;
+  // Intenta cargar desde GitHub
+  const remoteData = await loadDBFromGitHub();
+
+  if (localData && remoteData) {
+    // Backup antes de sobrescribir con datos externos
+    saveBackup();
+    const merged = mergeDBs(localData, remoteData);
+    // Detectar si el merge añadió entradas que GitHub no tenía
+    const remoteDates = new Set((remoteData.history || []).map(e => e.date));
+    const needsUpload = (localData.history || []).some(e => !remoteDates.has(e.date));
+    return { data: merged, needsUpload };
   }
-
-  DB = data;
-  ensureHistorySorted(DB);
-  const hash = await sha256(SALT + pass);
-
-  if (DB.auth.username.toLowerCase() !== user.toLowerCase() || DB.auth.passwordHash !== hash) {
-    errEl.hidden = false;
-    errEl.textContent = 'Usuario o contraseña incorrectos';
-    currentPassword = '';
-    return;
+  if (remoteData) {
+    saveBackup();
+    return { data: remoteData, needsUpload: false };
   }
-
-  // Save session
-  const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
-  try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ token, user, hash }));
-  } catch (e) { }
-  saveDBLocal();
-
-  showApp();
-}
-
-async function tryAutoLogin() {
-  const session = (() => { try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; } })();
-  if (!session) return false;
-
-  // We need the password to decrypt PAT, but we can still load local DB
-  const local = localStorage.getItem(DB_LOCAL_KEY);
-  if (local) {
-    try { DB = JSON.parse(local); } catch { return false; }
-    if (DB.auth && DB.auth.username === session.user && DB.auth.passwordHash === session.hash) {
-      ensureHistorySorted(DB);
-      showApp();
-      return true;
-    }
-  }
-  return false;
-}
-
-function logout() {
-  localStorage.removeItem(SESSION_KEY);
-  currentPassword = '';
-  DB = null;
-  document.getElementById('app-shell').hidden = true;
-  document.getElementById('login-screen').classList.add('active');
-  document.getElementById('login-form').reset();
+  if (localData) return { data: localData, needsUpload: false };
+  return { data: null, needsUpload: false };
 }
 
 function showApp() {
-  document.getElementById('login-screen').classList.remove('active');
   document.getElementById('app-shell').hidden = false;
   renderHoy();
 }
@@ -223,12 +291,6 @@ function showApp() {
 
 /**
  * Build the 3 param rows (weight, series, repsExpected) with +/− buttons.
- * @param {string} prefix - 'w' (workout) or 'h' (history)
- * @param {number} logIdx
- * @param {object} log
- * @param {string} adjustName - callback name: 'adjustParam' or 'adjustHistoryParam'
- * @param {string} setName - callback name: 'setParam' or 'setHistoryParam'
- * @param {string} argsPrefix - args before param-specific: e.g. "0" or "'2026-01-01',0"
  */
 function buildParamRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix) {
   return `<div class="param-row">
@@ -259,12 +321,6 @@ function buildParamRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix
 
 /**
  * Build per-series rep input rows (S1, S2, ...) with +/− buttons.
- * @param {string} prefix - 'w' or 'h'
- * @param {number} logIdx
- * @param {object} log
- * @param {string} adjustName - 'adjustRep' or 'adjustHistoryRep'
- * @param {string} setName - 'setRep' or 'setHistoryRep'
- * @param {string} argsPrefix - e.g. "0" or "'2026-01-01',0"
  */
 function buildAllSeriesRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix) {
   let html = '';
@@ -346,7 +402,6 @@ function applyValidationErrors(logIdx, log, prefix = 'w') {
 const getExerciseName = (id) => _getExerciseName(DB, id);
 const getTodayEntry = () => _getTodayEntry(DB, todayStr());
 const getLastValuesForExercise = (exerciseId, dayType) => _getLastValuesForExercise(DB, exerciseId, dayType);
-const getHistoricalRecords = (exerciseId) => _getHistoricalRecords(DB, exerciseId);
 
 // ── View: Rutinas ──
 function renderHoy() {
@@ -357,21 +412,18 @@ function renderHoy() {
 
   const todayEntry = getTodayEntry();
 
-  // If there's an active (uncompleted) workout today
   if (todayEntry && !todayEntry.completed) {
     title.textContent = `Entreno ${DAY_LABELS[todayEntry.type]}`;
     renderActiveWorkout(content, todayEntry);
     return;
   }
 
-  // If today's workout is completed
   if (todayEntry && todayEntry.completed) {
     title.textContent = `${DAY_LABELS[todayEntry.type]} ✓`;
     renderCompletedToday(content, todayEntry);
     return;
   }
 
-  // Show day selector with all routines
   title.textContent = 'Rutinas';
   renderDaySelector(content);
 }
@@ -435,14 +487,10 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   container.innerHTML = html;
 
   const startBtn = document.getElementById('start-workout-btn');
-  if (startBtn) {
-    startBtn.onclick = () => startWorkout(dayType);
-  }
+  if (startBtn) startBtn.onclick = () => startWorkout(dayType);
 
   const addBtn = document.getElementById('add-exercise-btn');
-  if (addBtn) {
-    addBtn.onclick = () => showAddExerciseModal(dayType);
-  }
+  if (addBtn) addBtn.onclick = () => showAddExerciseModal(dayType);
 
   const backBtn = document.getElementById('back-to-selector-btn');
   if (backBtn) {
@@ -457,7 +505,6 @@ async function startWorkout(dayType) {
   const routineIds = DB.routines[dayType] || [];
   const entry = buildWorkoutEntry(todayStr(), dayType, routineIds, getLastValuesForExercise, getExerciseName);
 
-  // Remove existing today entry if any
   DB.history = DB.history.filter(h => h.date !== todayStr());
   DB.history.push(entry);
   ensureHistorySorted(DB);
@@ -478,7 +525,6 @@ function renderActiveWorkout(container, entry) {
   entry.logs.forEach((log, logIdx) => {
     const name = getExerciseName(log.exercise_id);
 
-    // Check for records
     const prevEntries = DB.history.filter(h => h.date !== entry.date);
     const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
     if (isVolRecord || isE1RMRecord) hasRecord = true;
@@ -498,16 +544,13 @@ function renderActiveWorkout(container, entry) {
     </div>
     <div class="card-body" id="body-${logIdx}">`;
 
-    // Weight & series/reps params
     const wArgs = `${logIdx}`;
     html += buildParamRowsHtml('w', logIdx, log, 'adjustParam', 'setParam', wArgs);
 
-    // Per-series rep inputs
     html += `<div class="mt-sm"><p class="text-xs text-muted mb-sm" >Reps realizadas por serie:</p><div id="w-seriesrows-${logIdx}">`;
     html += buildAllSeriesRowsHtml('w', logIdx, log, 'adjustRep', 'setRep', wArgs);
     html += '</div></div>';
 
-    // Remove from routine
     html += `<div class="routine-actions">
     <button class="btn-sm btn-danger" onclick="GymCompanion.removeExerciseFromRoutine('${entry.type}','${log.exercise_id}',${logIdx})">Quitar de rutina</button>
   </div>`;
@@ -530,7 +573,6 @@ function renderActiveWorkout(container, entry) {
 
   container.innerHTML = html;
 
-  // Accordion: only one card open at a time; drag-handle clicks don't toggle
   container.querySelectorAll('.card-header').forEach(header => {
     header.onclick = (e) => {
       if (e.target.closest('.drag-handle')) return;
@@ -539,11 +581,9 @@ function renderActiveWorkout(container, entry) {
       const chevron = document.getElementById(`chevron-${idx}`);
       const wasOpen = body.classList.contains('open');
 
-      // Close all cards
       container.querySelectorAll('.card-body.open').forEach(b => b.classList.remove('open'));
       container.querySelectorAll('.card-chevron.open').forEach(c => c.classList.remove('open'));
 
-      // If it was closed, open this one
       if (!wasOpen) {
         body.classList.add('open');
         chevron.classList.add('open');
@@ -562,7 +602,6 @@ function renderActiveWorkout(container, entry) {
   const addMidBtn = document.getElementById('add-exercise-mid-btn');
   if (addMidBtn) addMidBtn.onclick = () => showAddExerciseModal(entry.type);
 
-  // Drag & drop reorder via SortableJS
   const cardsList = document.getElementById('workout-cards-list');
   if (cardsList && typeof Sortable !== 'undefined') {
     Sortable.create(cardsList, {
@@ -585,10 +624,9 @@ async function finishWorkout() {
 
   const { valid, errorsByLog } = validateEntry(entry);
   if (!valid) {
-    errorsByLog.forEach((errors, logIdx) => applyValidationErrors(logIdx, entry.logs[logIdx]));
+    errorsByLog.forEach((_errors, logIdx) => applyValidationErrors(logIdx, entry.logs[logIdx]));
 
     const firstErrorIdx = errorsByLog.keys().next().value;
-    // Accordion: close all before opening the error card
     document.querySelectorAll('.card-body.open').forEach(b => b.classList.remove('open'));
     document.querySelectorAll('.card-chevron.open').forEach(c => c.classList.remove('open'));
     const body = document.getElementById(`body-${firstErrorIdx}`);
@@ -609,9 +647,27 @@ async function finishWorkout() {
   }
 
   finishWorkoutEntry(entry);
-  await persistDB({ forceGitHub: true });
+  saveDBLocal();
   renderHoy();
-  toast('¡Entreno completado!');
+  toast('¡Entreno completado! Guardando...');
+
+  // Forzar save a GitHub; si falla, alerta clara
+  const ok = await saveDBToGitHub();
+  if (!ok && getGithubConfig()) {
+    // Entreno seguro en local, pero GitHub falló
+    setSyncState('pending');
+    syncPending = true;
+    syncRetryCount = 0;
+    scheduleRetry();
+    // Mostrar alerta persistente (no solo toast)
+    setTimeout(() => {
+      showModal(
+        '⚠️ Entreno guardado localmente',
+        '<p class="text-sm">El entreno se ha guardado en este dispositivo, pero <strong>no se pudo subir a GitHub</strong>. Se reintentará automáticamente cuando haya conexión.</p>',
+        [{ label: 'Entendido', className: 'btn-primary btn-sm', action: () => {} }]
+      );
+    }, 100);
+  }
 }
 
 function renderCompletedToday(container, entry) {
@@ -665,7 +721,6 @@ function showAddExerciseModal(dayType) {
     { label: 'Cerrar', className: 'btn-secondary btn-sm', action: () => { } }
   ]);
 
-  // Search filter
   setTimeout(() => {
     const searchInput = document.getElementById('exercise-search-input');
     if (searchInput) {
@@ -684,7 +739,6 @@ function showAddExerciseModal(dayType) {
         if (!DB.routines[dayType]) DB.routines[dayType] = [];
         DB.routines[dayType].push(id);
 
-        // If workout is in progress, add to today's entry too
         const todayEntry = getTodayEntry();
         if (todayEntry && !todayEntry.completed && todayEntry.type === dayType) {
           const last = getLastValuesForExercise(id, dayType);
@@ -823,21 +877,18 @@ window.GymCompanion = {
     withHistoryUpdate(() => _setHistoryRep(DB.history, date, logIdx, seriesIdx, value), date, logIdx),
 
   reorderExercises: async (dayType, fromIndex, toIndex) => {
-    // 1. Reordenar rutina permanente
     DB.routines[dayType] = reorderByIndex(DB.routines[dayType], fromIndex, toIndex);
 
-    // 2. Reordenar logs del entreno activo (mantener invariante)
     const entry = getTodayEntry();
     if (entry && !entry.completed) {
       entry.logs = reorderByIndex(entry.logs, fromIndex, toIndex);
     }
 
-    // 3. Persistir (localStorage + GitHub sync)
     await persistDB();
     toast('Orden actualizado');
   },
 
-  removeExerciseFromRoutine: (dayType, exerciseId, logIdx) => {
+  removeExerciseFromRoutine: (dayType, exerciseId, _logIdx) => {
     showModal('¿Quitar ejercicio?', `<p class="text-sm">Se eliminará <strong>${getExerciseName(exerciseId)}</strong> de la rutina de ${DAY_LABELS[dayType]}. Los registros históricos se conservarán.</p>`, [
       { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => { } },
       {
@@ -858,7 +909,7 @@ window.GymCompanion = {
 
 // ── View: Historial ──
 let historialFilter = 'TODOS';
-let editingHistorialExercise = null; // { date, logIdx } or null
+let editingHistorialExercise = null;
 
 function renderHistorial() {
   const content = document.getElementById('historial-content');
@@ -974,7 +1025,6 @@ function renderHistorialDetail(date) {
         }
         editingHistorialExercise = null;
       } else {
-        // Normalizar reps.actual: rellenar huecos con expected
         const log = entry.logs[logIdx];
         log.reps.actual = Array.from({ length: log.series }, (_, i) =>
           log.reps.actual[i] != null ? log.reps.actual[i] : log.reps.expected
@@ -1194,27 +1244,11 @@ function initSettings() {
     document.getElementById('set-path').value = cfg.path || 'db.json';
   }
 
-  // Restore PAT to field if we can decrypt it
-  const pat = getDecryptedPat();
+  const pat = getPat();
   if (pat) document.getElementById('set-pat').value = pat;
-
-  // Show password confirmation field if session was restored without password
-  document.getElementById('confirm-pass-group').hidden = !!currentPassword;
-  if (!currentPassword) document.getElementById('set-confirm-pass').value = '';
 }
 
 function setupSettings() {
-  async function confirmPasswordIfNeeded() {
-    if (currentPassword) return true;
-    const confirmPass = document.getElementById('set-confirm-pass').value;
-    if (!confirmPass) { toast('⚠️ Introduce tu contraseña para cifrar el PAT'); return false; }
-    const hash = await sha256(SALT + confirmPass);
-    if (hash !== DB.auth.passwordHash) { toast('❌ Contraseña incorrecta'); return false; }
-    currentPassword = confirmPass;
-    document.getElementById('confirm-pass-group').hidden = true;
-    return true;
-  }
-
   document.getElementById('save-github-btn').onclick = async () => {
     const repo = document.getElementById('set-repo').value.trim();
     const branch = document.getElementById('set-branch').value.trim() || 'main';
@@ -1222,10 +1256,10 @@ function setupSettings() {
     const path = document.getElementById('set-path').value.trim() || 'db.json';
 
     if (!repo || !pat) { toast('⚠️ Repo y PAT requeridos'); return; }
-    if (!await confirmPasswordIfNeeded()) return;
 
     localStorage.setItem(GITHUB_KEY, JSON.stringify({ repo, branch, path }));
-    localStorage.setItem(PAT_KEY, encryptPat(pat, currentPassword));
+    localStorage.setItem(PAT_KEY, pat);
+    setSyncState('pending');
     toast('✅ Configuración guardada — sincronizando...');
     persistDB();
   };
@@ -1236,64 +1270,30 @@ function setupSettings() {
     statusEl.textContent = 'Probando conexión...';
     statusEl.className = 'status-msg';
 
-    if (!await confirmPasswordIfNeeded()) {
-      statusEl.textContent = '⚠️ Introduce tu contraseña primero';
-      statusEl.classList.add('error');
-      return;
-    }
-
     const patInput = document.getElementById('set-pat').value.trim();
-    const ok = await loadDBFromGitHub(patInput || undefined);
-    if (ok) {
-      statusEl.textContent = '✅ Conexión exitosa. DB cargada.';
-      statusEl.classList.add('success');
-      DB = ok;
-      ensureHistorySorted(DB);
-      saveDBLocal();
-    } else {
-      statusEl.textContent = '❌ No se pudo conectar. Verifica repo, PAT y rama.';
+    const cfg = getGithubConfig();
+    if (!cfg || !patInput) {
+      statusEl.textContent = '⚠️ Guarda la configuración primero';
+      statusEl.classList.add('error');
+      return;
+    }
+
+    // Sólo verificar que la API responde — NO modificar DB
+    try {
+      const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`, {
+        headers: { 'Authorization': `Bearer ${patInput}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (res.ok) {
+        statusEl.textContent = '✅ Conexión exitosa';
+        statusEl.classList.add('success');
+      } else {
+        statusEl.textContent = `❌ Error ${res.status} — verifica repo, PAT y rama`;
+        statusEl.classList.add('error');
+      }
+    } catch {
+      statusEl.textContent = '❌ No se pudo conectar';
       statusEl.classList.add('error');
     }
-  };
-
-  document.getElementById('change-pass-btn').onclick = async () => {
-    const oldPass = document.getElementById('set-old-pass').value;
-    const newPass = document.getElementById('set-new-pass').value;
-    const statusEl = document.getElementById('pass-status');
-    statusEl.hidden = false;
-
-    const oldHash = await sha256(SALT + oldPass);
-    if (oldHash !== DB.auth.passwordHash) {
-      statusEl.textContent = '❌ Contraseña actual incorrecta';
-      statusEl.className = 'status-msg error';
-      return;
-    }
-
-    if (!newPass.trim()) {
-      statusEl.textContent = '❌ La contraseña nueva no puede estar vacía';
-      statusEl.className = 'status-msg error';
-      return;
-    }
-
-    // Decrypt stored PAT with old password BEFORE changing currentPassword
-    const storedPat = getDecryptedPat();
-
-    const newHash = await sha256(SALT + newPass);
-    DB.auth.passwordHash = newHash;
-    currentPassword = newPass;
-
-    // Re-encrypt PAT with new password
-    if (storedPat) localStorage.setItem(PAT_KEY, encryptPat(storedPat, currentPassword));
-
-    // Update session
-    const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ token, user: DB.auth.username, hash: newHash }));
-
-    await persistDB();
-    statusEl.textContent = '✅ Contraseña cambiada correctamente';
-    statusEl.className = 'status-msg success';
-    document.getElementById('set-old-pass').value = '';
-    document.getElementById('set-new-pass').value = '';
   };
 
   document.getElementById('sync-github-btn').onclick = async () => {
@@ -1302,25 +1302,33 @@ function setupSettings() {
     statusEl.textContent = 'Descargando desde GitHub...';
     statusEl.className = 'status-msg';
     try {
-      const data = await loadDBFromGitHub();
-      if (!data || !data.exercises || !data.history || !data.auth) {
+      const remote = await loadDBFromGitHub();
+      if (!remote || !remote.exercises || !remote.history) {
         statusEl.textContent = '❌ No se pudo descargar o formato inválido';
         statusEl.className = 'status-msg error';
         return;
       }
-      DB = data;
+      // Backup + merge con local
+      saveBackup();
+      DB = mergeDBs(DB || { exercises: {}, routines: {}, history: [] }, remote);
       ensureHistorySorted(DB);
       saveDBLocal();
+
+      // Subir el resultado mergeado a GitHub
+      const ok = await saveDBToGitHub();
       renderHoy();
-      statusEl.textContent = '✅ Datos sincronizados desde GitHub';
-      statusEl.className = 'status-msg success';
+      if (ok) {
+        statusEl.textContent = '✅ Datos sincronizados y subidos a GitHub';
+        statusEl.className = 'status-msg success';
+      } else {
+        statusEl.textContent = '✅ Datos sincronizados localmente (sin subida a GitHub)';
+        statusEl.className = 'status-msg success';
+      }
     } catch (err) {
       statusEl.textContent = '❌ Error: ' + err.message;
       statusEl.className = 'status-msg error';
     }
   };
-
-  document.getElementById('logout-btn').onclick = logout;
 }
 
 // ── Navigation ──
@@ -1351,7 +1359,6 @@ function setupFilters() {
     };
   });
 
-  // Chart controls
   document.getElementById('chart-from')?.addEventListener('change', () => { updateChartExercises(); renderChart(); });
   document.getElementById('chart-to')?.addEventListener('change', () => { updateChartExercises(); renderChart(); });
   initExerciseSearchDropdown();
@@ -1376,27 +1383,48 @@ async function getDefaultDB() {
 
 // ── Init ──
 async function init() {
-  // Register service worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => { });
   }
 
-  // Show version
-  const versionText = `v${APP_VERSION}`;
-  document.getElementById('login-version').textContent = versionText;
-  document.getElementById('settings-version').textContent = versionText;
+  document.getElementById('settings-version').textContent = `v${APP_VERSION}`;
 
-  // Setup event listeners
-  document.getElementById('login-form').addEventListener('submit', handleLogin);
   setupTabs();
   setupFilters();
   setupSettings();
+  setupSyncIndicator();
 
-  // Try auto-login
-  const autoLogged = await tryAutoLogin();
-  if (!autoLogged) {
-    document.getElementById('login-screen').classList.add('active');
+  // Migrar PAT cifrado antiguo si existe
+  migrateLegacyPat();
+
+  // Cargar DB con merge
+  let { data, needsUpload } = await loadDB();
+  if (!data) {
+    data = await getDefaultDB();
+    needsUpload = false;
   }
+
+  if (!data) {
+    // Situación extrema — arrancar con estructura vacía
+    data = { exercises: {}, routines: { DIA1: [], DIA2: [], DIA3: [] }, history: [] };
+    needsUpload = false;
+  }
+
+  DB = data;
+  ensureHistorySorted(DB);
+  saveDBLocal();
+
+  if (getGithubConfig() && getPat()) {
+    setSyncState('pending');
+    if (needsUpload) {
+      // Entrenos offline detectados en el merge — subir a GitHub sin bloquear UI
+      saveDBToGitHub();
+    }
+  } else {
+    setSyncState('none');
+  }
+
+  showApp();
 }
 
 init();
