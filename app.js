@@ -27,36 +27,66 @@ let syncRetryCount = 0;
 const SYNC_MAX_RETRIES = 3;
 const SYNC_BACKOFF_MS = [1000, 3000, 9000];
 
+// ── SVG icon system ───────────────────────────────────────────────────────────
+const SVG_PATHS = {
+  check:     `<polyline points="20 6 9 17 4 12"/>`,
+  cross:     `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`,
+  clock:     `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>`,
+  dash:      `<line x1="5" y1="12" x2="19" y2="12"/>`,
+  warn:      `<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>`,
+  save:      `<polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>`,
+  trophy:    `<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>`,
+  clipboard: `<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>`,
+};
+
+const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+function icon(name, size = 16, extraClass = '') {
+  const sw = (name === 'check' || name === 'cross') ? '2.5' : '2';
+  const cls = extraClass ? ` class="${extraClass}"` : '';
+  return `<svg${cls} xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${SVG_PATHS[name]}</svg>`;
+}
+
 // ── Utility ──
-function toast(msg, duration = 2500) {
+function toast(msg, type = null, duration = 2500) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
+  const toastIcons = { ok: 'check', error: 'cross', warn: 'warn', save: 'save' };
+  const iconName = toastIcons[type];
+  t.innerHTML = iconName
+    ? `<span class="toast-icon toast-${type}">${icon(iconName, 14)}</span>${escHtml(msg)}`
+    : escHtml(msg);
   t.hidden = false;
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.hidden = true, duration);
 }
 
 // ── Sync status indicator ──────────────────────────────────────────────────────
-const SYNC_ICONS = { ok: '✓', pending: '⏳', error: '✗', none: '○' };
-const SYNC_MSGS = {
-  ok:      '✓ Sincronizado con GitHub',
-  pending: '⏳ Pendiente de subir a GitHub',
-  error:   '✗ Error al guardar en GitHub — datos seguros en local',
-  none:    'GitHub no configurado'
+const SYNC_SVGS = {
+  ok:      () => icon('check', 16),
+  pending: () => icon('clock', 16, 'sync-spin'),
+  error:   () => icon('cross', 16),
+  none:    () => icon('dash', 16),
 };
+const SYNC_MSGS = {
+  ok:      'Sincronizado con GitHub',
+  pending: 'Pendiente de subir a GitHub',
+  error:   'Error al guardar en GitHub — datos seguros en local',
+  none:    'GitHub no configurado',
+};
+const SYNC_TOAST_TYPES = { ok: 'ok', pending: null, error: 'error', none: null };
 
 function setSyncState(state) {
   syncState = state;
   const btn = document.getElementById('sync-status-btn');
-  const icon = document.getElementById('sync-status-icon');
-  if (!btn || !icon) return;
+  const iconEl = document.getElementById('sync-status-icon');
+  if (!btn || !iconEl) return;
   btn.dataset.state = state;
-  icon.textContent = SYNC_ICONS[state] || '○';
+  iconEl.innerHTML = (SYNC_SVGS[state] || SYNC_SVGS.none)();
 }
 
 function setupSyncIndicator() {
   const btn = document.getElementById('sync-status-btn');
-  if (btn) btn.onclick = () => toast(SYNC_MSGS[syncState] || '');
+  if (btn) btn.onclick = () => toast(SYNC_MSGS[syncState] || '', SYNC_TOAST_TYPES[syncState] || null);
   setSyncState(getGithubConfig() ? 'none' : 'none');
 }
 
@@ -103,7 +133,7 @@ function migrateLegacyPat() {
     if (stored && /^[0-9a-f]+$/.test(stored) && stored.length >= 40 && stored.length % 2 === 0) {
       localStorage.removeItem(key);
       if (key === oldKey) localStorage.removeItem(PAT_KEY);
-      toast('⚠️ PAT antiguo no recuperable — introdúcelo de nuevo en Ajustes', 5000);
+      toast('PAT antiguo no recuperable — introdúcelo de nuevo en Ajustes', 'warn', 5000);
       return;
     }
     // Migrate old key name to new key name
@@ -210,7 +240,7 @@ async function persistDB({ forceGitHub = false } = {}) {
     syncPending = true;
     const ok = await saveDBToGitHub();
     if (ok) {
-      toast('💾 Guardado');
+      toast('Guardado', 'save');
       syncPending = false;
     } else if (getGithubConfig()) {
       // Retry con backoff
@@ -222,7 +252,7 @@ async function persistDB({ forceGitHub = false } = {}) {
 function scheduleRetry() {
   if (syncRetryCount >= SYNC_MAX_RETRIES) {
     setSyncState('error');
-    toast('⚠️ Guardado local (sin GitHub)', 4000);
+    toast('Guardado local (sin GitHub)', 'warn', 4000);
     return;
   }
   const delay = SYNC_BACKOFF_MS[syncRetryCount] || 9000;
@@ -231,7 +261,7 @@ function scheduleRetry() {
     if (!syncPending) return;
     const ok = await saveDBToGitHub();
     if (ok) {
-      toast('💾 Guardado en GitHub');
+      toast('Guardado en GitHub', 'save');
     } else {
       scheduleRetry();
     }
@@ -242,7 +272,7 @@ window.addEventListener('online', () => {
   if (syncPending && getGithubConfig() && getPat()) {
     syncRetryCount = 0;
     saveDBToGitHub().then(ok => {
-      if (ok) toast('💾 Guardado en GitHub (recuperado tras reconexión)');
+      if (ok) toast('Guardado en GitHub (recuperado tras reconexión)', 'save');
     });
   }
 });
@@ -350,7 +380,7 @@ function updateWorkoutCardInPlace(logIdx, entry) {
   const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
 
   const title = document.getElementById(`w-title-${logIdx}`);
-  if (title) title.innerHTML = `${name}${isVolRecord ? ' <span class="record-badge">🏆 Volumen</span>' : ''}${isE1RMRecord ? ' <span class="record-badge">🏆 e1RM</span>' : ''}`;
+  if (title) title.innerHTML = `${name}${isVolRecord ? ` <span class="record-badge">${icon('trophy', 10)} Volumen</span>` : ''}${isE1RMRecord ? ` <span class="record-badge">${icon('trophy', 10)} e1RM</span>` : ''}`;
 
   const subtitle = document.getElementById(`w-subtitle-${logIdx}`);
   if (subtitle) {
@@ -505,7 +535,7 @@ async function startWorkout(dayType) {
   ensureHistorySorted(DB);
   await persistDB();
   renderHoy();
-  toast('¡Entreno iniciado!');
+  toast('¡Entreno iniciado!', 'ok');
 }
 
 function renderActiveWorkout(container, entry) {
@@ -530,8 +560,8 @@ function renderActiveWorkout(container, entry) {
       <div>
         <div class="card-title" id="w-title-${logIdx}">
           ${name}
-          ${isVolRecord ? '<span class="record-badge">🏆 Volumen</span>' : ''}
-          ${isE1RMRecord ? '<span class="record-badge">🏆 e1RM</span>' : ''}
+          ${isVolRecord ? `<span class="record-badge">${icon('trophy', 10)} Volumen</span>` : ''}
+          ${isE1RMRecord ? `<span class="record-badge">${icon('trophy', 10)} e1RM</span>` : ''}
         </div>
         <div class="card-subtitle" id="w-subtitle-${logIdx}">${log.weight > 0 ? log.weight + ' kg · ' : ''}${log.series}×${log.reps.expected}${(() => { const r = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected); return r ? ' · ' + r : ''; })()}</div>
       </div>
@@ -637,16 +667,16 @@ async function finishWorkout() {
       : `w-${firstError.field === 'repsExpected' ? 'reps' : firstError.field}-${firstErrorIdx}`;
     document.getElementById(inputId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    toast('⚠️ Completa todos los campos antes de finalizar');
+    toast('Completa todos los campos antes de finalizar', 'warn');
     return;
   }
 
   finishWorkoutEntry(entry);
   saveDBLocal();
   const hoyContent = document.getElementById('hoy-content');
-  document.getElementById('hoy-title').textContent = `${DAY_LABELS[entry.type]} ✓`;
+  document.getElementById('hoy-title').innerHTML = `${DAY_LABELS[entry.type]} <span class="icon-done">${icon('check', 16)}</span>`;
   renderCompletedToday(hoyContent, entry);
-  toast('¡Entreno completado! Guardando...');
+  toast('¡Entreno completado! Guardando...', 'ok');
 
   // Forzar save a GitHub; si falla, alerta clara
   const ok = await saveDBToGitHub();
@@ -659,7 +689,7 @@ async function finishWorkout() {
     // Mostrar alerta persistente (no solo toast)
     setTimeout(() => {
       showModal(
-        '⚠️ Entreno guardado localmente',
+        'Entreno guardado localmente',
         '<p class="text-sm">El entreno se ha guardado en este dispositivo, pero <strong>no se pudo subir a GitHub</strong>. Se reintentará automáticamente cuando haya conexión.</p>',
         [{ label: 'Entendido', className: 'btn-primary btn-sm', action: () => {} }]
       );
@@ -669,7 +699,7 @@ async function finishWorkout() {
 
 function renderCompletedToday(container, entry) {
   let html = `<div class="workout-status">
-  <span class="workout-status-icon">✓</span>
+  <span class="workout-status-icon">${icon('check', 18)}</span>
   <span>Entreno completado</span>
 </div>`;
 
@@ -751,7 +781,7 @@ function showAddExerciseModal(dayType) {
         await persistDB();
         hideModal();
         renderHoy();
-        toast(`✅ ${getExerciseName(id)} añadido`);
+        toast(`${getExerciseName(id)} añadido`, 'ok');
       };
     });
 
@@ -778,13 +808,13 @@ function showCreateExerciseModal(dayType) {
         const name = document.getElementById('new-exercise-name').value.trim();
         if (!name) return;
         const id = slugifyExerciseName(name);
-        if (DB.exercises[id]) { toast('⚠️ Ya existe ese ejercicio'); return false; }
+        if (DB.exercises[id]) { toast('Ya existe ese ejercicio', 'warn'); return false; }
         DB.exercises[id] = { id, name };
         if (!DB.routines[dayType]) DB.routines[dayType] = [];
         DB.routines[dayType].push(id);
         await persistDB();
         renderHoy();
-        toast(`✅ ${name} creado y añadido`);
+        toast(`${name} creado y añadido`, 'ok');
       }
     }
   ]);
@@ -921,7 +951,7 @@ function renderHistorial() {
   const filtered = _filterHistory(entries, historialFilter);
 
   if (filtered.length === 0) {
-    content.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>No hay sesiones registradas</p></div>';
+    content.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon('clipboard', 48)}</div><p>No hay sesiones registradas</p></div>`;
     return;
   }
 
@@ -1017,7 +1047,7 @@ function renderHistorialDetail(date) {
         const errors = validateLog(log);
         if (errors.length > 0) {
           applyValidationErrors(logIdx, log, 'h');
-          toast('⚠️ Corrige los campos marcados antes de guardar');
+          toast('Corrige los campos marcados antes de guardar', 'warn');
           return;
         }
         editingHistorialExercise = null;
@@ -1252,12 +1282,12 @@ function setupSettings() {
     const pat = document.getElementById('set-pat').value.trim();
     const path = document.getElementById('set-path').value.trim() || 'db.json';
 
-    if (!repo || !pat) { toast('⚠️ Repo y PAT requeridos'); return; }
+    if (!repo || !pat) { toast('Repo y PAT requeridos', 'warn'); return; }
 
     localStorage.setItem(GITHUB_KEY, JSON.stringify({ repo, branch, path }));
     localStorage.setItem(PAT_KEY, pat);
     setSyncState('pending');
-    toast('✅ Configuración guardada — sincronizando...');
+    toast('Configuración guardada — sincronizando...', 'ok');
 
     // Si no hay sha (primera config o arranque sin PAT), cargar remoto primero:
     // poblamos githubSha y mergeamos para no perder datos remotos.
@@ -1284,7 +1314,7 @@ function setupSettings() {
     const patInput = document.getElementById('set-pat').value.trim();
     const cfg = getGithubConfig();
     if (!cfg || !patInput) {
-      statusEl.textContent = '⚠️ Guarda la configuración primero';
+      statusEl.innerHTML = `<span class="toast-icon toast-warn">${icon('warn', 14)}</span>Guarda la configuración primero`;
       statusEl.classList.add('error');
       return;
     }
@@ -1295,14 +1325,14 @@ function setupSettings() {
         headers: { 'Authorization': `Bearer ${patInput}`, 'Accept': 'application/vnd.github.v3+json' }
       });
       if (res.ok) {
-        statusEl.textContent = '✅ Conexión exitosa';
+        statusEl.innerHTML = `<span class="toast-icon toast-ok">${icon('check', 14)}</span>Conexión exitosa`;
         statusEl.classList.add('success');
       } else {
-        statusEl.textContent = `❌ Error ${res.status} — verifica repo, PAT y rama`;
+        statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>Error ${res.status} — verifica repo, PAT y rama`;
         statusEl.classList.add('error');
       }
     } catch {
-      statusEl.textContent = '❌ No se pudo conectar';
+      statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>No se pudo conectar`;
       statusEl.classList.add('error');
     }
   };
@@ -1315,7 +1345,7 @@ function setupSettings() {
     try {
       const remote = await loadDBFromGitHub();
       if (!remote || !remote.exercises || !remote.history) {
-        statusEl.textContent = '❌ No se pudo descargar o formato inválido';
+        statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>No se pudo descargar o formato inválido`;
         statusEl.className = 'status-msg error';
         return;
       }
@@ -1329,14 +1359,14 @@ function setupSettings() {
       const ok = await saveDBToGitHub();
       renderHoy();
       if (ok) {
-        statusEl.textContent = '✅ Datos sincronizados y subidos a GitHub';
+        statusEl.innerHTML = `<span class="toast-icon toast-ok">${icon('check', 14)}</span>Datos sincronizados y subidos a GitHub`;
         statusEl.className = 'status-msg success';
       } else {
-        statusEl.textContent = '✅ Datos sincronizados localmente (sin subida a GitHub)';
+        statusEl.innerHTML = `<span class="toast-icon toast-ok">${icon('check', 14)}</span>Datos sincronizados localmente (sin subida a GitHub)`;
         statusEl.className = 'status-msg success';
       }
     } catch (err) {
-      statusEl.textContent = '❌ Error: ' + err.message;
+      statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>${escHtml('Error: ' + err.message)}`;
       statusEl.className = 'status-msg error';
     }
   };
