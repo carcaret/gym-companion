@@ -62,51 +62,50 @@ Objetivo tras el plan:
 
 **Objetivo:** eliminar lo que no aporta nada sin cambiar comportamiento observable. Cada bullet es un commit posible. **Cada commit deja la suite en verde.**
 
-### 1.1 Borrar `src/crypto.js` y su rastro
+### ~~1.1 Borrar `src/crypto.js` y su rastro~~ ✅ (commit 2bd3acd)
 
-- Eliminar `src/crypto.js` (archivo con sólo un comentario).
-- Eliminar `./src/crypto.js` de `ASSETS` en `sw.js`. Bumpear `CACHE_NAME` a `gym-companion-v4`.
-- **Test `tests/unit/crypto.test.js`**: abrirlo. Si sólo afirma "el módulo existe y está vacío" → borrar (cubre código muerto). Si afirma algo más → adaptar.
+- ~~Eliminar `src/crypto.js` (archivo con sólo un comentario).~~
+- ~~Eliminar `./src/crypto.js` de `ASSETS` en `sw.js`. Bumpear `CACHE_NAME` a `gym-companion-v4`.~~
+- ~~**Test `tests/unit/crypto.test.js`**: abrirlo. Si sólo afirma "el módulo existe y está vacío" → borrar (cubre código muerto). Si afirma algo más → adaptar.~~
 
-### 1.2 Borrar `DAY_MAP` + `getTodayDayType`
+### ~~1.2 Borrar `DAY_MAP` + `getTodayDayType`~~ ✅ (commit 515327e)
 
-- Eliminar `DAY_MAP` de `src/constants.js`.
-- Eliminar `getTodayDayType` y su import de `DAY_MAP` en `src/dates.js`.
-- En `tests/unit/dates.test.js`: borrar **sólo** el `describe('getTodayDayType', ...)`. El resto (`todayStr`, `formatDate`) se mantiene.
-- En `tests/unit/constants.test.js`: quitar la aserción concreta sobre `DAY_MAP`. El resto del fichero se mantiene.
+- ~~Eliminar `DAY_MAP` de `src/constants.js`.~~
+- ~~Eliminar `getTodayDayType` y su import de `DAY_MAP` en `src/dates.js`.~~
+- ~~En `tests/unit/dates.test.js`: borrar **sólo** el `describe('getTodayDayType', ...)`. El resto (`todayStr`, `formatDate`) se mantiene.~~
+- ~~En `tests/unit/constants.test.js`: quitar la aserción concreta sobre `DAY_MAP`. El resto del fichero se mantiene.~~
+- En `tests/unit/routine-rename.test.js`: eliminados 2 describes de DAY_MAP; rescatado test "ROUTINE_KEYS coincide con claves de DAY_LABELS" (sin DAY_MAP).
 
-### 1.3 Borrar `validateGitHubConfig`
+### ~~1.3 Borrar `validateGitHubConfig`~~ ✅ (commit f1ffd60)
 
-- Eliminar la función de `src/github.js`.
-- En `tests/unit/github.test.js`: borrar **sólo** el `describe('validateGitHubConfig', ...)`. Los tests de `buildGitHubPayload` y `parseGitHubResponse` se mantienen tal cual — son comportamiento real.
+- ~~Eliminar la función de `src/github.js`.~~
+- ~~En `tests/unit/github.test.js`: borrar **sólo** el `describe('validateGitHubConfig', ...)`. Los tests de `buildGitHubPayload` y `parseGitHubResponse` se mantienen tal cual — son comportamiento real.~~
 
-### 1.4 Borrar sistema de backup sin restore
+### ~~1.4 Borrar sistema de backup sin restore~~ ✅ (commit a3b5c75)
 
-- Eliminar `saveBackup()` de `app.js` y todas sus llamadas.
-- Eliminar `DB_BACKUP_KEY` de `src/constants.js` y del import en `app.js`.
-- En `tests/unit/constants.test.js`: quitar la aserción concreta sobre `DB_BACKUP_KEY`.
-- En `tests/e2e/sync-bulletproof.spec.js`: buscar la(s) aserción(es) sobre `gym_companion_db_backup`. Si son líneas aisladas dentro de un test más grande → quitar sólo esas líneas. Si hay un test entero dedicado al backup → quitar ese test concreto. El resto del spec **se mantiene**.
+- ~~Eliminar `saveBackup()` de `app.js` y todas sus llamadas.~~
+- ~~Eliminar `DB_BACKUP_KEY` de `src/constants.js` y del import en `app.js`.~~
+- ~~En `tests/unit/constants.test.js`: quitar la aserción concreta sobre `DB_BACKUP_KEY`.~~
+- ~~En `tests/e2e/sync-bulletproof.spec.js`: test dedicado al backup eliminado entero. El resto del spec se mantiene.~~
 
-### 1.5 Borrar `migrateLegacyPat`
+### ~~1.5 Borrar `migrateLegacyPat`~~ ✅ (commit 4c519ec)
 
-- Eliminar función y su llamada en `init()`.
-- Si hay test específico de la migración → borrar (cubre código muerto). Leer primero para confirmar que no valida nada más.
+- ~~Eliminar función y su llamada en `init()`.~~
+- Sin tests asociados — eliminación limpia.
 
-### 1.6 Eliminar "safety net" de `finishWorkoutEntry`
+### ~~1.6 Eliminar "safety net" de `finishWorkoutEntry`~~ ✅ (commit a07115d)
 
-- En `src/workout.js`, quitar el `map(v => v !== null ? v : log.reps.expected)`. La validación previa ya garantiza no-nulls.
-- En `tests/unit/workout.test.js`: leer todos los tests relacionados. Si alguno depende del auto-relleno (ej: "finishWorkout convierte nulls a expected"), **ese comportamiento ha cambiado** — el nuevo comportamiento es "finishWorkout asume que no hay nulls". Adaptar el test: ahora el test debe verificar que `finishWorkout` marca `completed=true` sin tocar reps. No borrar.
+- ~~En `src/workout.js`, quitar el `map(v => v !== null ? v : log.reps.expected)`. La validación previa ya garantiza no-nulls.~~
+- 3 tests de null-filling eliminados (testean comportamiento que ya no existe y no tiene adaptación equivalente). 3 tests sobre `completed=true` y no-modificación de reps válidas se mantienen.
 
-### 1.7 Simplificar `validateLog`
+### ~~1.7 Simplificar `validateLog`~~ ✅ (commit 0a827f6)
 
-- En `src/workout.js`, eliminar los chequeos `typeof !== 'number'` y `isNaN`.
-- Mantener las reglas de dominio (`weight >= 0`, `series >= 1`, `repsExpected >= 1`, rep no-null).
-- En `tests/unit/workout.test.js`: los tests que pasan un string o NaN y esperan error dejan de ser relevantes para el validador (testean camino imposible). Pero **antes de borrarlos**, revisar que no haya un comportamiento de dominio legítimo entremedias (ej: "weight < 0 es error" SIGUE siendo válido). Adaptar, no borrar en bloque.
+- ~~En `src/workout.js`, eliminar los chequeos `typeof !== 'number'` y `isNaN`.~~
+- Eliminado 1 test de NaN en weight (camino imposible). Todos los tests de reglas de dominio se mantienen.
 
-### 1.8 Quitar bug cosmético
+### ~~1.8 Quitar bug cosmético~~ ✅ (commit 0a827f6)
 
-- `app.js:90` — reemplazar `setSyncState(getGithubConfig() ? 'none' : 'none')` por `setSyncState('none')`.
-- No afecta tests.
+- ~~`app.js:90` — reemplazar `setSyncState(getGithubConfig() ? 'none' : 'none')` por `setSyncState('none')`.~~
 
 ### Tests esperados tras Fase 1
 
