@@ -2,7 +2,7 @@
  * Pure history logic — no DOM, no persistence.
  * Operates on history arrays and entry objects passed as arguments.
  */
-import { adjustLogParamWithSync, setLogParamWithSync, adjustLogRep, setLogRep } from './log-mutations.js';
+import { adjustParam, setParam, adjustRep, setRep } from './workout.js';
 
 /**
  * Filter history entries by day type.
@@ -42,7 +42,7 @@ function findEntryLog(history, date, logIdx) {
 export function adjustHistoryParam(history, date, logIdx, param, delta) {
   const found = findEntryLog(history, date, logIdx);
   if (!found) return null;
-  adjustLogParamWithSync(found.log, param, delta);
+  adjustParam(found.log, param, delta);
   return found.entry;
 }
 
@@ -53,7 +53,7 @@ export function adjustHistoryParam(history, date, logIdx, param, delta) {
 export function setHistoryParam(history, date, logIdx, param, value) {
   const found = findEntryLog(history, date, logIdx);
   if (!found) return null;
-  setLogParamWithSync(found.log, param, value);
+  setParam(found.log, param, value);
   return found.entry;
 }
 
@@ -64,7 +64,7 @@ export function setHistoryParam(history, date, logIdx, param, value) {
 export function adjustHistoryRep(history, date, logIdx, seriesIdx, delta) {
   const found = findEntryLog(history, date, logIdx);
   if (!found) return null;
-  adjustLogRep(found.log, seriesIdx, delta);
+  adjustRep(found.log, seriesIdx, delta);
   return found.entry;
 }
 
@@ -75,6 +75,6 @@ export function adjustHistoryRep(history, date, logIdx, seriesIdx, delta) {
 export function setHistoryRep(history, date, logIdx, seriesIdx, value) {
   const found = findEntryLog(history, date, logIdx);
   if (!found) return null;
-  setLogRep(found.log, seriesIdx, value);
+  setRep(found.log, seriesIdx, value);
   return found.entry;
 }

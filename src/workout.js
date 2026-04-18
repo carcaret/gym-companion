@@ -1,5 +1,4 @@
 import { computeVolume, computeE1RM, getMaxMetrics } from './metrics.js';
-import { adjustLogParamWithSync, setLogParamWithSync, adjustLogRep, setLogRep } from './log-mutations.js';
 
 /**
  * Valida un log de ejercicio. Devuelve array de errores.
@@ -83,38 +82,58 @@ export function finishWorkoutEntry(entry) {
   return entry;
 }
 
-/**
- * Adjust a parameter (weight, series, repsExpected) on a log by delta.
- * Delegates to log-mutations.js. Mutates log in place.
- * When repsExpected changes, all reps.actual are synced to the new expected value.
- */
+function adjustLogParam(log, param, delta) {
+  if (param === 'weight') {
+    log.weight = Math.max(0, Math.round((log.weight + delta) * 10) / 10);
+  } else if (param === 'series') {
+    const newSeries = Math.max(1, log.series + delta);
+    if (newSeries > log.series) {
+      log.reps.actual.push(log.reps.expected);
+    } else if (newSeries < log.series) {
+      log.reps.actual.pop();
+    }
+    log.series = newSeries;
+  } else if (param === 'repsExpected') {
+    log.reps.expected = Math.max(1, log.reps.expected + delta);
+  }
+}
+
+function setLogParam(log, param, value) {
+  const num = parseFloat(value) || 0;
+  if (param === 'weight') {
+    log.weight = Math.max(0, num);
+  } else if (param === 'series') {
+    const newSeries = Math.max(1, Math.round(num));
+    while (log.reps.actual.length < newSeries) log.reps.actual.push(log.reps.expected);
+    while (log.reps.actual.length > newSeries) log.reps.actual.pop();
+    log.series = newSeries;
+  } else if (param === 'repsExpected') {
+    log.reps.expected = Math.max(1, Math.round(num));
+  }
+}
+
 export function adjustParam(log, param, delta) {
-  adjustLogParamWithSync(log, param, delta);
+  adjustLogParam(log, param, delta);
+  if (param === 'repsExpected') {
+    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
+  }
 }
 
-/**
- * Set a parameter directly from user input.
- * Delegates to log-mutations.js. Mutates log in place.
- * When repsExpected changes, all reps.actual are synced to the new expected value.
- */
 export function setParam(log, param, value) {
-  setLogParamWithSync(log, param, value);
+  setLogParam(log, param, value);
+  if (param === 'repsExpected') {
+    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
+  }
 }
 
-/**
- * Adjust a single rep value for a specific series.
- * Delegates to log-mutations.js. Mutates log in place.
- */
 export function adjustRep(log, seriesIdx, delta) {
-  adjustLogRep(log, seriesIdx, delta);
+  const current = log.reps.actual[seriesIdx] != null ? log.reps.actual[seriesIdx] : log.reps.expected;
+  log.reps.actual[seriesIdx] = Math.max(0, current + delta);
 }
 
-/**
- * Set a single rep value directly.
- * Delegates to log-mutations.js. Mutates log in place.
- */
 export function setRep(log, seriesIdx, value) {
-  setLogRep(log, seriesIdx, value);
+  const num = parseInt(value);
+  log.reps.actual[seriesIdx] = isNaN(num) ? null : Math.max(0, num);
 }
 
 /**

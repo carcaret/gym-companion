@@ -8,8 +8,8 @@ import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, P
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
-import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, setParam as _setParam, adjustRep as _adjustRep, setRep as _setRep, detectRecords, validateLog, validateEntry, reorderByIndex } from './src/workout.js';
-import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
+import { buildWorkoutEntry, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex } from './src/workout.js';
+import { filterHistory, sortHistory, adjustHistoryParam, setHistoryParam, adjustHistoryRep, setHistoryRep } from './src/history.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
 
@@ -789,7 +789,7 @@ window.GymCompanion = {
   adjustParam: async (logIdx, param, delta) => {
     const entry = getTodayEntry();
     if (!entry) return;
-    _adjustParam(entry.logs[logIdx], param, delta);
+    adjustParam(entry.logs[logIdx], param, delta);
     await persistDB();
     updateWorkoutCardInPlace(logIdx, entry);
   },
@@ -797,7 +797,7 @@ window.GymCompanion = {
   setParam: async (logIdx, param, value) => {
     const entry = getTodayEntry();
     if (!entry) return;
-    _setParam(entry.logs[logIdx], param, value);
+    setParam(entry.logs[logIdx], param, value);
     await persistDB();
     updateWorkoutCardInPlace(logIdx, entry);
   },
@@ -805,7 +805,7 @@ window.GymCompanion = {
   adjustRep: async (logIdx, seriesIdx, delta) => {
     const entry = getTodayEntry();
     if (!entry) return;
-    _adjustRep(entry.logs[logIdx], seriesIdx, delta);
+    adjustRep(entry.logs[logIdx], seriesIdx, delta);
     await persistDB();
     const input = document.getElementById(`w-rep-${logIdx}-${seriesIdx}`);
     if (input) input.value = entry.logs[logIdx].reps.actual[seriesIdx];
@@ -815,7 +815,7 @@ window.GymCompanion = {
   setRep: async (logIdx, seriesIdx, value) => {
     const entry = getTodayEntry();
     if (!entry) return;
-    _setRep(entry.logs[logIdx], seriesIdx, value);
+    setRep(entry.logs[logIdx], seriesIdx, value);
     await persistDB();
     updateWorkoutCardInPlace(logIdx, entry);
   },
@@ -842,16 +842,16 @@ window.GymCompanion = {
   },
 
   adjustHistoryParam: (date, logIdx, param, delta) =>
-    withHistoryUpdate(() => _adjustHistoryParam(DB.history, date, logIdx, param, delta), date, logIdx),
+    withHistoryUpdate(() => adjustHistoryParam(DB.history, date, logIdx, param, delta), date, logIdx),
 
   setHistoryParam: (date, logIdx, param, value) =>
-    withHistoryUpdate(() => _setHistoryParam(DB.history, date, logIdx, param, value), date, logIdx),
+    withHistoryUpdate(() => setHistoryParam(DB.history, date, logIdx, param, value), date, logIdx),
 
   adjustHistoryRep: (date, logIdx, seriesIdx, delta) =>
-    withHistoryUpdate(() => _adjustHistoryRep(DB.history, date, logIdx, seriesIdx, delta), date, logIdx),
+    withHistoryUpdate(() => adjustHistoryRep(DB.history, date, logIdx, seriesIdx, delta), date, logIdx),
 
   setHistoryRep: (date, logIdx, seriesIdx, value) =>
-    withHistoryUpdate(() => _setHistoryRep(DB.history, date, logIdx, seriesIdx, value), date, logIdx),
+    withHistoryUpdate(() => setHistoryRep(DB.history, date, logIdx, seriesIdx, value), date, logIdx),
 
   reorderExercises: async (dayType, fromIndex, toIndex) => {
     DB.routines[dayType] = reorderByIndex(DB.routines[dayType], fromIndex, toIndex);
@@ -897,8 +897,8 @@ function renderHistorial() {
 
   editingHistorialExercise = null;
 
-  const entries = _sortHistory(DB.history);
-  const filtered = _filterHistory(entries, historialFilter);
+  const entries = sortHistory(DB.history);
+  const filtered = filterHistory(entries, historialFilter);
 
   if (filtered.length === 0) {
     content.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon('clipboard', 48)}</div><p>No hay sesiones registradas</p></div>`;
