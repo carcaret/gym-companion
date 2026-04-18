@@ -121,29 +121,6 @@ function getPat() {
   return localStorage.getItem(PAT_KEY) || null;
 }
 
-/**
- * Migración: si el PAT almacenado parece un valor XOR cifrado (hex puro, longitud par > 40),
- * no podemos descifrarlo → lo borramos y pedimos al usuario que lo reintroduzca.
- */
-function migrateLegacyPat() {
-  // Check both old key name and current key
-  const oldKey = 'gym_companion_pat_enc';
-  for (const key of [oldKey, PAT_KEY]) {
-    const stored = localStorage.getItem(key);
-    if (stored && /^[0-9a-f]+$/.test(stored) && stored.length >= 40 && stored.length % 2 === 0) {
-      localStorage.removeItem(key);
-      if (key === oldKey) localStorage.removeItem(PAT_KEY);
-      toast('PAT antiguo no recuperable — introdúcelo de nuevo en Ajustes', 'warn', 5000);
-      return;
-    }
-    // Migrate old key name to new key name
-    if (key === oldKey && stored && stored.length > 0) {
-      localStorage.setItem(PAT_KEY, stored);
-      localStorage.removeItem(oldKey);
-    }
-  }
-}
-
 async function loadDBFromGitHub(patOverride) {
   const cfg = getGithubConfig();
   const pat = patOverride || getPat();
@@ -1421,9 +1398,6 @@ async function init() {
   setupFilters();
   setupSettings();
   setupSyncIndicator();
-
-  // Migrar PAT cifrado antiguo si existe
-  migrateLegacyPat();
 
   // Cargar DB con merge
   let { data, needsUpload } = await loadDB();
