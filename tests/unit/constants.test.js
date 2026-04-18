@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, DB_BACKUP_KEY, PAT_KEY } from '../../src/constants.js';
+import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from '../../src/constants.js';
 
 describe('constants', () => {
   test('DAY_LABELS tiene etiquetas Full Body', () => {
@@ -15,7 +15,6 @@ describe('constants', () => {
   test('las claves de localStorage están definidas', () => {
     expect(GITHUB_KEY).toBe('gym_companion_github');
     expect(DB_LOCAL_KEY).toBe('gym_companion_db');
-    expect(DB_BACKUP_KEY).toBe('gym_companion_db_backup');
     expect(PAT_KEY).toBe('gym_companion_pat');
   });
 

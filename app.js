@@ -4,7 +4,7 @@
 
 const APP_VERSION = '1.0.11';
 
-import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, DB_BACKUP_KEY, PAT_KEY } from './src/constants.js';
+import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
@@ -219,13 +219,6 @@ function saveDBLocal() {
   }
 }
 
-function saveBackup() {
-  const current = localStorage.getItem(DB_LOCAL_KEY);
-  if (current) {
-    try { localStorage.setItem(DB_BACKUP_KEY, current); } catch (e) { }
-  }
-}
-
 async function persistDB({ forceGitHub = false } = {}) {
   saveDBLocal();
   if (_isWorkoutActive(DB, todayStr()) && !forceGitHub) return;
@@ -297,8 +290,6 @@ async function loadDB() {
   const remoteData = await loadDBFromGitHub();
 
   if (localData && remoteData) {
-    // Backup antes de sobrescribir con datos externos
-    saveBackup();
     const merged = mergeDBs(localData, remoteData);
     // Detectar si el merge añadió entradas que GitHub no tenía
     const remoteDates = new Set((remoteData.history || []).map(e => e.date));
@@ -306,7 +297,6 @@ async function loadDB() {
     return { data: merged, needsUpload };
   }
   if (remoteData) {
-    saveBackup();
     return { data: remoteData, needsUpload: false };
   }
   if (localData) return { data: localData, needsUpload: false };
@@ -1294,7 +1284,6 @@ function setupSettings() {
     if (!githubSha) {
       const remote = await loadDBFromGitHub();
       if (remote) {
-        saveBackup();
         DB = mergeDBs(DB, remote);
         ensureHistorySorted(DB);
         saveDBLocal();
@@ -1349,8 +1338,6 @@ function setupSettings() {
         statusEl.className = 'status-msg error';
         return;
       }
-      // Backup + merge con local
-      saveBackup();
       DB = mergeDBs(DB || { exercises: {}, routines: {}, history: [] }, remote);
       ensureHistorySorted(DB);
       saveDBLocal();

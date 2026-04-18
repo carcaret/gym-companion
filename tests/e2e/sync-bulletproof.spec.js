@@ -157,35 +157,6 @@ test.describe('Sync a prueba de bombas', () => {
     expect(entry.completed).toBe(true);
   });
 
-  // ── Backup ────────────────────────────────────────────────────────────────
-
-  test('arranque con GitHub crea backup del local', async ({ page }) => {
-    await page.addInitScript((data) => {
-      localStorage.setItem('gym_companion_db', data.localJson);
-      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
-      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
-    }, { localJson: JSON.stringify(BASE_DB) });
-
-    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
-      if (route.request().method() === 'GET') {
-        await route.fulfill({
-          status: 200, contentType: 'application/json',
-          body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_remote', encoding: 'base64' })
-        });
-      } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'new_sha' } }) });
-      }
-    });
-
-    await page.goto('/');
-    await expect(page.locator('#app-shell')).toBeVisible();
-
-    const backup = await page.evaluate(() => localStorage.getItem('gym_companion_db_backup'));
-    expect(backup).not.toBeNull();
-    const backupDB = JSON.parse(backup);
-    expect(backupDB.exercises).toBeDefined();
-  });
-
   // ── Indicador de sync ────────────────────────────────────────────────────
 
   test('sin GitHub → indicador muestra ○ (none)', async ({ page }) => {
