@@ -635,7 +635,16 @@ function renderCompletedToday(container, entry) {
     </div>`;
   });
 
+  html += `<div class="view-nav-actions">
+    <button class="btn-secondary" id="back-to-selector-btn">← Volver a rutinas</button>
+  </div>`;
+
   container.innerHTML = html;
+
+  document.getElementById('back-to-selector-btn').onclick = () => {
+    document.getElementById('hoy-title').textContent = 'Rutinas';
+    renderDaySelector(container);
+  };
 }
 
 // ── Exercise Management ──

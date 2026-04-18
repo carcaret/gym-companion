@@ -182,4 +182,56 @@ test.describe('Vista de entreno completado', () => {
     await expect(page.locator('.historial-detail-card')).not.toHaveCount(0);
     await expect(page.locator('.day-selector')).toHaveCount(0);
   });
+
+  // ════════════════════════════════════════════════
+  // Botón "← Volver a rutinas" en vista completado
+  // ════════════════════════════════════════════════
+
+  test('vista completada: existe botón #back-to-selector-btn', async ({ page }) => {
+    await completeWorkout(page);
+    await expect(page.locator('#back-to-selector-btn')).toBeVisible();
+  });
+
+  test('vista completada: botón Volver tiene texto "← Volver a rutinas"', async ({ page }) => {
+    await completeWorkout(page);
+    await expect(page.locator('#back-to-selector-btn')).toContainText('← Volver a rutinas');
+  });
+
+  test('vista completada: botón Volver tiene clase btn-secondary', async ({ page }) => {
+    await completeWorkout(page);
+    await expect(page.locator('#back-to-selector-btn')).toHaveClass(/btn-secondary/);
+  });
+
+  test('vista completada: botón Volver está dentro de view-nav-actions', async ({ page }) => {
+    await completeWorkout(page);
+    const container = page.locator('#view-hoy .view-nav-actions');
+    await expect(container).toBeVisible();
+    await expect(container.locator('#back-to-selector-btn')).toBeVisible();
+  });
+
+  test('vista completada: view-nav-actions solo tiene un botón (ocupa ancho completo)', async ({ page }) => {
+    await completeWorkout(page);
+    const container = page.locator('#view-hoy .view-nav-actions');
+    await expect(container.locator('button')).toHaveCount(1);
+  });
+
+  test('vista completada: botón Volver ocupa el ancho del contenedor (flex: 1)', async ({ page }) => {
+    await completeWorkout(page);
+    const btn = page.locator('#view-hoy #back-to-selector-btn');
+    const container = page.locator('#view-hoy .view-nav-actions');
+    const btnBox = await btn.boundingBox();
+    const containerBox = await container.boundingBox();
+    // Con un único botón y flex:1, debe ocupar (casi) todo el ancho
+    expect(btnBox.width).toBeGreaterThan(containerBox.width * 0.9);
+  });
+
+  test('durante el entreno activo NO existe el botón Volver a rutinas', async ({ page }) => {
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
+    const hasDaySelector = await dayBtn.isVisible().catch(() => false);
+    if (hasDaySelector) await dayBtn.click();
+    await page.locator('#start-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
+
+    await expect(page.locator('#back-to-selector-btn')).toHaveCount(0);
+  });
 });

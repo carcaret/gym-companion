@@ -128,4 +128,62 @@ test.describe('Botones de navegación en vistas (Volver + Ejercicio)', () => {
     expect(btnBox.width).toBeGreaterThan(0);
     expect(btnBox.width).toBeLessThanOrEqual(containerBox.width + 1);
   });
+
+  // ════════════════════════════════════════════════
+  // Vista Entreno completado — botón Volver a rutinas
+  // ════════════════════════════════════════════════
+
+  async function completeWorkout(page) {
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
+    const hasDaySelector = await dayBtn.isVisible().catch(() => false);
+    if (hasDaySelector) await dayBtn.click();
+    await page.locator('#start-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
+    const { fillAllWorkoutReps } = require('./helpers.js');
+    await fillAllWorkoutReps(page);
+    await page.locator('#finish-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('completado');
+  }
+
+  test('completed view: botón Volver lleva al selector de rutinas', async ({ page }) => {
+    await completeWorkout(page);
+    await page.locator('#back-to-selector-btn').click();
+    await expect(page.locator('.day-selector')).toBeVisible();
+    await expect(page.locator('.day-btn').first()).toBeVisible();
+  });
+
+  test('completed view: botón Volver actualiza el título a "Rutinas"', async ({ page }) => {
+    await completeWorkout(page);
+    await page.locator('#back-to-selector-btn').click();
+    await expect(page.locator('#hoy-title')).toHaveText('Rutinas');
+  });
+
+  test('completed view: botón Volver oculta la vista de completado', async ({ page }) => {
+    await completeWorkout(page);
+    await page.locator('#back-to-selector-btn').click();
+    await expect(page.locator('.workout-status')).toHaveCount(0);
+    await expect(page.locator('.historial-detail-card')).toHaveCount(0);
+  });
+
+  test('completed view: desde selector tras volver, se puede seleccionar otra rutina', async ({ page }) => {
+    await completeWorkout(page);
+    await page.locator('#back-to-selector-btn').click();
+    // Se pueden ver todos los botones de rutina
+    await expect(page.locator('.day-btn')).toHaveCount(3);
+    // Se puede hacer clic en otra rutina y ver su preview
+    await page.locator('.day-btn', { hasText: 'Día 2' }).click();
+    await expect(page.locator('#start-workout-btn')).toBeVisible();
+  });
+
+  test('completed view: tras volver al selector y navegar a otra pestaña, volver a Hoy muestra de nuevo el resumen completado', async ({ page }) => {
+    await completeWorkout(page);
+    await page.locator('#back-to-selector-btn').click();
+    await expect(page.locator('.day-selector')).toBeVisible();
+
+    // Navegar fuera y volver — debe mostrar el resumen porque el entreno sigue completado
+    await page.click('[data-view="historial"]');
+    await page.click('[data-view="hoy"]');
+    await expect(page.locator('.workout-status')).toContainText('completado');
+    await expect(page.locator('.day-selector')).toHaveCount(0);
+  });
 });
