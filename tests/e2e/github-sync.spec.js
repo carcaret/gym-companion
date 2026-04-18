@@ -114,7 +114,7 @@ test.describe('GitHub sync (mock)', () => {
     expect(capturedRequest.body.content).toMatch(/^[A-Za-z0-9+/]+=*$/);
   });
 
-  test('sync desde GitHub hace merge e inyecta datos del remoto', async ({ page }) => {
+  test('sync desde GitHub sobreescribe local con datos del remoto', async ({ page }) => {
     await setupDBWithGitHub(page);
 
     // Remote DB has an extra exercise
@@ -148,10 +148,12 @@ test.describe('GitHub sync (mock)', () => {
 
     await page.click('[data-view="ajustes"]');
     await page.click('#sync-github-btn');
+    // Botón ahora abre modal de confirmación — confirmar
+    await page.click('text=Sobreescribir local');
 
     await expect(page.locator('#sync-status')).toContainText('sincronizados');
 
-    // Verify DB was updated with remote data (merged)
+    // Verify DB was updated with remote data
     const exercises = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
       return Object.keys(db.exercises);
@@ -175,6 +177,7 @@ test.describe('GitHub sync (mock)', () => {
 
     await page.click('[data-view="ajustes"]');
     await page.click('#sync-github-btn');
+    await page.click('text=Sobreescribir local');
 
     await expect(page.locator('#sync-status')).toContainText('No se pudo');
   });
@@ -193,6 +196,7 @@ test.describe('GitHub sync (mock)', () => {
 
     await page.click('[data-view="ajustes"]');
     await page.click('#sync-github-btn');
+    await page.click('text=Sobreescribir local');
 
     await expect(page.locator('#sync-status')).toContainText(/Error|No se pudo/);
 
@@ -271,6 +275,8 @@ test.describe('GitHub sync (mock)', () => {
       localStorage.setItem('gym_companion_db', data.localDBJson);
       localStorage.setItem('gym_companion_github', JSON.stringify(data.githubConfig));
       localStorage.setItem('gym_companion_pat', 'ghp_faketoken123');
+      // Simular que el entreno offline quedó pendiente de subir
+      localStorage.setItem('gym_companion_needs_upload', 'true');
     }, { localDBJson: JSON.stringify(localDB), githubConfig });
 
     let putCaptured = null;

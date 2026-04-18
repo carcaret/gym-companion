@@ -75,16 +75,18 @@ test.describe('Sync a prueba de bombas', () => {
 
   // ── Indicador de sync ────────────────────────────────────────────────────
 
-  test('sin GitHub → indicador muestra ○ (none)', async ({ page }) => {
+  test('sin GitHub → indicador en estado ok (neutral)', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-    const icon = await page.locator('#sync-status-icon').textContent();
-    expect(icon).toBe('○');
+    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
+    expect(state).toBe('ok');
   });
 
-  test('sync ok → indicador muestra ✓', async ({ page }) => {
+  test('sync ok → indicador muestra estado ok', async ({ page }) => {
     await page.addInitScript((data) => {
-      localStorage.setItem('gym_companion_db', data.dbJson);
+      if (!localStorage.getItem('gym_companion_db')) {
+        localStorage.setItem('gym_companion_db', data.dbJson);
+      }
       localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
       localStorage.setItem('gym_companion_pat', 'ghp_testpat');
     }, { dbJson: JSON.stringify(BASE_DB) });
@@ -113,8 +115,8 @@ test.describe('Sync a prueba de bombas', () => {
 
     await page.waitForTimeout(2000);
 
-    const icon = await page.locator('#sync-status-icon').textContent();
-    expect(icon).toBe('✓');
+    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
+    expect(state).toBe('ok');
   });
 
   test('clic en indicador muestra toast con estado', async ({ page }) => {

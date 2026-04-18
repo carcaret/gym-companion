@@ -40,10 +40,10 @@ test.describe('Arranque directo (sin login)', () => {
     await expect(page.locator('#sync-status-btn')).toBeVisible();
   });
 
-  test('sin GitHub configurado → indicador en estado none (○)', async ({ page }) => {
+  test('sin GitHub configurado → indicador en estado ok (sin GitHub = neutral)', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-    const icon = await page.locator('#sync-status-icon').textContent();
-    expect(icon).toBe('○');
+    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
+    expect(state).toBe('ok');
   });
 });
