@@ -1,170 +1,112 @@
 const { test, expect } = require('@playwright/test');
-const { injectTestDB, injectTestSession, clearStorage } = require('./helpers.js');
+const { injectTestDB, clearStorage } = require('./helpers.js');
 
-// XOR encrypt helper (mirrors src/crypto.js xorEncrypt)
-function xorEncrypt(text, key) {
-  return Array.from(text).map((c, i) =>
-    (c.charCodeAt(0) ^ key.charCodeAt(i % key.length)).toString(16).padStart(2, '0')
-  ).join('');
-}
-
-function xorDecrypt(hexStr, key) {
-  const bytes = hexStr.match(/.{2}/g).map(h => parseInt(h, 16));
-  return bytes.map((b, i) => String.fromCharCode(b ^ key.charCodeAt(i % key.length))).join('');
-}
-
-async function loginAs(page, password = 'test123') {
-  await page.fill('#login-user', 'testuser');
-  await page.fill('#login-pass', password);
-  await page.click('#login-form button[type="submit"]');
-  await expect(page.locator('#app-shell')).toBeVisible();
-}
-
-async function changePassword(page, oldPass, newPass) {
-  await page.click('[data-view="ajustes"]');
-  await page.fill('#set-old-pass', oldPass);
-  await page.fill('#set-new-pass', newPass);
-  await page.click('#change-pass-btn');
-}
-
-test.describe('Ajustes y configuracion', () => {
+test.describe('Ajustes — GitHub y PAT en claro', () => {
   test.afterEach(async ({ page }) => {
     await clearStorage(page);
   });
 
-  test('cambiar contraseña con password correcto permite re-login', async ({ page }) => {
+  test('guardar configuración GitHub almacena PAT en texto plano', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-    await loginAs(page);
 
-    await changePassword(page, 'test123', 'newpass456');
-
-    // Should show success
-    await expect(page.locator('#pass-status')).toContainText('cambiada');
-
-    // Logout
-    await page.click('#logout-btn');
-    await expect(page.locator('#login-screen')).toHaveClass(/active/);
-
-    // Re-login with new password
-    await loginAs(page, 'newpass456');
-  });
-
-  test('cambiar contraseña con password incorrecto muestra error', async ({ page }) => {
-    await injectTestDB(page);
-    await page.goto('/');
-    await loginAs(page);
-
-    await changePassword(page, 'wrongpass', 'newpass456');
-
-    await expect(page.locator('#pass-status')).toContainText('incorrecta');
-  });
-
-  test('contraseña nueva vacía muestra error', async ({ page }) => {
-    await injectTestDB(page);
-    await page.goto('/');
-    await loginAs(page);
-
-    await changePassword(page, 'test123', '');
-
-    await expect(page.locator('#pass-status')).toContainText('vacía');
-  });
-
-  test('contraseña nueva solo espacios muestra error', async ({ page }) => {
-    await injectTestDB(page);
-    await page.goto('/');
-    await loginAs(page);
-
-    await changePassword(page, 'test123', '   ');
-
-    await expect(page.locator('#pass-status')).toContainText('vacía');
-  });
-
-  test('contraseña vieja deja de funcionar tras cambio', async ({ page }) => {
-    await injectTestDB(page);
-    await page.goto('/');
-    await loginAs(page);
-
-    await changePassword(page, 'test123', 'newpass456');
-    await expect(page.locator('#pass-status')).toContainText('cambiada');
-
-    // Logout
-    await page.click('#logout-btn');
-    await expect(page.locator('#login-screen')).toHaveClass(/active/);
-
-    // Try old password — should fail
-    await page.fill('#login-user', 'testuser');
-    await page.fill('#login-pass', 'test123');
-    await page.click('#login-form button[type="submit"]');
-    await expect(page.locator('#login-error')).toBeVisible();
-  });
-
-  test('PAT se re-cifra correctamente tras cambio de contraseña', async ({ page }) => {
-    const fakePat = 'ghp_testtoken12345';
-    const encryptedPat = xorEncrypt(fakePat, 'test123');
-
-    // Inject DB + PAT + GitHub config
-    await page.addInitScript((data) => {
-      localStorage.setItem('gym_companion_db', data.dbJson);
-      localStorage.setItem('gym_companion_pat_enc', data.encryptedPat);
-      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'user/repo', branch: 'main', path: 'db.json' }));
-    }, { dbJson: JSON.stringify(JSON.parse(require('fs').readFileSync(require('path').resolve(__dirname, '../fixtures/db-test.json'), 'utf-8'))), encryptedPat });
-
-    await page.goto('/');
-    await loginAs(page);
-
-    await changePassword(page, 'test123', 'newpass456');
-    await expect(page.locator('#pass-status')).toContainText('cambiada');
-
-    // Read re-encrypted PAT from localStorage and verify it decrypts with new password
-    const storedPatEnc = await page.evaluate(() => localStorage.getItem('gym_companion_pat_enc'));
-    const decrypted = xorDecrypt(storedPatEnc, 'newpass456');
-    expect(decrypted).toBe(fakePat);
-  });
-
-  test('PAT se re-cifra aunque el campo PAT del form esté vacío', async ({ page }) => {
-    const fakePat = 'ghp_edgecase999';
-    const encryptedPat = xorEncrypt(fakePat, 'test123');
-
-    await page.addInitScript((data) => {
-      localStorage.setItem('gym_companion_db', data.dbJson);
-      localStorage.setItem('gym_companion_pat_enc', data.encryptedPat);
-      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'user/repo', branch: 'main', path: 'db.json' }));
-    }, { dbJson: JSON.stringify(JSON.parse(require('fs').readFileSync(require('path').resolve(__dirname, '../fixtures/db-test.json'), 'utf-8'))), encryptedPat });
-
-    await page.goto('/');
-    await loginAs(page);
-
-    // Go to settings and CLEAR the PAT field before changing password
     await page.click('[data-view="ajustes"]');
-    await page.fill('#set-pat', '');
+    await page.fill('#set-repo', 'user/repo');
+    await page.fill('#set-branch', 'main');
+    await page.fill('#set-pat', 'ghp_plaintext123');
+    await page.fill('#set-path', 'db.json');
+    await page.click('#save-github-btn');
 
-    await page.fill('#set-old-pass', 'test123');
-    await page.fill('#set-new-pass', 'newpass456');
-    await page.click('#change-pass-btn');
-    await expect(page.locator('#pass-status')).toContainText('cambiada');
-
-    // PAT should still be re-encrypted with new password (read from localStorage, not from field)
-    const storedPatEnc = await page.evaluate(() => localStorage.getItem('gym_companion_pat_enc'));
-    const decrypted = xorDecrypt(storedPatEnc, 'newpass456');
-    expect(decrypted).toBe(fakePat);
+    // El PAT se almacena en texto plano
+    const stored = await page.evaluate(() => localStorage.getItem('gym_companion_pat'));
+    expect(stored).toBe('ghp_plaintext123');
   });
 
-  test('sesión se actualiza tras cambio de contraseña', async ({ page }) => {
+  test('guardar configuración GitHub sin PAT muestra error', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-    await loginAs(page);
 
-    // Get session before
-    const sessionBefore = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_session')));
+    await page.click('[data-view="ajustes"]');
+    await page.fill('#set-repo', 'user/repo');
+    // No se rellena PAT
+    await page.click('#save-github-btn');
 
-    await changePassword(page, 'test123', 'newpass456');
-    await expect(page.locator('#pass-status')).toContainText('cambiada');
+    // Debe mostrar toast de error (no crash)
+    await expect(page.locator('#toast')).toContainText('requeridos');
+  });
 
-    // Session should have new hash and different token
-    const sessionAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_session')));
-    expect(sessionAfter.hash).not.toBe(sessionBefore.hash);
-    expect(sessionAfter.token).not.toBe(sessionBefore.token);
-    expect(sessionAfter.user).toBe('testuser');
+  test('guardar sin repo muestra error', async ({ page }) => {
+    await injectTestDB(page);
+    await page.goto('/');
+
+    await page.click('[data-view="ajustes"]');
+    await page.fill('#set-pat', 'ghp_token');
+    // No se rellena repo
+    await page.click('#save-github-btn');
+
+    await expect(page.locator('#toast')).toContainText('requeridos');
+  });
+
+  test('al abrir ajustes con PAT guardado, se muestra en el campo', async ({ page }) => {
+    await page.addInitScript(() => {
+      const db = JSON.parse(localStorage.getItem('gym_companion_db') || '{}');
+      localStorage.setItem('gym_companion_pat', 'ghp_visibletesttoken');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+    });
+    await injectTestDB(page);
+    await page.goto('/');
+    await page.click('[data-view="ajustes"]');
+
+    const val = await page.locator('#set-pat').inputValue();
+    expect(val).toBe('ghp_visibletesttoken');
+  });
+
+  test('no hay sección "Cambiar contraseña" en ajustes', async ({ page }) => {
+    await injectTestDB(page);
+    await page.goto('/');
+    await page.click('[data-view="ajustes"]');
+
+    await expect(page.locator('#change-pass-btn')).toHaveCount(0);
+    await expect(page.locator('#set-old-pass')).toHaveCount(0);
+    await expect(page.locator('#set-new-pass')).toHaveCount(0);
+  });
+
+  test('no hay botón de logout', async ({ page }) => {
+    await injectTestDB(page);
+    await page.goto('/');
+    await page.click('[data-view="ajustes"]');
+    await expect(page.locator('#logout-btn')).toHaveCount(0);
+  });
+
+  test('probar conexión NO modifica la DB', async ({ page }) => {
+    await injectTestDB(page);
+
+    await page.addInitScript(() => {
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    });
+
+    await page.route('https://api.github.com/**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ content: btoa('{"exercises":{"sentadilla":{"id":"sentadilla","name":"Sentadilla"}},"routines":{},"history":[]}'), sha: 'sha123', encoding: 'base64' })
+      });
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+
+    const dbBefore = await page.evaluate(() => localStorage.getItem('gym_companion_db'));
+
+    await page.click('[data-view="ajustes"]');
+    await page.fill('#set-pat', 'ghp_testpat');
+    await page.click('#test-github-btn');
+
+    await expect(page.locator('#github-status')).toBeVisible();
+
+    // La DB NO debe haber cambiado (test solo verifica conexión)
+    const dbAfter = await page.evaluate(() => localStorage.getItem('gym_companion_db'));
+    expect(dbAfter).toBe(dbBefore);
   });
 });
