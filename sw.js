@@ -1,11 +1,10 @@
-const CACHE_NAME = 'gym-companion-v3';
+const CACHE_NAME = 'gym-companion-v4';
 const ASSETS = [
   './',
   './index.html',
   './index.css',
   './app.js',
   './src/constants.js',
-  './src/crypto.js',
   './src/dates.js',
   './src/metrics.js',
   './src/formatting.js',
