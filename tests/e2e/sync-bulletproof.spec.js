@@ -361,4 +361,173 @@ test.describe('Sync a prueba de bombas', () => {
     expect(history).toContain('2024-01-08');
     expect(history).toContain('2024-02-01');
   });
+
+  // ── Guardar config por primera vez sin sha local ─────────────────────────
+  // Regression: arranque sin PAT → githubSha queda null → al guardar config
+  // el primer PUT va sin sha. Si el archivo existe en repo, GitHub devuelve
+  // 422 (no 409). El código debe manejar 422 igual que 409: cargar remoto,
+  // mergear y reintentar con sha válido. El indicador debe acabar en ✓.
+
+  test('guardar config sin sha → 422 en primer PUT → retry con sha → estado ok', async ({ page }) => {
+    // No hay PAT al arrancar → githubSha se queda null
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.localJson);
+    }, { localJson: JSON.stringify(BASE_DB) });
+
+    let putCount = 0;
+    const putShas = [];
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      const req = route.request();
+      if (req.method() === 'GET') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_remote', encoding: 'base64' })
+        });
+      } else {
+        putCount++;
+        const body = JSON.parse(req.postData() || '{}');
+        putShas.push(body.sha || null);
+        if (!body.sha) {
+          // Primer PUT sin sha sobre archivo existente → 422
+          await route.fulfill({
+            status: 422, contentType: 'application/json',
+            body: JSON.stringify({ message: 'Invalid request. "sha" wasn\'t supplied.' })
+          });
+        } else {
+          await route.fulfill({
+            status: 200, contentType: 'application/json',
+            body: JSON.stringify({ content: { sha: 'sha_new' } })
+          });
+        }
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+
+    await page.click('[data-view="ajustes"]');
+    await page.fill('#set-repo', 'u/r');
+    await page.fill('#set-branch', 'main');
+    await page.fill('#set-pat', 'ghp_newtoken');
+    await page.fill('#set-path', 'db.json');
+    await page.click('#save-github-btn');
+
+    // Esperar al debounce (500ms) + retry
+    await page.waitForTimeout(2500);
+
+    // Debe haber al menos 2 PUTs: primero sin sha (422), luego con sha (200)
+    // O, con el pre-load del fix A, solo 1 PUT con sha (porque githubSha ya estaría poblado)
+    const lastSha = putShas[putShas.length - 1];
+    expect(lastSha).toBe('sha_remote');
+
+    // Indicador de sync debe estar en ok (✓), no error (✗)
+    const icon = await page.locator('#sync-status-icon').textContent();
+    expect(icon).toBe('✓');
+  });
+
+  test('guardar config sin sha con remoto con entrenos nuevos → merge, no pierde datos', async ({ page }) => {
+    const remoteDB = {
+      ...BASE_DB,
+      history: [
+        ...BASE_DB.history,
+        {
+          date: '2024-03-15', type: 'DIA2', completed: true,
+          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 8, actual: [8, 8, 8] }, weight: 80 }]
+        }
+      ]
+    };
+
+    const localOnlyDB = {
+      ...BASE_DB,
+      history: [
+        ...BASE_DB.history,
+        {
+          date: '2024-04-01', type: 'DIA1', completed: true,
+          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 9, 8] }, weight: 65 }]
+        }
+      ]
+    };
+
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.localJson);
+    }, { localJson: JSON.stringify(localOnlyDB) });
+
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      const req = route.request();
+      if (req.method() === 'GET') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(remoteDB), sha: 'sha_r', encoding: 'base64' })
+        });
+      } else {
+        const body = JSON.parse(req.postData() || '{}');
+        if (!body.sha) {
+          await route.fulfill({ status: 422, contentType: 'application/json', body: JSON.stringify({ message: 'sha required' }) });
+        } else {
+          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'sha_new' } }) });
+        }
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+
+    await page.click('[data-view="ajustes"]');
+    await page.fill('#set-repo', 'u/r');
+    await page.fill('#set-pat', 'ghp_newtoken');
+    await page.click('#save-github-btn');
+
+    await page.waitForTimeout(2500);
+
+    // Debe contener ambas fechas: la local nueva Y la remota
+    const history = await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('gym_companion_db'));
+      return db.history.map(e => e.date);
+    });
+    expect(history).toContain('2024-03-15');
+    expect(history).toContain('2024-04-01');
+    expect(history).toContain('2024-01-08');
+  });
+
+  test('guardar config con PUT 409 (sha desactualizado) → reintenta y acaba ok', async ({ page }) => {
+    // Simula caso donde githubSha está poblado pero está desactualizado
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.localJson);
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_existing');
+    }, { localJson: JSON.stringify(BASE_DB) });
+
+    let putCount = 0;
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      const req = route.request();
+      if (req.method() === 'GET') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_v2', encoding: 'base64' })
+        });
+      } else {
+        putCount++;
+        const body = JSON.parse(req.postData() || '{}');
+        // Primer PUT con sha cualquiera → 409 (desactualizado). Segundo → ok
+        if (putCount === 1) {
+          await route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ message: 'sha mismatch' }) });
+        } else {
+          expect(body.sha).toBe('sha_v2');
+          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'sha_v3' } }) });
+        }
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+
+    await page.click('[data-view="ajustes"]');
+    await page.fill('#set-pat', 'ghp_existing');
+    await page.click('#save-github-btn');
+
+    await page.waitForTimeout(2500);
+
+    const icon = await page.locator('#sync-status-icon').textContent();
+    expect(icon).toBe('✓');
+  });
 });

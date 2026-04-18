@@ -148,10 +148,11 @@ async function saveDBToGitHub(options = {}) {
     if (options.keepalive) fetchOpts.keepalive = true;
     const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, fetchOpts);
 
-    if (res.status === 409) {
-      // Conflicto de SHA — obtener versión remota, hacer merge y reintentar
+    // 409: sha desactualizado. 422: PUT sin sha sobre archivo existente.
+    // En ambos: cargar remoto para obtener sha + merge y reintentar.
+    if (res.status === 409 || res.status === 422) {
       if (options._conflictRetry) {
-        console.error('GitHub save: 409 tras retry, abortando');
+        console.error(`GitHub save: ${res.status} tras retry, abortando`);
         setSyncState('error');
         return false;
       }
@@ -1261,6 +1262,20 @@ function setupSettings() {
     localStorage.setItem(PAT_KEY, pat);
     setSyncState('pending');
     toast('✅ Configuración guardada — sincronizando...');
+
+    // Si no hay sha (primera config o arranque sin PAT), cargar remoto primero:
+    // poblamos githubSha y mergeamos para no perder datos remotos.
+    if (!githubSha) {
+      const remote = await loadDBFromGitHub();
+      if (remote) {
+        saveBackup();
+        DB = mergeDBs(DB, remote);
+        ensureHistorySorted(DB);
+        saveDBLocal();
+        renderHoy();
+      }
+    }
+
     persistDB();
   };
 
