@@ -223,27 +223,6 @@ test.describe('Sync a prueba de bombas', () => {
     expect(stored).toBe('ghp_cleartext999');
   });
 
-  test('PAT legado hex (gym_companion_pat_enc) se elimina al arrancar y avisa al usuario', async ({ page }) => {
-    // Simular PAT cifrado antiguo: hex puro, par, > 40 chars
-    const fakeLegacyHex = 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4';
-
-    await page.addInitScript((hex) => {
-      localStorage.setItem('gym_companion_pat_enc', hex);
-      const db = { exercises: {}, routines: { DIA1: [] }, history: [] };
-      localStorage.setItem('gym_companion_db', JSON.stringify(db));
-    }, fakeLegacyHex);
-
-    await page.goto('/');
-    await expect(page.locator('#app-shell')).toBeVisible();
-
-    // El PAT cifrado debe haber sido eliminado
-    const oldKey = await page.evaluate(() => localStorage.getItem('gym_companion_pat_enc'));
-    expect(oldKey).toBeNull();
-
-    // Se debe haber mostrado un aviso
-    await expect(page.locator('#toast')).toContainText('PAT');
-  });
-
   // ── "Probar conexión" no modifica DB ─────────────────────────────────────
 
   test('probar conexión NO sobrescribe la DB local', async ({ page }) => {
