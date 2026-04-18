@@ -7,7 +7,7 @@ set -e
 APP_JS="app.js"
 
 # Leer versión actual
-current=$(grep -oP "(?<=APP_VERSION = ')[\d.]+" "$APP_JS")
+current=$(sed -n "s/.*APP_VERSION = '\([0-9.]*\)'.*/\1/p" "$APP_JS")
 if [ -z "$current" ]; then
   echo "pre-push: no se encontró APP_VERSION en $APP_JS, saltando bump." >&2
   exit 0
