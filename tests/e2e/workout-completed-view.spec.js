@@ -151,36 +151,31 @@ test.describe('Vista de entreno completado', () => {
     await expect(page.locator('#completed-close-btn')).toHaveCount(0);
   });
 
-  test('navegar entre múltiples pestañas y volver siempre muestra el resumen completado', async ({ page }) => {
+  test('navegar entre múltiples pestañas y volver muestra el selector (no el resumen)', async ({ page }) => {
     await completeWorkout(page);
 
     // Navegar a ajustes y volver
     await page.click('[data-view="ajustes"]');
     await page.click('[data-view="hoy"]');
-    await expect(page.locator('.workout-status')).toContainText('completado');
+    await expect(page.locator('.day-selector')).toBeVisible();
+    await expect(page.locator('.workout-status')).toHaveCount(0);
 
     // Navegar a gráficas y volver
     await page.click('[data-view="graficas"]');
     await page.click('[data-view="hoy"]');
-    await expect(page.locator('.workout-status')).toContainText('completado');
-
-    // Nunca aparece el selector de rutinas ni el botón Cerrar
-    await expect(page.locator('.day-selector')).toHaveCount(0);
-    await expect(page.locator('#completed-close-btn')).toHaveCount(0);
+    await expect(page.locator('.day-selector')).toBeVisible();
+    await expect(page.locator('.workout-status')).toHaveCount(0);
   });
 
-  test('navegar a otra pestaña y volver sigue mostrando el resumen completado', async ({ page }) => {
+  test('navegar a otra pestaña y volver muestra el selector (no el resumen completado)', async ({ page }) => {
     await completeWorkout(page);
 
-    // Navegar a historial y volver
     await page.click('[data-view="historial"]');
     await expect(page.locator('#view-historial')).toBeVisible();
     await page.click('[data-view="hoy"]');
 
-    // Debe seguir mostrando el resumen completado
-    await expect(page.locator('.workout-status')).toContainText('completado');
-    await expect(page.locator('.historial-detail-card')).not.toHaveCount(0);
-    await expect(page.locator('.day-selector')).toHaveCount(0);
+    await expect(page.locator('.day-selector')).toBeVisible();
+    await expect(page.locator('.workout-status')).toHaveCount(0);
   });
 
   // ════════════════════════════════════════════════
@@ -233,5 +228,26 @@ test.describe('Vista de entreno completado', () => {
     await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
 
     await expect(page.locator('#back-to-selector-btn')).toHaveCount(0);
+  });
+
+  // ════════════════════════════════════════════════
+  // Comportamiento post-completado sin flag
+  // ════════════════════════════════════════════════
+
+  test('tras pulsar Volver, aparece el selector de rutinas con título "Rutinas"', async ({ page }) => {
+    await completeWorkout(page);
+    await page.locator('#back-to-selector-btn').click();
+
+    await expect(page.locator('.day-selector')).toBeVisible();
+    await expect(page.locator('.workout-status')).toHaveCount(0);
+    await expect(page.locator('#hoy-title')).toHaveText('Rutinas');
+  });
+
+  test('sin pulsar Volver, el resumen sigue visible al recargar la vista (botón Volver presente)', async ({ page }) => {
+    await completeWorkout(page);
+
+    // El resumen se renderizó directamente por finishWorkout — el botón Volver está visible
+    await expect(page.locator('#back-to-selector-btn')).toBeVisible();
+    await expect(page.locator('.workout-status')).toContainText('completado');
   });
 });

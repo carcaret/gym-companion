@@ -419,12 +419,6 @@ function renderHoy() {
     return;
   }
 
-  if (todayEntry && todayEntry.completed) {
-    title.textContent = `${DAY_LABELS[todayEntry.type]} ✓`;
-    renderCompletedToday(content, todayEntry);
-    return;
-  }
-
   title.textContent = 'Rutinas';
   renderDaySelector(content);
 }
@@ -649,7 +643,9 @@ async function finishWorkout() {
 
   finishWorkoutEntry(entry);
   saveDBLocal();
-  renderHoy();
+  const hoyContent = document.getElementById('hoy-content');
+  document.getElementById('hoy-title').textContent = `${DAY_LABELS[entry.type]} ✓`;
+  renderCompletedToday(hoyContent, entry);
   toast('¡Entreno completado! Guardando...');
 
   // Forzar save a GitHub; si falla, alerta clara
