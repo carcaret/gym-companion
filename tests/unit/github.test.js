@@ -1,62 +1,11 @@
 import { describe, test, expect } from 'vitest';
 import {
-  validateGitHubConfig,
   buildGitHubPayload,
   parseGitHubResponse
 } from '../../src/github.js';
 
 // ════════════════════════════════════════════════
-// C.1 — validateGitHubConfig
-// ════════════════════════════════════════════════
-
-describe('validateGitHubConfig', () => {
-  test('config completa (repo, branch, path) → válida', () => {
-    const result = validateGitHubConfig({ repo: 'user/repo', branch: 'main', path: 'db.json' });
-    expect(result.valid).toBe(true);
-    expect(result.repo).toBe('user/repo');
-    expect(result.branch).toBe('main');
-    expect(result.path).toBe('db.json');
-  });
-
-  test('repo vacío → inválida', () => {
-    const result = validateGitHubConfig({ repo: '', branch: 'main', path: 'db.json' });
-    expect(result.valid).toBe(false);
-  });
-
-  test('branch vacío → usa default "main"', () => {
-    const result = validateGitHubConfig({ repo: 'user/repo', branch: '', path: 'data.json' });
-    expect(result.valid).toBe(true);
-    expect(result.branch).toBe('main');
-  });
-
-  test('path vacío → usa default "db.json"', () => {
-    const result = validateGitHubConfig({ repo: 'user/repo', branch: 'master', path: '' });
-    expect(result.valid).toBe(true);
-    expect(result.path).toBe('db.json');
-  });
-
-  test('repo con formato owner/repo → válida', () => {
-    const result = validateGitHubConfig({ repo: 'my-org/my-repo' });
-    expect(result.valid).toBe(true);
-  });
-
-  test('repo sin "/" → inválida', () => {
-    const result = validateGitHubConfig({ repo: 'justrepo' });
-    expect(result.valid).toBe(false);
-    expect(result.reason).toContain('owner/repo');
-  });
-
-  test('config null → inválida', () => {
-    expect(validateGitHubConfig(null).valid).toBe(false);
-  });
-
-  test('config undefined → inválida', () => {
-    expect(validateGitHubConfig(undefined).valid).toBe(false);
-  });
-});
-
-// ════════════════════════════════════════════════
-// C.2 — buildGitHubPayload
+// C.1 — buildGitHubPayload
 // ════════════════════════════════════════════════
 
 describe('buildGitHubPayload', () => {

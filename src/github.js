@@ -1,15 +1,3 @@
-// ── Config validation ──
-
-export function validateGitHubConfig(config) {
-  if (!config || typeof config !== 'object') return { valid: false, reason: 'config vacía' };
-  const repo = (config.repo || '').trim();
-  if (!repo) return { valid: false, reason: 'repo vacío' };
-  if (!repo.includes('/')) return { valid: false, reason: 'repo debe tener formato owner/repo' };
-  const branch = (config.branch || '').trim() || 'main';
-  const path = (config.path || '').trim() || 'db.json';
-  return { valid: true, repo, branch, path };
-}
-
 // ── Payload building (for PUT) ──
 
 export function buildGitHubPayload(db, sha, { branch = 'main', message = '' } = {}) {
