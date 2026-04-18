@@ -22,10 +22,7 @@ let saveTimeout = null;
 
 // ── sync state: 'none' | 'ok' | 'pending' | 'error' ──────────────────────────
 let syncState = 'none';
-let syncPending = false;
-let syncRetryCount = 0;
-const SYNC_MAX_RETRIES = 3;
-const SYNC_BACKOFF_MS = [1000, 3000, 9000];
+let conflict = false;
 
 // ── SVG icon system ───────────────────────────────────────────────────────────
 const SVG_PATHS = {
@@ -155,38 +152,28 @@ async function saveDBToGitHub(options = {}) {
     if (options.keepalive) fetchOpts.keepalive = true;
     const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, fetchOpts);
 
-    // 409: sha desactualizado. 422: PUT sin sha sobre archivo existente.
-    // En ambos: cargar remoto para obtener sha + merge y reintentar.
+    // 409/422: sha desactualizado o archivo sin sha — conflicto manual.
     if (res.status === 409 || res.status === 422) {
-      if (options._conflictRetry) {
-        console.error(`GitHub save: ${res.status} tras retry, abortando`);
-        setSyncState('error');
-        return false;
-      }
-      const remote = await loadDBFromGitHub();
-      if (remote) {
-        DB = mergeDBs(DB, remote);
-        saveDBLocal();
-      }
-      return saveDBToGitHub({ ...options, _conflictRetry: true });
+      conflict = true;
+      setSyncState('pending');
+      return false;
     }
 
     if (!res.ok) {
       console.error('GitHub save failed', res.status);
-      setSyncState('error');
+      setSyncState('pending');
       return false;
     }
 
     const data = await res.json();
     githubSha = data.content.sha;
     try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'false'); } catch (e) { }
+    conflict = false;
     setSyncState('ok');
-    syncPending = false;
-    syncRetryCount = 0;
     return true;
   } catch (e) {
     console.error('GitHub save error', e);
-    setSyncState('error');
+    setSyncState('pending');
     return false;
   }
 }
@@ -209,40 +196,14 @@ async function persistDB({ forceGitHub = false } = {}) {
       return;
     }
     setSyncState('pending');
-    syncPending = true;
     const ok = await saveDBToGitHub();
-    if (ok) {
-      toast('Guardado', 'save');
-      syncPending = false;
-    } else if (getGithubConfig()) {
-      // Retry con backoff
-      scheduleRetry();
-    }
+    if (ok) toast('Guardado', 'save');
   }, 500);
 }
 
-function scheduleRetry() {
-  if (syncRetryCount >= SYNC_MAX_RETRIES) {
-    setSyncState('error');
-    toast('Guardado local (sin GitHub)', 'warn', 4000);
-    return;
-  }
-  const delay = SYNC_BACKOFF_MS[syncRetryCount] || 9000;
-  syncRetryCount++;
-  setTimeout(async () => {
-    if (!syncPending) return;
-    const ok = await saveDBToGitHub();
-    if (ok) {
-      toast('Guardado en GitHub', 'save');
-    } else {
-      scheduleRetry();
-    }
-  }, delay);
-}
-
 window.addEventListener('online', () => {
-  if (syncPending && getGithubConfig() && getPat()) {
-    syncRetryCount = 0;
+  const needsUpload = localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true';
+  if (needsUpload && !conflict && getGithubConfig() && getPat() && !_isWorkoutActive(DB, todayStr())) {
     saveDBToGitHub().then(ok => {
       if (ok) toast('Guardado en GitHub (recuperado tras reconexión)', 'save');
     });
