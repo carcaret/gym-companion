@@ -187,12 +187,6 @@ describe('finishWorkoutEntry', () => {
     expect(entry.completed).toBe(true);
   });
 
-  test('rellena nulls en reps.actual con expected', () => {
-    const entry = makeEntry({ logs: [makeLog({ expected: 10, actual: [null, null, null] })] });
-    finishWorkoutEntry(entry);
-    expect(entry.logs[0].reps.actual).toEqual([10, 10, 10]);
-  });
-
   test('no modifica reps que ya tenían valor', () => {
     const entry = makeEntry({ logs: [makeLog({ expected: 10, actual: [8, 7, 9] })] });
     finishWorkoutEntry(entry);
@@ -203,18 +197,6 @@ describe('finishWorkoutEntry', () => {
     const entry = makeEntry({ logs: [makeLog({ expected: 10, actual: [10, 10, 10] })] });
     finishWorkoutEntry(entry);
     expect(entry.logs[0].reps.actual).toEqual([10, 10, 10]);
-  });
-
-  test('con todas las reps null, las rellena todas con expected', () => {
-    const entry = makeEntry({ logs: [makeLog({ expected: 12, actual: [null, null, null] })] });
-    finishWorkoutEntry(entry);
-    expect(entry.logs[0].reps.actual).toEqual([12, 12, 12]);
-  });
-
-  test('mezcla de nulls y valores: solo rellena los nulls', () => {
-    const entry = makeEntry({ logs: [makeLog({ expected: 10, actual: [10, null, 8] })] });
-    finishWorkoutEntry(entry);
-    expect(entry.logs[0].reps.actual).toEqual([10, 10, 8]);
   });
 });
 

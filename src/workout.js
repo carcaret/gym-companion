@@ -79,11 +79,6 @@ export function buildWorkoutEntry(date, dayType, routineIds, getLastValues, getE
  * Mutates entry in place and returns it.
  */
 export function finishWorkoutEntry(entry) {
-  // Safety net: rellena nulls restantes. En flujo normal, la validación
-  // impide llegar aquí con nulls, pero sync/importación podría.
-  entry.logs.forEach(log => {
-    log.reps.actual = log.reps.actual.map(v => v !== null ? v : log.reps.expected);
-  });
   entry.completed = true;
   return entry;
 }
