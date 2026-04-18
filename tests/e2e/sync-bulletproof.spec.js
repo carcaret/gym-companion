@@ -41,48 +41,7 @@ test.describe('Sync a prueba de bombas', () => {
     await clearStorage(page);
   });
 
-  // ── Merge de historiales ────────────────────────────────────────────────────
-
-  test('arranque con local + remoto distintos → merge correcto (ambos entrenos presentes)', async ({ page }) => {
-    const remoteDB = {
-      ...BASE_DB,
-      history: [
-        ...BASE_DB.history,
-        {
-          date: '2024-01-10', type: 'DIA2', completed: true,
-          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 8, actual: [8, 8, 8] }, weight: 80 }]
-        }
-      ]
-    };
-
-    await page.addInitScript((data) => {
-      localStorage.setItem('gym_companion_db', data.localJson);
-      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
-      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
-    }, { localJson: JSON.stringify(BASE_DB) });
-
-    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
-      if (route.request().method() === 'GET') {
-        await route.fulfill({
-          status: 200, contentType: 'application/json',
-          body: JSON.stringify({ content: encodeDBToBase64(remoteDB), sha: 'sha_remote', encoding: 'base64' })
-        });
-      } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'new_sha' } }) });
-      }
-    });
-
-    await page.goto('/');
-    await expect(page.locator('#app-shell')).toBeVisible();
-
-    // Verificar que el merge incluyó ambas fechas
-    const history = await page.evaluate(() => {
-      const db = JSON.parse(localStorage.getItem('gym_companion_db'));
-      return db.history.map(e => e.date);
-    });
-    expect(history).toContain('2024-01-08');
-    expect(history).toContain('2024-01-10');
-  });
+  // ── Resiliencia de datos locales ──────────────────────────────────────────
 
   test('entreno solo en local, remoto vacío → el local no se pierde', async ({ page }) => {
     const remoteDB = { ...BASE_DB, history: [] };
@@ -112,49 +71,6 @@ test.describe('Sync a prueba de bombas', () => {
       return db.history.map(e => e.date);
     });
     expect(history).toContain('2024-01-08');
-  });
-
-  test('conflicto fecha: remoto completado, local incompleto → gana completado', async ({ page }) => {
-    const localDB = {
-      ...BASE_DB,
-      history: [{
-        date: '2024-01-08', type: 'DIA1', completed: false,
-        logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [null, null, null] }, weight: 60 }]
-      }]
-    };
-    const remoteDB = {
-      ...BASE_DB,
-      history: [{
-        date: '2024-01-08', type: 'DIA1', completed: true,
-        logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [10, 10, 8] }, weight: 60 }]
-      }]
-    };
-
-    await page.addInitScript((data) => {
-      localStorage.setItem('gym_companion_db', data.localJson);
-      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
-      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
-    }, { localJson: JSON.stringify(localDB) });
-
-    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
-      if (route.request().method() === 'GET') {
-        await route.fulfill({
-          status: 200, contentType: 'application/json',
-          body: JSON.stringify({ content: encodeDBToBase64(remoteDB), sha: 'sha_remote', encoding: 'base64' })
-        });
-      } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'new_sha' } }) });
-      }
-    });
-
-    await page.goto('/');
-    await expect(page.locator('#app-shell')).toBeVisible();
-
-    const entry = await page.evaluate(() => {
-      const db = JSON.parse(localStorage.getItem('gym_companion_db'));
-      return db.history.find(e => e.date === '2024-01-08');
-    });
-    expect(entry.completed).toBe(true);
   });
 
   // ── Indicador de sync ────────────────────────────────────────────────────

@@ -4,7 +4,7 @@
 
 const APP_VERSION = '1.0.11';
 
-import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from './src/constants.js';
+import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
@@ -179,6 +179,7 @@ async function saveDBToGitHub(options = {}) {
 
     const data = await res.json();
     githubSha = data.content.sha;
+    try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'false'); } catch (e) { }
     setSyncState('ok');
     syncPending = false;
     syncRetryCount = 0;
@@ -198,6 +199,7 @@ function saveDBLocal() {
 
 async function persistDB({ forceGitHub = false } = {}) {
   saveDBLocal();
+  try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'true'); } catch (e) { }
   if (_isWorkoutActive(DB, todayStr()) && !forceGitHub) return;
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async () => {
@@ -256,27 +258,20 @@ window.addEventListener('beforeunload', () => {
 });
 
 async function loadDB() {
-  // Lee local
-  let localData = null;
+  // Si hay local, es la fuente de verdad — nunca se reemplaza con remote al arrancar.
   const localRaw = localStorage.getItem(DB_LOCAL_KEY);
   if (localRaw) {
-    try { localData = JSON.parse(localRaw); } catch { /* JSON corrupto */ }
+    try {
+      const localData = JSON.parse(localRaw);
+      const needsUpload = localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true';
+      return { data: localData, needsUpload };
+    } catch { /* JSON corrupto — continuar como si no hubiera local */ }
   }
 
-  // Intenta cargar desde GitHub
+  // Sin local: primera instalación — intentar desde GitHub.
   const remoteData = await loadDBFromGitHub();
+  if (remoteData) return { data: remoteData, needsUpload: false };
 
-  if (localData && remoteData) {
-    const merged = mergeDBs(localData, remoteData);
-    // Detectar si el merge añadió entradas que GitHub no tenía
-    const remoteDates = new Set((remoteData.history || []).map(e => e.date));
-    const needsUpload = (localData.history || []).some(e => !remoteDates.has(e.date));
-    return { data: merged, needsUpload };
-  }
-  if (remoteData) {
-    return { data: remoteData, needsUpload: false };
-  }
-  if (localData) return { data: localData, needsUpload: false };
   return { data: null, needsUpload: false };
 }
 
@@ -1399,7 +1394,7 @@ async function init() {
   setupSettings();
   setupSyncIndicator();
 
-  // Cargar DB con merge
+  // Cargar DB: local es fuente de verdad; sin local → GitHub → default
   let { data, needsUpload } = await loadDB();
   if (!data) {
     data = await getDefaultDB();
