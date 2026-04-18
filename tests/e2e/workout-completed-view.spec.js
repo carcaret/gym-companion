@@ -26,20 +26,20 @@ test.describe('Vista de entreno completado', () => {
     await expect(page.locator('.workout-status')).toContainText('completado');
   }
 
-  test('el mensaje de completado usa color accent (no verde)', async ({ page }) => {
+  test('el mensaje de completado usa color verde (#6a9955)', async ({ page }) => {
     await completeWorkout(page);
 
     const status = page.locator('.workout-status');
-    // No debe tener estilos inline que fuercen verde
+    // No debe tener estilos inline
     const style = await status.getAttribute('style');
     expect(style).toBeNull();
 
-    // El checkmark usa clase CSS con color accent (no inline style)
+    // El checkmark usa clase CSS con color verde
     const checkmark = status.locator('.workout-status-icon');
     await expect(checkmark).toHaveCount(1);
     const color = await checkmark.evaluate(el => getComputedStyle(el).color);
-    // --accent: #569cd6 → rgb(86, 156, 214)
-    expect(color).toBe('rgb(86, 156, 214)');
+    // #6a9955 → rgb(106, 153, 85)
+    expect(color).toBe('rgb(106, 153, 85)');
   });
 
   test('las cards usan formato de historial (compact-card + card-title/subtitle)', async ({ page }) => {

@@ -175,15 +175,15 @@ test.describe('Botones de navegación en vistas (Volver + Ejercicio)', () => {
     await expect(page.locator('#start-workout-btn')).toBeVisible();
   });
 
-  test('completed view: tras volver al selector y navegar a otra pestaña, volver a Hoy muestra de nuevo el resumen completado', async ({ page }) => {
+  test('completed view: tras volver al selector y navegar a otra pestaña, volver a Hoy muestra el selector', async ({ page }) => {
     await completeWorkout(page);
     await page.locator('#back-to-selector-btn').click();
     await expect(page.locator('.day-selector')).toBeVisible();
 
-    // Navegar fuera y volver — debe mostrar el resumen porque el entreno sigue completado
+    // Navegar fuera y volver — debe mostrar el selector porque se pulsó "Volver a rutinas"
     await page.click('[data-view="historial"]');
     await page.click('[data-view="hoy"]');
-    await expect(page.locator('.workout-status')).toContainText('completado');
-    await expect(page.locator('.day-selector')).toHaveCount(0);
+    await expect(page.locator('.day-selector')).toBeVisible();
+    await expect(page.locator('.workout-status')).toHaveCount(0);
   });
 });
