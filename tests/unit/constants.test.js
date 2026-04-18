@@ -1,14 +1,7 @@
 import { describe, test, expect } from 'vitest';
-import { DAY_MAP, DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, DB_BACKUP_KEY, PAT_KEY } from '../../src/constants.js';
+import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, DB_BACKUP_KEY, PAT_KEY } from '../../src/constants.js';
 
 describe('constants', () => {
-  test('DAY_MAP mapea dias correctos', () => {
-    expect(DAY_MAP[1]).toBe('DIA1');
-    expect(DAY_MAP[3]).toBe('DIA2');
-    expect(DAY_MAP[5]).toBe('DIA3');
-    expect(DAY_MAP[0]).toBeUndefined();
-  });
-
   test('DAY_LABELS tiene etiquetas Full Body', () => {
     expect(DAY_LABELS.DIA1).toBe('Full Body - Día 1');
     expect(DAY_LABELS.DIA2).toBe('Full Body - Día 2');

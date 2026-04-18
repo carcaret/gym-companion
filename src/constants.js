@@ -1,4 +1,3 @@
-export const DAY_MAP = { 1: 'DIA1', 3: 'DIA2', 5: 'DIA3' };
 export const DAY_LABELS = { DIA1: 'Full Body - Día 1', DIA2: 'Full Body - Día 2', DIA3: 'Full Body - Día 3' };
 export const ROUTINE_KEYS = ['DIA1', 'DIA2', 'DIA3'];
 

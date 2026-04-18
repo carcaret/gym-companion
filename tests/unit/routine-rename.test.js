@@ -1,29 +1,8 @@
 import { describe, test, expect } from 'vitest';
-import { DAY_MAP, DAY_LABELS, ROUTINE_KEYS } from '../../src/constants.js';
+import { DAY_LABELS, ROUTINE_KEYS } from '../../src/constants.js';
 import { filterHistory, sortHistory } from '../../src/history.js';
 
 describe('Renombrado de rutinas: sin referencias a días de la semana', () => {
-
-  describe('DAY_MAP usa claves DIA1/DIA2/DIA3', () => {
-    test('lunes mapea a DIA1', () => {
-      expect(DAY_MAP[1]).toBe('DIA1');
-    });
-
-    test('miércoles mapea a DIA2', () => {
-      expect(DAY_MAP[3]).toBe('DIA2');
-    });
-
-    test('viernes mapea a DIA3', () => {
-      expect(DAY_MAP[5]).toBe('DIA3');
-    });
-
-    test('no hay claves con nombres de días de la semana', () => {
-      const values = Object.values(DAY_MAP);
-      values.forEach(v => {
-        expect(v).not.toMatch(/LUNES|MIERCOLES|VIERNES/);
-      });
-    });
-  });
 
   describe('DAY_LABELS usa etiquetas Full Body', () => {
     test('DIA1 → Full Body - Día 1', () => {
@@ -103,20 +82,7 @@ describe('Renombrado de rutinas: sin referencias a días de la semana', () => {
     });
   });
 
-  describe('DAY_MAP y DAY_LABELS son consistentes', () => {
-    test('cada valor de DAY_MAP tiene etiqueta en DAY_LABELS', () => {
-      Object.values(DAY_MAP).forEach(key => {
-        expect(DAY_LABELS[key]).toBeDefined();
-        expect(typeof DAY_LABELS[key]).toBe('string');
-        expect(DAY_LABELS[key].length).toBeGreaterThan(0);
-      });
-    });
-
-    test('ROUTINE_KEYS coincide con valores de DAY_MAP', () => {
-      const mapValues = Object.values(DAY_MAP);
-      expect(ROUTINE_KEYS).toEqual(mapValues);
-    });
-
+  describe('consistencia ROUTINE_KEYS / DAY_LABELS', () => {
     test('ROUTINE_KEYS coincide con claves de DAY_LABELS', () => {
       const labelKeys = Object.keys(DAY_LABELS);
       expect(ROUTINE_KEYS).toEqual(labelKeys);
