@@ -12,7 +12,6 @@ import { buildWorkoutEntry, finishWorkoutEntry, adjustParam as _adjustParam, set
 import { filterHistory as _filterHistory, sortHistory as _sortHistory, adjustHistoryParam as _adjustHistoryParam, setHistoryParam as _setHistoryParam, adjustHistoryRep as _adjustHistoryRep, setHistoryRep as _setHistoryRep } from './src/history.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
-import { mergeDBs } from './src/merge.js';
 
 let DB = null;
 let githubSha = null;
@@ -21,7 +20,7 @@ let currentWeightChart = null;
 let saveTimeout = null;
 
 // ── sync state: 'none' | 'ok' | 'pending' | 'error' ──────────────────────────
-let syncState = 'none';
+let syncState = 'ok';
 let conflict = false;
 
 // ── SVG icon system ───────────────────────────────────────────────────────────
@@ -61,16 +60,7 @@ function toast(msg, type = null, duration = 2500) {
 const SYNC_SVGS = {
   ok:      () => icon('check', 16),
   pending: () => icon('clock', 16, 'sync-spin'),
-  error:   () => icon('cross', 16),
-  none:    () => icon('dash', 16),
 };
-const SYNC_MSGS = {
-  ok:      'Sincronizado con GitHub',
-  pending: 'Pendiente de subir a GitHub',
-  error:   'Error al guardar en GitHub — datos seguros en local',
-  none:    'GitHub no configurado',
-};
-const SYNC_TOAST_TYPES = { ok: 'ok', pending: null, error: 'error', none: null };
 
 function setSyncState(state) {
   syncState = state;
@@ -78,13 +68,55 @@ function setSyncState(state) {
   const iconEl = document.getElementById('sync-status-icon');
   if (!btn || !iconEl) return;
   btn.dataset.state = state;
-  iconEl.innerHTML = (SYNC_SVGS[state] || SYNC_SVGS.none)();
+  iconEl.innerHTML = (SYNC_SVGS[state] || SYNC_SVGS.ok)();
+}
+
+function showConflictModal() {
+  showModal(
+    'Conflicto de sincronización',
+    '<p class="text-sm">GitHub tiene cambios que no coinciden con los locales (posiblemente editaste <code>db.json</code> a mano). Elige cómo resolver:</p>',
+    [
+      { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
+      {
+        label: 'Subir local → GitHub', className: 'btn-accent-subtle btn-sm', action: async () => {
+          const remote = await loadDBFromGitHub();
+          if (!remote) { toast('No se pudo conectar a GitHub', 'error'); return false; }
+          const ok = await saveDBToGitHub();
+          if (ok) { conflict = false; toast('Datos locales subidos a GitHub', 'ok'); }
+          else toast('No se pudo subir — sigue en pendiente', null);
+        }
+      },
+      {
+        label: 'Bajar GitHub → local', className: 'btn-primary btn-sm', action: async () => {
+          const remote = await loadDBFromGitHub();
+          if (!remote || !remote.exercises || !remote.history) {
+            toast('No se pudo descargar desde GitHub', 'error'); return false;
+          }
+          DB = remote;
+          ensureHistorySorted(DB);
+          saveDBLocal();
+          try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'false'); } catch (e) { }
+          conflict = false;
+          setSyncState('ok');
+          renderHoy();
+          toast('Datos de GitHub aplicados localmente', 'ok');
+        }
+      }
+    ]
+  );
 }
 
 function setupSyncIndicator() {
   const btn = document.getElementById('sync-status-btn');
-  if (btn) btn.onclick = () => toast(SYNC_MSGS[syncState] || '', SYNC_TOAST_TYPES[syncState] || null);
-  setSyncState('none');
+  if (btn) btn.onclick = () => {
+    if (syncState === 'pending') {
+      if (conflict) { showConflictModal(); }
+      else toast('Hay cambios pendientes de subir a GitHub', null);
+    } else {
+      toast(getGithubConfig() ? 'Sincronizado con GitHub' : 'GitHub no configurado', getGithubConfig() ? 'ok' : null);
+    }
+  };
+  setSyncState('ok');
 }
 
 // ── Modal ──
@@ -192,7 +224,7 @@ async function persistDB({ forceGitHub = false } = {}) {
   saveTimeout = setTimeout(async () => {
     saveTimeout = null;
     if (!getGithubConfig() || !getPat()) {
-      setSyncState('none');
+      setSyncState('ok');
       return;
     }
     setSyncState('pending');
@@ -604,16 +636,11 @@ async function finishWorkout() {
   // Forzar save a GitHub; si falla, alerta clara
   const ok = await saveDBToGitHub();
   if (!ok && getGithubConfig()) {
-    // Entreno seguro en local, pero GitHub falló
     setSyncState('pending');
-    syncPending = true;
-    syncRetryCount = 0;
-    scheduleRetry();
-    // Mostrar alerta persistente (no solo toast)
     setTimeout(() => {
       showModal(
         'Entreno guardado localmente',
-        '<p class="text-sm">El entreno se ha guardado en este dispositivo, pero <strong>no se pudo subir a GitHub</strong>. Se reintentará automáticamente cuando haya conexión.</p>',
+        '<p class="text-sm">El entreno se ha guardado en este dispositivo, pero <strong>no se pudo subir a GitHub</strong>. Se subirá automáticamente cuando haya conexión.</p>',
         [{ label: 'Entendido', className: 'btn-primary btn-sm', action: () => {} }]
       );
     }, 100);
@@ -1212,16 +1239,9 @@ function setupSettings() {
     setSyncState('pending');
     toast('Configuración guardada — sincronizando...', 'ok');
 
-    // Si no hay sha (primera config o arranque sin PAT), cargar remoto primero:
-    // poblamos githubSha y mergeamos para no perder datos remotos.
+    // Obtener sha remoto (necesario para futuros PUTs). No se mezcla con local.
     if (!githubSha) {
-      const remote = await loadDBFromGitHub();
-      if (remote) {
-        DB = mergeDBs(DB, remote);
-        ensureHistorySorted(DB);
-        saveDBLocal();
-        renderHoy();
-      }
+      await loadDBFromGitHub(); // solo actualiza githubSha, no toca DB
     }
 
     persistDB();
@@ -1259,36 +1279,37 @@ function setupSettings() {
     }
   };
 
-  document.getElementById('sync-github-btn').onclick = async () => {
-    const statusEl = document.getElementById('sync-status');
-    statusEl.hidden = false;
-    statusEl.textContent = 'Descargando desde GitHub...';
-    statusEl.className = 'status-msg';
-    try {
-      const remote = await loadDBFromGitHub();
-      if (!remote || !remote.exercises || !remote.history) {
-        statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>No se pudo descargar o formato inválido`;
-        statusEl.className = 'status-msg error';
-        return;
-      }
-      DB = mergeDBs(DB || { exercises: {}, routines: {}, history: [] }, remote);
-      ensureHistorySorted(DB);
-      saveDBLocal();
-
-      // Subir el resultado mergeado a GitHub
-      const ok = await saveDBToGitHub();
-      renderHoy();
-      if (ok) {
-        statusEl.innerHTML = `<span class="toast-icon toast-ok">${icon('check', 14)}</span>Datos sincronizados y subidos a GitHub`;
-        statusEl.className = 'status-msg success';
-      } else {
-        statusEl.innerHTML = `<span class="toast-icon toast-ok">${icon('check', 14)}</span>Datos sincronizados localmente (sin subida a GitHub)`;
-        statusEl.className = 'status-msg success';
-      }
-    } catch (err) {
-      statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>${escHtml('Error: ' + err.message)}`;
-      statusEl.className = 'status-msg error';
-    }
+  document.getElementById('sync-github-btn').onclick = () => {
+    showModal(
+      'Sincronizar desde GitHub',
+      '<p class="text-sm">Esto <strong>sobreescribirá tus datos locales</strong> con los de GitHub. Los cambios no subidos se perderán. ¿Continuar?</p>',
+      [
+        { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => false },
+        {
+          label: 'Sobreescribir local', className: 'btn-primary btn-sm', action: async () => {
+            const statusEl = document.getElementById('sync-status');
+            statusEl.hidden = false;
+            statusEl.textContent = 'Descargando desde GitHub...';
+            statusEl.className = 'status-msg';
+            const remote = await loadDBFromGitHub();
+            if (!remote || !remote.exercises || !remote.history) {
+              statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>No se pudo descargar o formato inválido`;
+              statusEl.className = 'status-msg error';
+              return false;
+            }
+            DB = remote;
+            ensureHistorySorted(DB);
+            saveDBLocal();
+            try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'false'); } catch (e) { }
+            conflict = false;
+            setSyncState('ok');
+            renderHoy();
+            statusEl.innerHTML = `<span class="toast-icon toast-ok">${icon('check', 14)}</span>Datos sincronizados desde GitHub`;
+            statusEl.className = 'status-msg success';
+          }
+        }
+      ]
+    );
   };
 }
 
@@ -1379,7 +1400,7 @@ async function init() {
       saveDBToGitHub();
     }
   } else {
-    setSyncState('none');
+    setSyncState('ok');
   }
 
   showApp();

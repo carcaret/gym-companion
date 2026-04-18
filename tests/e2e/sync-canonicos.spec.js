@@ -45,8 +45,11 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
   // Al recargar con red, needsUpload=true hace que se intente subir.
 
   test('Canónico A: entreno completado con GitHub caído → persiste en local y se sube al reload', async ({ page }) => {
+    // addInitScript corre en CADA navegación (incluyendo reload) — solo inyectar DB si no existe ya
     await page.addInitScript((data) => {
-      localStorage.setItem('gym_companion_db', data.dbJson);
+      if (!localStorage.getItem('gym_companion_db')) {
+        localStorage.setItem('gym_companion_db', data.dbJson);
+      }
       localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
       localStorage.setItem('gym_companion_pat', 'ghp_testpat');
     }, { dbJson: JSON.stringify(BASE_DB) });
@@ -157,5 +160,114 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
     // Los datos del entreno de 2024-01-08 deben ser los del LOCAL (weight: 60), no los del remote (weight: 40)
     const jan8 = dbAfter.history.find(e => e.date === '2024-01-08');
     expect(jan8.logs[0].weight).toBe(60);
+  });
+
+  // ── Canónico B ───────────────────────────────────────────────────────────────
+  // Pulsar "Sincronizar desde GitHub" (con confirmación) sobreescribe local con remote.
+  // Es el ÚNICO camino para que el remote entre si ya hay local.
+
+  test('Canónico B: botón "Sincronizar desde GitHub" sobreescribe local con remote tras confirmación', async ({ page }) => {
+    const localDB = { ...BASE_DB };
+    const remoteDB = {
+      ...BASE_DB,
+      exercises: { ...BASE_DB.exercises, dominadas: { id: 'dominadas', name: 'Dominadas' } },
+      history: [{ date: '2024-02-14', type: 'DIA1', completed: true, logs: [] }]
+    };
+
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.localJson);
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { localJson: JSON.stringify(localDB) });
+
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(remoteDB), sha: 'sha_remote', encoding: 'base64' })
+        });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'sha_new' } }) });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+
+    await page.click('[data-view="ajustes"]');
+    await page.click('#sync-github-btn');
+    // Debe aparecer modal de confirmación — confirmar
+    await expect(page.locator('#modal-overlay')).toBeVisible();
+    await page.click('text=Sobreescribir local');
+
+    await expect(page.locator('#sync-status')).toContainText('sincronizados');
+
+    const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
+    // Ejercicio nuevo del remote está presente
+    expect(Object.keys(dbAfter.exercises)).toContain('dominadas');
+    // Entreno del remote está presente
+    expect(dbAfter.history.some(e => e.date === '2024-02-14')).toBe(true);
+    // Entreno local que no estaba en remote no está
+    expect(dbAfter.history.some(e => e.date === '2024-01-08')).toBe(false);
+    // needsUpload es false tras sobreescribir con remote
+    const needsUpload = await page.evaluate(() => localStorage.getItem('gym_companion_needs_upload'));
+    expect(needsUpload).toBe('false');
+  });
+
+  // ── Canónico D ───────────────────────────────────────────────────────────────
+  // Un 409/422 en PUT activa conflict=true y el indicador queda en "pendiente".
+  // Al pulsar el indicador aparece el modal de resolución con 3 opciones.
+
+  test('Canónico D: 409 en PUT → indicador pendiente → modal con 3 opciones', async ({ page }) => {
+    await page.addInitScript((data) => {
+      if (!localStorage.getItem('gym_companion_db')) {
+        localStorage.setItem('gym_companion_db', data.dbJson);
+      }
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { dbJson: JSON.stringify(BASE_DB) });
+
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      if (route.request().method() === 'PUT') {
+        await route.fulfill({ status: 409, contentType: 'application/json', body: '{"message":"Conflict"}' });
+      } else {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_x', encoding: 'base64' })
+        });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+
+    // Completar un entreno para disparar el PUT
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
+    if (await dayBtn.isVisible().catch(() => false)) await dayBtn.click();
+    await page.locator('#start-workout-btn').click();
+    await fillAllWorkoutReps(page);
+    await page.locator('#finish-workout-btn').click();
+
+    await page.waitForTimeout(2000);
+
+    // Indicador debe estar en pendiente
+    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
+    expect(state).toBe('pending');
+
+    // Puede haber un modal de "Entreno guardado localmente" (100ms delay) — cerrar si está abierto
+    const modalVisible = await page.locator('#modal-overlay').isVisible().catch(() => false);
+    if (modalVisible) await page.click('text=Entendido');
+
+    // Pulsar el indicador → modal de conflicto con 3 opciones
+    await page.click('#sync-status-btn');
+    await expect(page.locator('#modal-overlay')).toBeVisible();
+    await expect(page.locator('#modal-title')).toContainText('Conflicto');
+    await expect(page.locator('text=Cancelar')).toBeVisible();
+    await expect(page.locator('text=Subir local → GitHub')).toBeVisible();
+    await expect(page.locator('text=Bajar GitHub → local')).toBeVisible();
+
+    // Cancelar no hace nada
+    await page.click('text=Cancelar');
+    await expect(page.locator('#modal-overlay')).toBeHidden();
   });
 });
