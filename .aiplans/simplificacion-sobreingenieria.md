@@ -356,9 +356,9 @@ github.js     ← opcional, si no se colapsa en app.js
 1. ~~`test: añadir canónicos A y C de resiliencia (entreno no se pierde, loadDB no sobreescribe local)`~~ ✅ (commit e3a8fbb) — Canónico A verde con código actual. Canónico C rojo hasta que loadDB implemente opción B.
 2. ~~`refactor: sustituir scheduleRetry + syncState por needsUpload + auto-push`~~ ✅ (commit dbeb9b7)
 3. ~~`refactor: loadDB usa local si existe, sin merge automático`~~ ✅ (commit 51c40af)
-4. `feat: reescribir botón "Sincronizar desde GitHub" como pull explícito con confirmación`
-5. `feat: modal de resolución manual para conflicto 409/422`
-6. `refactor: simplificar indicador de sync a ok/pendiente`
+4. ~~`feat: reescribir botón "Sincronizar desde GitHub" como pull explícito con confirmación`~~ ✅ (commits c9165d9, 9a0ac9e, 38577ff)
+5. ~~`feat: modal de resolución manual para conflicto 409/422`~~ ✅ (commit 9a0ac9e)
+6. ~~`refactor: simplificar indicador de sync a ok/pendiente`~~ ✅ (commit 9a0ac9e)
 
 **Fase 3 (variable):**
 1. `refactor: colapsar log-mutations dentro de workout`
