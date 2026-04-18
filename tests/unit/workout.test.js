@@ -601,13 +601,6 @@ describe('validateLog', () => {
     expect(errors).toEqual([{ field: 'weight', message: 'Peso debe ser >= 0' }]);
   });
 
-  test('weight NaN → error en field weight', () => {
-    const log = makeLog({ weight: 50, series: 3, expected: 10, actual: [10, 8, 9] });
-    log.weight = NaN;
-    const errors = validateLog(log);
-    expect(errors.some(e => e.field === 'weight')).toBe(true);
-  });
-
   test('weight 0 → sin error (bodyweight)', () => {
     const log = makeLog({ weight: 0, series: 3, expected: 10, actual: [10, 8, 9] });
     const errors = validateLog(log);

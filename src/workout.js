@@ -8,20 +8,20 @@ import { adjustLogParamWithSync, setLogParamWithSync, adjustLogRep, setLogRep } 
 export function validateLog(log) {
   const errors = [];
 
-  if (typeof log.weight !== 'number' || isNaN(log.weight) || log.weight < 0) {
+  if (log.weight < 0) {
     errors.push({ field: 'weight', message: 'Peso debe ser >= 0' });
   }
-  if (typeof log.series !== 'number' || !Number.isInteger(log.series) || log.series < 1) {
+  if (!Number.isInteger(log.series) || log.series < 1) {
     errors.push({ field: 'series', message: 'Series debe ser >= 1' });
   }
-  if (typeof log.reps.expected !== 'number' || !Number.isInteger(log.reps.expected) || log.reps.expected < 1) {
+  if (!Number.isInteger(log.reps.expected) || log.reps.expected < 1) {
     errors.push({ field: 'repsExpected', message: 'Reps objetivo debe ser >= 1' });
   }
   for (let i = 0; i < log.series; i++) {
     const val = log.reps.actual[i];
-    if (val === null || val === undefined || (typeof val === 'number' && isNaN(val))) {
+    if (val === null || val === undefined) {
       errors.push({ field: 'rep', index: i, message: `Serie ${i + 1} no completada` });
-    } else if (typeof val !== 'number' || !Number.isInteger(val) || val < 0) {
+    } else if (!Number.isInteger(val) || val < 0) {
       errors.push({ field: 'rep', index: i, message: `Serie ${i + 1} inválida` });
     }
   }

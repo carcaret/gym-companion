@@ -87,7 +87,7 @@ function setSyncState(state) {
 function setupSyncIndicator() {
   const btn = document.getElementById('sync-status-btn');
   if (btn) btn.onclick = () => toast(SYNC_MSGS[syncState] || '', SYNC_TOAST_TYPES[syncState] || null);
-  setSyncState(getGithubConfig() ? 'none' : 'none');
+  setSyncState('none');
 }
 
 // ── Modal ──
