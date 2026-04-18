@@ -1,17 +1,3 @@
-import { xorEncrypt, xorDecrypt } from './crypto.js';
-
-// ── PAT encryption ──
-
-export function encryptPat(pat, password) {
-  if (!pat) return '';
-  return xorEncrypt(pat, password);
-}
-
-export function decryptPat(encHex, password) {
-  if (!encHex || !password) return null;
-  try { return xorDecrypt(encHex, password); } catch { return null; }
-}
-
 // ── Config validation ──
 
 export function validateGitHubConfig(config) {

@@ -1,8 +1,4 @@
 {
-  "auth": {
-    "username": "carlos",
-    "passwordHash": "41b9ff313475f1b4ff226edc73284d914a3011f3af39d3ab38190e05392e8f59"
-  },
   "exercises": {
     "abductores": {
       "id": "abductores",

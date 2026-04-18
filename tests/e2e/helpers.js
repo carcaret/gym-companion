@@ -13,18 +13,9 @@ async function injectTestDB(page) {
   }, dbJson);
 }
 
+// Alias mantenido para compatibilidad — ya no hay sesión, sólo inyecta la DB
 async function injectTestSession(page) {
-  const dbJson = getTestDB();
-  const db = JSON.parse(dbJson);
-  const session = {
-    token: 'test-token',
-    user: db.auth.username,
-    hash: db.auth.passwordHash,
-  };
-  await page.addInitScript((data) => {
-    localStorage.setItem('gym_companion_db', data.dbJson);
-    localStorage.setItem('gym_companion_session', JSON.stringify(data.session));
-  }, { dbJson, session });
+  return injectTestDB(page);
 }
 
 async function clearStorage(page) {
@@ -35,7 +26,6 @@ async function fillAllWorkoutReps(page) {
   const cards = page.locator('.card-header');
   const cardCount = await cards.count();
   for (let c = 0; c < cardCount; c++) {
-    // Expand this card (accordion closes others)
     const body = page.locator(`#body-${c}`);
     if (!await body.evaluate(el => el.classList.contains('open'))) {
       await cards.nth(c).click();

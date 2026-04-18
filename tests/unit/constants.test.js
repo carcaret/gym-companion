@@ -1,11 +1,7 @@
 import { describe, test, expect } from 'vitest';
-import { SALT, DAY_MAP, DAY_LABELS, ROUTINE_KEYS, SESSION_KEY, GITHUB_KEY, DB_LOCAL_KEY, PAT_KEY } from '../../src/constants.js';
+import { DAY_MAP, DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, DB_BACKUP_KEY, PAT_KEY } from '../../src/constants.js';
 
 describe('constants', () => {
-  test('SALT tiene el valor esperado', () => {
-    expect(SALT).toBe('GYMPRO_SALT_2024');
-  });
-
   test('DAY_MAP mapea dias correctos', () => {
     expect(DAY_MAP[1]).toBe('DIA1');
     expect(DAY_MAP[3]).toBe('DIA2');
@@ -24,9 +20,15 @@ describe('constants', () => {
   });
 
   test('las claves de localStorage están definidas', () => {
-    expect(SESSION_KEY).toBe('gym_companion_session');
     expect(GITHUB_KEY).toBe('gym_companion_github');
     expect(DB_LOCAL_KEY).toBe('gym_companion_db');
-    expect(PAT_KEY).toBe('gym_companion_pat_enc');
+    expect(DB_BACKUP_KEY).toBe('gym_companion_db_backup');
+    expect(PAT_KEY).toBe('gym_companion_pat');
+  });
+
+  test('SESSION_KEY y SALT ya no existen (sistema de auth eliminado)', async () => {
+    const mod = await import('../../src/constants.js');
+    expect(mod.SESSION_KEY).toBeUndefined();
+    expect(mod.SALT).toBeUndefined();
   });
 });

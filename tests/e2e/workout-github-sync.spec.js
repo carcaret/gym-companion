@@ -2,7 +2,6 @@ const { test, expect } = require('@playwright/test');
 const { clearStorage, fillAllWorkoutReps } = require('./helpers.js');
 
 const TEST_DB = {
-  auth: { username: 'testuser', passwordHash: '00ea24559d2fbb7ef0f4310680c8759255966500c40387cdd64f67b2ebc4df8f' },
   exercises: { press_banca: { id: 'press_banca', name: 'Press Banca' } },
   routines: { DIA1: ['press_banca'] },
   history: [
@@ -12,30 +11,15 @@ const TEST_DB = {
   ]
 };
 
-// XOR encrypt helper (mirrors src/crypto.js xorEncrypt)
-function xorEncrypt(text, key) {
-  return Array.from(text).map((c, i) =>
-    (c.charCodeAt(0) ^ key.charCodeAt(i % key.length)).toString(16).padStart(2, '0')
-  ).join('');
-}
-
 async function setupDBWithGitHub(page) {
   const dbJson = JSON.stringify(TEST_DB);
   const githubConfig = { repo: 'testuser/gym-data', branch: 'main', path: 'db.json' };
-  const encryptedPat = xorEncrypt('ghp_faketoken123', 'test123');
 
   await page.addInitScript((data) => {
     localStorage.setItem('gym_companion_db', data.dbJson);
     localStorage.setItem('gym_companion_github', JSON.stringify(data.githubConfig));
-    localStorage.setItem('gym_companion_pat_enc', data.encryptedPat);
-  }, { dbJson, githubConfig, encryptedPat });
-}
-
-async function loginManually(page) {
-  await page.fill('#login-user', 'testuser');
-  await page.fill('#login-pass', 'test123');
-  await page.click('#login-form button[type="submit"]');
-  await expect(page.locator('#app-shell')).toBeVisible();
+    localStorage.setItem('gym_companion_pat', 'ghp_faketoken123');
+  }, { dbJson, githubConfig });
 }
 
 async function selectRoutineAndStart(page) {
@@ -48,7 +32,6 @@ async function selectRoutineAndStart(page) {
 
 test.describe('GitHub sync durante entreno activo', () => {
   test.beforeEach(async ({ context }) => {
-    // Disable service worker to avoid intercepting GitHub API calls
     await context.addInitScript(() => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -80,10 +63,9 @@ test.describe('GitHub sync durante entreno activo', () => {
     });
 
     await page.goto('/');
-    await loginManually(page);
+    await expect(page.locator('#app-shell')).toBeVisible();
     await selectRoutineAndStart(page);
 
-    // Wait well beyond debounce (500ms) + buffer
     await page.waitForTimeout(2000);
 
     expect(putCount).toBe(0);
@@ -103,19 +85,16 @@ test.describe('GitHub sync durante entreno activo', () => {
     });
 
     await page.goto('/');
-    await loginManually(page);
+    await expect(page.locator('#app-shell')).toBeVisible();
     await selectRoutineAndStart(page);
 
-    // Expand first card and adjust weight
     await page.locator('.card-header').first().click();
     await page.locator('#exercise-card-0 .param-row').first().locator('.btn-icon:last-child').click();
 
-    // Wait for any potential debounced save
     await page.waitForTimeout(2000);
 
     expect(putCount).toBe(0);
 
-    // Verify data IS saved locally despite no GitHub sync
     const savedDB = await page.evaluate(() => {
       return JSON.parse(localStorage.getItem('gym_companion_db'));
     });
@@ -139,16 +118,14 @@ test.describe('GitHub sync durante entreno activo', () => {
     });
 
     await page.goto('/');
-    await loginManually(page);
+    await expect(page.locator('#app-shell')).toBeVisible();
     await selectRoutineAndStart(page);
 
-    // Expand first card and set a rep value
     await page.locator('.card-header').first().click();
     const repInput = page.locator('#w-rep-0-0');
     await repInput.fill('12');
     await repInput.dispatchEvent('change');
 
-    // Wait for any potential debounced save
     await page.waitForTimeout(2000);
 
     expect(putCount).toBe(0);
@@ -168,22 +145,18 @@ test.describe('GitHub sync durante entreno activo', () => {
     });
 
     await page.goto('/');
-    await loginManually(page);
+    await expect(page.locator('#app-shell')).toBeVisible();
     await selectRoutineAndStart(page);
 
-    // No PUT yet during active workout
     await page.waitForTimeout(1000);
     expect(putCount).toBe(0);
 
-    // Fill reps and finish
     await fillAllWorkoutReps(page);
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
 
-    // Wait for debounced GitHub save
     await page.waitForTimeout(2000);
 
-    // NOW we expect exactly one PUT
     expect(putCount).toBe(1);
   });
 
@@ -201,10 +174,9 @@ test.describe('GitHub sync durante entreno activo', () => {
     });
 
     await page.goto('/');
-    await loginManually(page);
+    await expect(page.locator('#app-shell')).toBeVisible();
     await selectRoutineAndStart(page);
 
-    // Multiple adjustments: weight +2.5, rep set, weight +2.5 again
     await page.locator('.card-header').first().click();
     await page.locator('#exercise-card-0 .param-row').first().locator('.btn-icon:last-child').click();
     await page.waitForTimeout(300);
@@ -214,11 +186,9 @@ test.describe('GitHub sync durante entreno activo', () => {
     await repInput.fill('8');
     await repInput.dispatchEvent('change');
 
-    // Wait for all potential debounces
     await page.waitForTimeout(2000);
     expect(putCount).toBe(0);
 
-    // Now finish
     await fillAllWorkoutReps(page);
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');

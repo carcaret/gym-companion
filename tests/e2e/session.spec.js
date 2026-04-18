@@ -1,62 +1,47 @@
+/**
+ * El sistema de sesiones ha sido eliminado junto con el login.
+ * Estos tests verifican el comportamiento de arranque sin auth.
+ */
 const { test, expect } = require('@playwright/test');
-const { injectTestDB, injectTestSession, clearStorage } = require('./helpers.js');
+const { injectTestDB, clearStorage } = require('./helpers.js');
 
-test.describe('Auto-login y sesion', () => {
+test.describe('Arranque sin sistema de sesiones', () => {
   test.afterEach(async ({ page }) => {
     await clearStorage(page);
   });
 
-  test('con sesion valida en localStorage auto-login sin ver login', async ({ page }) => {
-    await injectTestSession(page);
-    await page.goto('/');
-
-    // Should auto-login
-    await expect(page.locator('#app-shell')).toBeVisible();
-    await expect(page.locator('#login-screen')).not.toHaveClass(/active/);
-  });
-
-  test('con sesion invalida (hash no coincide) muestra login', async ({ page }) => {
-    // Inject session with wrong hash
-    await page.addInitScript(() => {
-      const db = {
-        auth: { username: 'testuser', passwordHash: '00ea24559d2fbb7ef0f4310680c8759255966500c40387cdd64f67b2ebc4df8f' },
-        exercises: {}, routines: {}, history: []
-      };
-      localStorage.setItem('gym_companion_db', JSON.stringify(db));
-      localStorage.setItem('gym_companion_session', JSON.stringify({
-        token: 'bad-token',
-        user: 'testuser',
-        hash: 'wrong_hash_value'
-      }));
-    });
-    await page.goto('/');
-
-    // Should show login screen
-    await expect(page.locator('#login-screen')).toHaveClass(/active/);
-  });
-
-  test('sin sesion muestra login', async ({ page }) => {
+  test('con DB en localStorage → app arranca directamente', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-
-    // No session, should show login
-    await expect(page.locator('#login-screen')).toHaveClass(/active/);
+    await expect(page.locator('#app-shell')).toBeVisible();
   });
 
-  test('logout limpia sesion y muestra login', async ({ page }) => {
-    await injectTestSession(page);
+  test('sin DB en localStorage → arranca con db.json por defecto', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
+  });
 
-    // Go to settings and logout
-    await page.click('[data-view="ajustes"]');
-    await page.click('#logout-btn');
+  test('gym_companion_session ignorado si existe (dato legado)', async ({ page }) => {
+    await page.addInitScript(() => {
+      const db = {
+        exercises: { press_banca: { id: 'press_banca', name: 'Press Banca' } },
+        routines: { DIA1: ['press_banca'] },
+        history: []
+      };
+      localStorage.setItem('gym_companion_db', JSON.stringify(db));
+      // Dato legado que ya no tiene efecto
+      localStorage.setItem('gym_companion_session', JSON.stringify({ token: 'old', user: 'carlos', hash: 'abc' }));
+    });
+    await page.goto('/');
+    // App debe arrancar normalmente — la sesión vieja no importa
+    await expect(page.locator('#app-shell')).toBeVisible();
+  });
 
-    // Should show login
-    await expect(page.locator('#login-screen')).toHaveClass(/active/);
-
-    // Verify session is cleared from localStorage
-    const session = await page.evaluate(() => localStorage.getItem('gym_companion_session'));
-    expect(session).toBeNull();
+  test('no hay botón de logout ni pantalla de login', async ({ page }) => {
+    await injectTestDB(page);
+    await page.goto('/');
+    await expect(page.locator('#logout-btn')).toHaveCount(0);
+    await expect(page.locator('#login-screen')).toHaveCount(0);
+    await expect(page.locator('#login-form')).toHaveCount(0);
   });
 });

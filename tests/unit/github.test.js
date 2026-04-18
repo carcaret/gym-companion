@@ -1,55 +1,12 @@
 import { describe, test, expect } from 'vitest';
 import {
-  encryptPat,
-  decryptPat,
   validateGitHubConfig,
   buildGitHubPayload,
   parseGitHubResponse
 } from '../../src/github.js';
 
 // ════════════════════════════════════════════════
-// C.1 — PAT encryption / decryption
-// ════════════════════════════════════════════════
-
-describe('encryptPat / decryptPat', () => {
-  test('roundtrip: encrypt + decrypt devuelve el PAT original', () => {
-    const pat = 'ghp_abc123XYZ';
-    const password = 'miPassword';
-    const encrypted = encryptPat(pat, password);
-    expect(decryptPat(encrypted, password)).toBe(pat);
-  });
-
-  test('PAT vacío → string vacío', () => {
-    expect(encryptPat('', 'password')).toBe('');
-  });
-
-  test('contraseña diferente → decrypt devuelve basura (no el PAT)', () => {
-    const pat = 'ghp_abc123XYZ';
-    const encrypted = encryptPat(pat, 'password1');
-    const result = decryptPat(encrypted, 'password2');
-    expect(result).not.toBe(pat);
-  });
-
-  test('caracteres especiales en PAT (ghp_xxxxx...)', () => {
-    const pat = 'ghp_A1b2C3d4E5f6G7h8I9j0KlMnOpQrStUvWx';
-    const password = 'c0mpl3x!@#$';
-    const encrypted = encryptPat(pat, password);
-    expect(decryptPat(encrypted, password)).toBe(pat);
-  });
-
-  test('decryptPat con encHex vacío → null', () => {
-    expect(decryptPat('', 'password')).toBeNull();
-    expect(decryptPat(null, 'password')).toBeNull();
-  });
-
-  test('decryptPat con password vacío → null', () => {
-    expect(decryptPat('aabb', '')).toBeNull();
-    expect(decryptPat('aabb', null)).toBeNull();
-  });
-});
-
-// ════════════════════════════════════════════════
-// C.2 — validateGitHubConfig
+// C.1 — validateGitHubConfig
 // ════════════════════════════════════════════════
 
 describe('validateGitHubConfig', () => {
@@ -99,16 +56,15 @@ describe('validateGitHubConfig', () => {
 });
 
 // ════════════════════════════════════════════════
-// C.3 — buildGitHubPayload
+// C.2 — buildGitHubPayload
 // ════════════════════════════════════════════════
 
 describe('buildGitHubPayload', () => {
-  const sampleDb = { auth: { username: 'test' }, exercises: {}, routines: {}, history: [] };
+  const sampleDb = { exercises: {}, routines: {}, history: [] };
 
   test('genera JSON con content en base64', () => {
     const payload = buildGitHubPayload(sampleDb, null);
     expect(payload.content).toBeTruthy();
-    // Decode and verify roundtrip
     const decoded = JSON.parse(decodeURIComponent(escape(atob(payload.content))));
     expect(decoded).toEqual(sampleDb);
   });
@@ -138,7 +94,7 @@ describe('buildGitHubPayload', () => {
 });
 
 // ════════════════════════════════════════════════
-// C.4 — parseGitHubResponse
+// C.3 — parseGitHubResponse
 // ════════════════════════════════════════════════
 
 describe('parseGitHubResponse', () => {
@@ -146,7 +102,7 @@ describe('parseGitHubResponse', () => {
     return btoa(unescape(encodeURIComponent(JSON.stringify(db, null, 2))));
   }
 
-  const sampleDb = { auth: { username: 'carlos' }, history: [] };
+  const sampleDb = { exercises: {}, history: [] };
 
   test('extrae content (base64) y sha del response', () => {
     const response = { content: encodeDbToBase64(sampleDb), sha: 'sha123', encoding: 'base64' };
@@ -157,7 +113,6 @@ describe('parseGitHubResponse', () => {
 
   test('content con line breaks en base64 → limpia y decodifica', () => {
     const raw = encodeDbToBase64(sampleDb);
-    // Simulate GitHub's line-wrapped base64
     const withBreaks = raw.match(/.{1,40}/g).join('\n');
     const response = { content: withBreaks, sha: 'sha456', encoding: 'base64' };
     const result = parseGitHubResponse(response);

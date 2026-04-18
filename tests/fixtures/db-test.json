@@ -1,8 +1,4 @@
 {
-  "auth": {
-    "username": "testuser",
-    "passwordHash": "00ea24559d2fbb7ef0f4310680c8759255966500c40387cdd64f67b2ebc4df8f"
-  },
   "exercises": {
     "press_banca": { "id": "press_banca", "name": "Press Banca" },
     "curl_biceps": { "id": "curl_biceps", "name": "Curl Bíceps" },

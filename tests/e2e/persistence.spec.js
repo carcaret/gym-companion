@@ -6,23 +6,16 @@ test.describe('Persistencia y datos', () => {
     await clearStorage(page);
   });
 
-  test('login → cambio → recarga → auto-login con datos intactos', async ({ page }) => {
+  test('app arranca → recarga → datos intactos', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-
-    // Login
-    await page.fill('#login-user', 'testuser');
-    await page.fill('#login-pass', 'test123');
-    await page.click('#login-form button[type="submit"]');
     await expect(page.locator('#app-shell')).toBeVisible();
 
     // Reload
     await page.reload();
 
-    // Should auto-login
+    // Should still show the app directly
     await expect(page.locator('#app-shell')).toBeVisible();
-    // Login screen should not be active
-    await expect(page.locator('#login-screen')).not.toHaveClass(/active/);
   });
 
   test('iniciar entreno → ajustar peso → verificar en DB', async ({ page }) => {
@@ -30,14 +23,12 @@ test.describe('Persistencia y datos', () => {
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
 
-    // Select a routine and start workout
     const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
 
-    // Expand first card and adjust weight
     await page.locator('.card-header').first().click();
     const weightInput = page.locator('#w-weight-0');
     const initialWeight = parseFloat(await weightInput.inputValue());
@@ -45,7 +36,6 @@ test.describe('Persistencia y datos', () => {
     const newWeight = initialWeight + 2.5;
     await expect(weightInput).toHaveValue(String(newWeight));
 
-    // Verify the weight change was persisted to localStorage
     const savedWeight = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
       const today = new Date().toISOString().split('T')[0];
@@ -55,7 +45,7 @@ test.describe('Persistencia y datos', () => {
     expect(savedWeight).toBe(newWeight);
   });
 
-  test('localStorage tiene DB_LOCAL_KEY con datos válidos tras login', async ({ page }) => {
+  test('localStorage tiene DB_LOCAL_KEY con datos válidos', async ({ page }) => {
     await injectTestSession(page);
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
@@ -66,9 +56,10 @@ test.describe('Persistencia y datos', () => {
     });
 
     expect(dbData).not.toBeNull();
-    expect(dbData.auth).toBeDefined();
     expect(dbData.exercises).toBeDefined();
     expect(dbData.history).toBeDefined();
+    // auth ya no existe en la DB
+    expect(dbData.auth).toBeUndefined();
   });
 
   test('finalizar entreno → historial muestra entry con datos correctos', async ({ page }) => {
@@ -76,25 +67,20 @@ test.describe('Persistencia y datos', () => {
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
 
-    // Start and finish workout
     const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     const hasDaySelector = await dayBtn.isVisible().catch(() => false);
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();
 
-    // Fill all reps (helper expands each card via accordion)
     await fillAllWorkoutReps(page);
 
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
 
-    // Check historial
     await page.click('[data-view="historial"]');
     const firstEntry = page.locator('.historial-entry-btn').first();
     await expect(firstEntry).toBeVisible();
-    // The most recent entry should be today's
     await firstEntry.click();
-    // Should show exercise details
     await expect(page.locator('#historial-content')).toContainText('Press Banca');
   });
 });
