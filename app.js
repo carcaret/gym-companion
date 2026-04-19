@@ -274,94 +274,56 @@ function showApp() {
 
 // ── Shared HTML Builders ──
 
-/**
- * Build the 3 param rows (weight, series, repsExpected) with +/− buttons.
- */
-function buildParamRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix) {
+function buildParamRowsHtml(prefix, logIdx, log, date = null) {
+  const d = date ? ` data-date="${date}"` : '';
   return `<div class="param-row">
     <label>Peso (kg)</label>
     <div class="flex-center gap-sm">
-      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'weight',-2.5)">−</button>
-      <input id="${prefix}-weight-${logIdx}" class="input-compact param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" onchange="GymCompanion.${setName}(${argsPrefix},'weight',this.value)">
-      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'weight',2.5)">+</button>
+      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="weight" data-delta="-2.5">−</button>
+      <input id="${prefix}-weight-${logIdx}" class="input-compact param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" data-action="setParam" data-logidx="${logIdx}"${d} data-param="weight">
+      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="weight" data-delta="2.5">+</button>
     </div>
   </div>
   <div class="param-row">
     <label>Series</label>
     <div class="flex-center gap-sm">
-      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'series',-1)">−</button>
-      <input id="${prefix}-series-${logIdx}" class="input-compact param-input" type="number" inputmode="numeric" value="${log.series}" onchange="GymCompanion.${setName}(${argsPrefix},'series',this.value)">
-      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'series',1)">+</button>
+      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="series" data-delta="-1">−</button>
+      <input id="${prefix}-series-${logIdx}" class="input-compact param-input" type="number" inputmode="numeric" value="${log.series}" data-action="setParam" data-logidx="${logIdx}"${d} data-param="series">
+      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="series" data-delta="1">+</button>
     </div>
   </div>
   <div class="param-row">
     <label>Reps obj.</label>
     <div class="flex-center gap-sm">
-      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'repsExpected',-1)">−</button>
-      <input id="${prefix}-reps-${logIdx}" class="input-compact param-input" type="number" inputmode="numeric" value="${log.reps.expected}" onchange="GymCompanion.${setName}(${argsPrefix},'repsExpected',this.value)">
-      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},'repsExpected',1)">+</button>
+      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="repsExpected" data-delta="-1">−</button>
+      <input id="${prefix}-reps-${logIdx}" class="input-compact param-input" type="number" inputmode="numeric" value="${log.reps.expected}" data-action="setParam" data-logidx="${logIdx}"${d} data-param="repsExpected">
+      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="repsExpected" data-delta="1">+</button>
     </div>
   </div>`;
 }
 
-/**
- * Build per-series rep input rows (S1, S2, ...) with +/− buttons.
- */
-function buildAllSeriesRowsHtml(prefix, logIdx, log, adjustName, setName, argsPrefix) {
+function buildAllSeriesRowsHtml(prefix, logIdx, log, date = null) {
+  const d = date ? ` data-date="${date}"` : '';
   let html = '';
   for (let s = 0; s < log.series; s++) {
     const val = log.reps.actual[s];
     html += `<div class="series-row">
       <span class="series-label">S${s + 1}</span>
-      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},${s},-1)">−</button>
-      <input id="${prefix}-rep-${logIdx}-${s}" class="input-compact series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" onchange="GymCompanion.${setName}(${argsPrefix},${s},this.value)">
-      <button class="btn-icon" onclick="GymCompanion.${adjustName}(${argsPrefix},${s},1)">+</button>
+      <button class="btn-icon" data-action="adjustRep" data-logidx="${logIdx}"${d} data-seriesidx="${s}" data-delta="-1">−</button>
+      <input id="${prefix}-rep-${logIdx}-${s}" class="input-compact series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" data-action="setRep" data-logidx="${logIdx}"${d} data-seriesidx="${s}">
+      <button class="btn-icon" data-action="adjustRep" data-logidx="${logIdx}"${d} data-seriesidx="${s}" data-delta="1">+</button>
     </div>`;
   }
   return html;
 }
 
-// ── Workout Card In-Place Update ──
-function buildSeriesRowsHtml(logIdx, log) {
-  return buildAllSeriesRowsHtml('w', logIdx, log, 'adjustRep', 'setRep', `${logIdx}`);
-}
-
-function updateWorkoutCardInPlace(logIdx, entry) {
-  const log = entry.logs[logIdx];
-  const name = getExerciseName(log.exercise_id);
-
-  const prevEntries = DB.history.filter(h => h.date !== entry.date);
-  const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
-
-  const title = document.getElementById(`w-title-${logIdx}`);
-  if (title) title.innerHTML = `${name}${isVolRecord ? ` <span class="record-badge">${icon('trophy', 10)} Volumen</span>` : ''}${isE1RMRecord ? ` <span class="record-badge">${icon('trophy', 10)} e1RM</span>` : ''}`;
-
-  const subtitle = document.getElementById(`w-subtitle-${logIdx}`);
-  if (subtitle) {
-    const repsFmt = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected);
-    const repsPart = repsFmt ? ` · ${repsFmt}` : '';
-    subtitle.textContent = `${log.weight > 0 ? log.weight + ' kg · ' : ''}${log.series}×${log.reps.expected}${repsPart}`;
-  }
-
-  const weightInput = document.getElementById(`w-weight-${logIdx}`);
-  if (weightInput) weightInput.value = log.weight;
-
-  const seriesInput = document.getElementById(`w-series-${logIdx}`);
-  if (seriesInput) seriesInput.value = log.series;
-
-  const repsInput = document.getElementById(`w-reps-${logIdx}`);
-  if (repsInput) repsInput.value = log.reps.expected;
-
-  const seriesRows = document.getElementById(`w-seriesrows-${logIdx}`);
-  if (seriesRows) seriesRows.innerHTML = buildSeriesRowsHtml(logIdx, log);
-
-  const hasRecord = entry.logs.some(l => {
-    const { isVolRecord: vr, isE1RMRecord: er } = detectRecords(l, prevEntries);
-    return vr || er;
-  });
-  document.getElementById('hoy-badge').hidden = !hasRecord;
-
-  applyValidationErrors(logIdx, log);
+function rerenderWorkout() {
+  const container = document.getElementById('hoy-content');
+  const entry = getTodayEntry();
+  if (!container || !entry) return;
+  const focusedId = document.activeElement?.id;
+  renderActiveWorkout(container, entry);
+  if (focusedId) document.getElementById(focusedId)?.focus();
 }
 
 function applyValidationErrors(logIdx, log, prefix = 'w') {
@@ -523,15 +485,14 @@ function renderActiveWorkout(container, entry) {
     </div>
     <div class="card-body" id="body-${logIdx}">`;
 
-    const wArgs = `${logIdx}`;
-    html += buildParamRowsHtml('w', logIdx, log, 'adjustParam', 'setParam', wArgs);
+    html += buildParamRowsHtml('w', logIdx, log);
 
     html += `<div class="mt-sm"><p class="text-xs text-muted mb-sm" >Reps realizadas por serie:</p><div id="w-seriesrows-${logIdx}">`;
-    html += buildAllSeriesRowsHtml('w', logIdx, log, 'adjustRep', 'setRep', wArgs);
+    html += buildAllSeriesRowsHtml('w', logIdx, log);
     html += '</div></div>';
 
     html += `<div class="routine-actions">
-    <button class="btn-sm btn-danger" onclick="GymCompanion.removeExerciseFromRoutine('${entry.type}','${log.exercise_id}',${logIdx})">Quitar de rutina</button>
+    <button class="btn-sm btn-danger" data-action="removeExercise" data-daytype="${entry.type}" data-exerciseid="${log.exercise_id}">Quitar de rutina</button>
   </div>`;
 
     html += '</div></div>';
@@ -590,8 +551,40 @@ function renderActiveWorkout(container, entry) {
       chosenClass: 'drag-chosen',
       onEnd: (evt) => {
         if (evt.oldIndex !== evt.newIndex) {
-          GymCompanion.reorderExercises(entry.type, evt.oldIndex, evt.newIndex);
+          reorderExercises(entry.type, evt.oldIndex, evt.newIndex);
         }
+      }
+    });
+  }
+
+  if (!container._workoutDelegated) {
+    container._workoutDelegated = true;
+    container.addEventListener('click', e => {
+      const el = e.target.closest('[data-action]');
+      if (!el || el.tagName === 'INPUT') return;
+      const { action, logidx, param, delta, daytype, exerciseid } = el.dataset;
+      const idx = parseInt(logidx);
+      if (action === 'adjustParam') {
+        const en = getTodayEntry(); if (!en) return;
+        adjustParam(en.logs[idx], param, parseFloat(delta)); persistDB(); rerenderWorkout();
+      } else if (action === 'adjustRep') {
+        const en = getTodayEntry(); if (!en) return;
+        adjustRep(en.logs[idx], parseInt(el.dataset.seriesidx), parseFloat(delta)); persistDB(); rerenderWorkout();
+      } else if (action === 'removeExercise') {
+        removeExerciseFromRoutine(daytype, exerciseid);
+      }
+    });
+    container.addEventListener('change', e => {
+      const el = e.target.closest('[data-action]');
+      if (!el) return;
+      const { action, logidx, param } = el.dataset;
+      const idx = parseInt(logidx);
+      if (action === 'setParam') {
+        const en = getTodayEntry(); if (!en) return;
+        setParam(en.logs[idx], param, el.value); persistDB(); rerenderWorkout();
+      } else if (action === 'setRep') {
+        const en = getTodayEntry(); if (!en) return;
+        setRep(en.logs[idx], parseInt(el.dataset.seriesidx), el.value); persistDB(); rerenderWorkout();
       }
     });
   }
@@ -774,114 +767,47 @@ function showCreateExerciseModal(dayType) {
   }, 100);
 }
 
-// ── History update helper ──
-function withHistoryUpdate(mutationFn, date, logIdx) {
-  if (!mutationFn()) return;
+function reorderExercises(dayType, fromIndex, toIndex) {
+  DB.routines[dayType] = reorderByIndex(DB.routines[dayType], fromIndex, toIndex);
+  const entry = getTodayEntry();
+  if (entry && !entry.completed) entry.logs = reorderByIndex(entry.logs, fromIndex, toIndex);
   persistDB();
-  renderHistorialDetail(date);
-  const entry = DB.history.find(h => h.date === date);
-  if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
+  toast('Orden actualizado');
 }
 
-// ── Param adjustments (exposed globally) ──
-window.GymCompanion = {
-  adjustParam: (logIdx, param, delta) => {
-    const entry = getTodayEntry();
-    if (!entry) return;
-    adjustParam(entry.logs[logIdx], param, delta);
-    persistDB();
-    updateWorkoutCardInPlace(logIdx, entry);
-  },
-
-  setParam: (logIdx, param, value) => {
-    const entry = getTodayEntry();
-    if (!entry) return;
-    setParam(entry.logs[logIdx], param, value);
-    persistDB();
-    updateWorkoutCardInPlace(logIdx, entry);
-  },
-
-  adjustRep: (logIdx, seriesIdx, delta) => {
-    const entry = getTodayEntry();
-    if (!entry) return;
-    adjustRep(entry.logs[logIdx], seriesIdx, delta);
-    persistDB();
-    const input = document.getElementById(`w-rep-${logIdx}-${seriesIdx}`);
-    if (input) input.value = entry.logs[logIdx].reps.actual[seriesIdx];
-    updateWorkoutCardInPlace(logIdx, entry);
-  },
-
-  setRep: (logIdx, seriesIdx, value) => {
-    const entry = getTodayEntry();
-    if (!entry) return;
-    setRep(entry.logs[logIdx], seriesIdx, value);
-    persistDB();
-    updateWorkoutCardInPlace(logIdx, entry);
-  },
-
-  deleteHistoryEntry: (date, event) => {
-    event.stopPropagation();
-    const entry = DB.history.find(h => h.date === date);
-    if (!entry) return;
-    showModal(
-      '¿Borrar entreno?',
-      `<p class="text-sm">Se eliminará el entreno del <strong>${formatDate(date)}</strong>. Esta acción no se puede deshacer.</p>`,
-      [
-        { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
-        {
-          label: 'Borrar', className: 'btn-danger btn-sm', action: () => {
-            DB.history = DB.history.filter(h => h.date !== date);
-            persistDB();
-            renderHistorial();
-            toast('Entreno eliminado');
-          }
-        }
-      ]
-    );
-  },
-
-  adjustHistoryParam: (date, logIdx, param, delta) =>
-    withHistoryUpdate(() => adjustHistoryParam(DB.history, date, logIdx, param, delta), date, logIdx),
-
-  setHistoryParam: (date, logIdx, param, value) =>
-    withHistoryUpdate(() => setHistoryParam(DB.history, date, logIdx, param, value), date, logIdx),
-
-  adjustHistoryRep: (date, logIdx, seriesIdx, delta) =>
-    withHistoryUpdate(() => adjustHistoryRep(DB.history, date, logIdx, seriesIdx, delta), date, logIdx),
-
-  setHistoryRep: (date, logIdx, seriesIdx, value) =>
-    withHistoryUpdate(() => setHistoryRep(DB.history, date, logIdx, seriesIdx, value), date, logIdx),
-
-  reorderExercises: (dayType, fromIndex, toIndex) => {
-    DB.routines[dayType] = reorderByIndex(DB.routines[dayType], fromIndex, toIndex);
-
-    const entry = getTodayEntry();
-    if (entry && !entry.completed) {
-      entry.logs = reorderByIndex(entry.logs, fromIndex, toIndex);
+function removeExerciseFromRoutine(dayType, exerciseId) {
+  showModal('¿Quitar ejercicio?', `<p class="text-sm">Se eliminará <strong>${getExerciseName(exerciseId)}</strong> de la rutina de ${DAY_LABELS[dayType]}. Los registros históricos se conservarán.</p>`, [
+    { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
+    {
+      label: 'Quitar', className: 'btn-danger btn-sm', action: () => {
+        DB.routines[dayType] = DB.routines[dayType].filter(id => id !== exerciseId);
+        const entry = getTodayEntry();
+        if (entry && !entry.completed) entry.logs = entry.logs.filter(l => l.exercise_id !== exerciseId);
+        persistDB();
+        renderHoy();
+        toast(`Ejercicio eliminado de ${DAY_LABELS[dayType]}`);
+      }
     }
+  ]);
+}
 
-    persistDB();
-    toast('Orden actualizado');
-  },
-
-  removeExerciseFromRoutine: (dayType, exerciseId, _logIdx) => {
-    showModal('¿Quitar ejercicio?', `<p class="text-sm">Se eliminará <strong>${getExerciseName(exerciseId)}</strong> de la rutina de ${DAY_LABELS[dayType]}. Los registros históricos se conservarán.</p>`, [
-      { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => { } },
+function deleteHistoryEntry(date) {
+  showModal(
+    '¿Borrar entreno?',
+    `<p class="text-sm">Se eliminará el entreno del <strong>${formatDate(date)}</strong>. Esta acción no se puede deshacer.</p>`,
+    [
+      { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
       {
-        label: 'Quitar', className: 'btn-danger btn-sm', action: () => {
-          DB.routines[dayType] = DB.routines[dayType].filter(id => id !== exerciseId);
-          const entry = getTodayEntry();
-          if (entry && !entry.completed) {
-            entry.logs = entry.logs.filter(l => l.exercise_id !== exerciseId);
-          }
+        label: 'Borrar', className: 'btn-danger btn-sm', action: () => {
+          DB.history = DB.history.filter(h => h.date !== date);
           persistDB();
-          renderHoy();
-          toast(`Ejercicio eliminado de ${DAY_LABELS[dayType]}`);
+          renderHistorial();
+          toast('Entreno eliminado');
         }
       }
-    ]);
-  }
-};
+    ]
+  );
+}
 
 // ── View: Historial ──
 let historialFilter = 'TODOS';
@@ -931,7 +857,7 @@ function renderHistorial() {
   content.querySelectorAll('.historial-delete-btn').forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
-      GymCompanion.deleteHistoryEntry(btn.dataset.date, e);
+      deleteHistoryEntry(btn.dataset.date);
     };
   });
 }
@@ -953,16 +879,15 @@ function renderHistorialDetail(date) {
     const isEditing = editingHistorialExercise && editingHistorialExercise.date === date && editingHistorialExercise.logIdx === logIdx;
 
     if (isEditing) {
-      const hArgs = `'${date}',${logIdx}`;
       html += `<div class="card historial-detail-card editing">
       <div class="exercise-row exercise-row--editing">
         <div class="exercise-row-controls">
           <div class="exercise-name">${name}</div>
           <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
         </div>
-        ${buildParamRowsHtml('h', logIdx, log, 'adjustHistoryParam', 'setHistoryParam', hArgs)}
+        ${buildParamRowsHtml('h', logIdx, log, date)}
         <div class="mt-sm"><p class="text-xs text-muted mb-sm">Reps por serie:</p>`;
-      html += buildAllSeriesRowsHtml('h', logIdx, log, 'adjustHistoryRep', 'setHistoryRep', hArgs);
+      html += buildAllSeriesRowsHtml('h', logIdx, log, date);
       html += `</div></div></div>`;
     } else {
       const weightStr = log.weight > 0 ? `${log.weight} kg · ` : '';
@@ -987,6 +912,38 @@ function renderHistorialDetail(date) {
   content.innerHTML = html;
 
   document.getElementById('historial-back-btn').onclick = () => renderHistorial();
+
+  if (!content._historialDelegated) {
+    content._historialDelegated = true;
+    content.addEventListener('click', e => {
+      const el = e.target.closest('[data-action]');
+      if (!el || el.tagName === 'INPUT') return;
+      const { action, logidx, param, delta, date: elDate } = el.dataset;
+      if (!elDate) return;
+      const idx = parseInt(logidx);
+      let success;
+      if (action === 'adjustParam') {
+        success = adjustHistoryParam(DB.history, elDate, idx, param, parseFloat(delta));
+      } else if (action === 'adjustRep') {
+        success = adjustHistoryRep(DB.history, elDate, idx, parseInt(el.dataset.seriesidx), parseFloat(delta));
+      }
+      if (success) { persistDB(); renderHistorialDetail(elDate); const en = DB.history.find(h => h.date === elDate); if (en) applyValidationErrors(idx, en.logs[idx], 'h'); }
+    });
+    content.addEventListener('change', e => {
+      const el = e.target.closest('[data-action]');
+      if (!el) return;
+      const { action, logidx, param, date: elDate } = el.dataset;
+      if (!elDate) return;
+      const idx = parseInt(logidx);
+      let success;
+      if (action === 'setParam') {
+        success = setHistoryParam(DB.history, elDate, idx, param, el.value);
+      } else if (action === 'setRep') {
+        success = setHistoryRep(DB.history, elDate, idx, parseInt(el.dataset.seriesidx), el.value);
+      }
+      if (success) { persistDB(); renderHistorialDetail(elDate); const en = DB.history.find(h => h.date === elDate); if (en) applyValidationErrors(idx, en.logs[idx], 'h'); }
+    });
+  }
 
   content.querySelectorAll('.historial-edit-btn').forEach(btn => {
     btn.onclick = () => {
