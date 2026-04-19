@@ -58,6 +58,15 @@ function toast(msg, type = null, duration = 2500) {
   t._timer = setTimeout(() => t.classList.remove('visible'), duration);
 }
 
+function setStatus(el, msg, type = null) {
+  const iconName = { ok: 'check', error: 'cross', warn: 'warn' }[type];
+  el.hidden = false;
+  el.innerHTML = iconName
+    ? `<span class="toast-icon toast-${type}">${icon(iconName, 14)}</span>${escHtml(msg)}`
+    : escHtml(msg);
+  el.className = 'status-msg' + (type === 'ok' ? ' success' : (type === 'error' || type === 'warn') ? ' error' : '');
+}
+
 // ── Sync status indicator ──────────────────────────────────────────────────────
 const SYNC_SVGS = {
   ok:      () => icon('check', 16),
@@ -1206,8 +1215,7 @@ function setupSettings() {
     const patInput = document.getElementById('set-pat').value.trim();
     const cfg = getGithubConfig();
     if (!cfg || !patInput) {
-      statusEl.innerHTML = `<span class="toast-icon toast-warn">${icon('warn', 14)}</span>Guarda la configuración primero`;
-      statusEl.classList.add('error');
+      setStatus(statusEl, 'Guarda la configuración primero', 'warn');
       return;
     }
 
@@ -1217,15 +1225,12 @@ function setupSettings() {
         headers: { 'Authorization': `Bearer ${patInput}`, 'Accept': 'application/vnd.github.v3+json' }
       });
       if (res.ok) {
-        statusEl.innerHTML = `<span class="toast-icon toast-ok">${icon('check', 14)}</span>Conexión exitosa`;
-        statusEl.classList.add('success');
+        setStatus(statusEl, 'Conexión exitosa', 'ok');
       } else {
-        statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>Error ${res.status} — verifica repo, PAT y rama`;
-        statusEl.classList.add('error');
+        setStatus(statusEl, `Error ${res.status} — verifica repo, PAT y rama`, 'error');
       }
     } catch {
-      statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>No se pudo conectar`;
-      statusEl.classList.add('error');
+      setStatus(statusEl, 'No se pudo conectar', 'error');
     }
   };
 
@@ -1243,8 +1248,7 @@ function setupSettings() {
             statusEl.className = 'status-msg';
             const remote = await loadDBFromGitHub();
             if (!remote || !remote.exercises || !remote.history) {
-              statusEl.innerHTML = `<span class="toast-icon toast-error">${icon('cross', 14)}</span>No se pudo descargar o formato inválido`;
-              statusEl.className = 'status-msg error';
+              setStatus(statusEl, 'No se pudo descargar o formato inválido', 'error');
               return false;
             }
             DB = remote;
@@ -1254,8 +1258,7 @@ function setupSettings() {
             conflict = false;
             setSyncState('ok');
             renderHoy();
-            statusEl.innerHTML = `<span class="toast-icon toast-ok">${icon('check', 14)}</span>Datos sincronizados desde GitHub`;
-            statusEl.className = 'status-msg success';
+            setStatus(statusEl, 'Datos sincronizados desde GitHub', 'ok');
           }
         }
       ]
