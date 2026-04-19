@@ -871,11 +871,14 @@ body {
   font-weight: 500;
   z-index: 300;
   box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-  animation: fadeUp 0.3s var(--ease);
   white-space: nowrap;
-  display: flex;
+  display: none;
   align-items: center;
   gap: 8px;
+}
+.toast.visible {
+  display: flex;
+  animation: fadeUp 0.3s var(--ease);
 }
 .toast-icon { display: flex; align-items: center; flex-shrink: 0; }
 .toast-ok    { color: #6a9955; }

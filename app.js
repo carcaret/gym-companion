@@ -50,9 +50,9 @@ function toast(msg, type = null, duration = 2500) {
   t.innerHTML = iconName
     ? `<span class="toast-icon toast-${type}">${icon(iconName, 14)}</span>${escHtml(msg)}`
     : escHtml(msg);
-  t.hidden = false;
   clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.hidden = true, duration);
+  t.classList.add('visible');
+  t._timer = setTimeout(() => t.classList.remove('visible'), duration);
 }
 
 // ── Sync status indicator ──────────────────────────────────────────────────────
