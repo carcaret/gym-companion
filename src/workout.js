@@ -82,23 +82,21 @@ export function finishWorkoutEntry(entry) {
   return entry;
 }
 
-function adjustLogParam(log, param, delta) {
+export function adjustParam(log, param, delta) {
   if (param === 'weight') {
     log.weight = Math.max(0, Math.round((log.weight + delta) * 10) / 10);
   } else if (param === 'series') {
     const newSeries = Math.max(1, log.series + delta);
-    if (newSeries > log.series) {
-      log.reps.actual.push(log.reps.expected);
-    } else if (newSeries < log.series) {
-      log.reps.actual.pop();
-    }
+    if (newSeries > log.series) log.reps.actual.push(log.reps.expected);
+    else if (newSeries < log.series) log.reps.actual.pop();
     log.series = newSeries;
   } else if (param === 'repsExpected') {
     log.reps.expected = Math.max(1, log.reps.expected + delta);
+    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
   }
 }
 
-function setLogParam(log, param, value) {
+export function setParam(log, param, value) {
   const num = parseFloat(value) || 0;
   if (param === 'weight') {
     log.weight = Math.max(0, num);
@@ -109,19 +107,6 @@ function setLogParam(log, param, value) {
     log.series = newSeries;
   } else if (param === 'repsExpected') {
     log.reps.expected = Math.max(1, Math.round(num));
-  }
-}
-
-export function adjustParam(log, param, delta) {
-  adjustLogParam(log, param, delta);
-  if (param === 'repsExpected') {
-    log.reps.actual = log.reps.actual.map(() => log.reps.expected);
-  }
-}
-
-export function setParam(log, param, value) {
-  setLogParam(log, param, value);
-  if (param === 'repsExpected') {
     log.reps.actual = log.reps.actual.map(() => log.reps.expected);
   }
 }
