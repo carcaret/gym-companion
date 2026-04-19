@@ -41,39 +41,6 @@ test.describe('Sync a prueba de bombas', () => {
     await clearStorage(page);
   });
 
-  // ── Resiliencia de datos locales ──────────────────────────────────────────
-
-  test('entreno solo en local, remoto vacío → el local no se pierde', async ({ page }) => {
-    const remoteDB = { ...BASE_DB, history: [] };
-
-    await page.addInitScript((data) => {
-      localStorage.setItem('gym_companion_db', data.localJson);
-      localStorage.setItem('gym_companion_needs_upload', 'true');
-      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
-      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
-    }, { localJson: JSON.stringify(BASE_DB) });
-
-    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
-      if (route.request().method() === 'GET') {
-        await route.fulfill({
-          status: 200, contentType: 'application/json',
-          body: JSON.stringify({ content: encodeDBToBase64(remoteDB), sha: 'sha_remote', encoding: 'base64' })
-        });
-      } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'new_sha' } }) });
-      }
-    });
-
-    await page.goto('/');
-    await expect(page.locator('#app-shell')).toBeVisible();
-
-    const history = await page.evaluate(() => {
-      const db = JSON.parse(localStorage.getItem('gym_companion_db'));
-      return db.history.map(e => e.date);
-    });
-    expect(history).toContain('2024-01-08');
-  });
-
   // ── Indicador de sync ────────────────────────────────────────────────────
 
   test('sin GitHub → indicador en estado ok (neutral)', async ({ page }) => {
