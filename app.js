@@ -161,6 +161,10 @@ function getPat() {
   return localStorage.getItem(PAT_KEY) || null;
 }
 
+function isSyncConfigured() {
+  return !!(getGithubConfig() && getPat());
+}
+
 async function fetchGithubDb(cfg, pat) {
   try {
     const res = await fetch(
@@ -253,7 +257,7 @@ function persistDB({ forceGitHub = false } = {}) {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async () => {
     saveTimeout = null;
-    if (!getGithubConfig() || !getPat()) {
+    if (!isSyncConfigured()) {
       setSyncState('ok');
       return;
     }
@@ -266,7 +270,7 @@ function persistDB({ forceGitHub = false } = {}) {
 // Pull silencioso al arrancar si el local no tiene cambios pendientes y
 // no hay entreno en curso. Seguro: needsUpload=false ⟹ local ya está en GitHub.
 async function pullFromGitHubIfClean() {
-  if (!getGithubConfig() || !getPat()) return;
+  if (!isSyncConfigured()) return;
   if (localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true') return;
   if (_isWorkoutActive(DB, todayStr())) return;
 
@@ -291,7 +295,7 @@ async function pullFromGitHubIfClean() {
 
 window.addEventListener('online', () => {
   const needsUpload = localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true';
-  if (needsUpload && !conflict && getGithubConfig() && getPat() && !_isWorkoutActive(DB, todayStr())) {
+  if (needsUpload && !conflict && isSyncConfigured() && !_isWorkoutActive(DB, todayStr())) {
     saveDBToGitHub().then(ok => {
       if (ok) toast('Guardado en GitHub (recuperado tras reconexión)', 'save');
     });
@@ -1375,14 +1379,14 @@ async function init() {
   ensureHistorySorted(DB);
   saveDBLocal();
 
-  if (getGithubConfig() && getPat() && needsUpload) {
+  if (isSyncConfigured() && needsUpload) {
     // Entrenos offline detectados en el merge — subir a GitHub sin bloquear UI
     setSyncState('pending');
     saveDBToGitHub();
   } else {
     setSyncState('ok');
     // Sin cambios pendientes: comprobar GitHub en background por si hubo edits externos
-    if (getGithubConfig() && getPat()) {
+    if (isSyncConfigured()) {
       pullFromGitHubIfClean();
     }
   }
