@@ -300,4 +300,297 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
     expect(state).toBe('ok');
     expect(putCount).toBe(0);
   });
+
+  // ── Canónico F ───────────────────────────────────────────────────────────────
+  // Pull-on-startup: needsUpload=false + remote == local → no toast, no overwrite,
+  // githubSha queda poblado (el siguiente PUT no dispara 422).
+
+  test('Canónico F: arranque needsUpload=false + remote==local → GET ocurre, sin toast, sin PUT, local intacto', async ({ page }) => {
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.dbJson);
+      localStorage.setItem('gym_companion_needs_upload', 'false');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { dbJson: JSON.stringify(BASE_DB) });
+
+    let getCount = 0;
+    let putCount = 0;
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      const req = route.request();
+      if (req.method() === 'GET') {
+        getCount++;
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_remote_match', encoding: 'base64' })
+        });
+      } else {
+        putCount++;
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'sha_put_ok' } }) });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+    await page.waitForTimeout(1500);
+
+    expect(getCount).toBeGreaterThan(0);
+    expect(putCount).toBe(0);
+    const toastVisible = await page.locator('#toast.visible').isVisible().catch(() => false);
+    if (toastVisible) {
+      const toastText = await page.locator('#toast').textContent();
+      expect(toastText).not.toContain('actualizados desde GitHub');
+    }
+
+    const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
+    expect(dbAfter.exercises).toEqual(BASE_DB.exercises);
+    expect(dbAfter.history.length).toBe(BASE_DB.history.length);
+  });
+
+  // ── Canónico G ───────────────────────────────────────────────────────────────
+  // Pull-on-startup: needsUpload=false + remote ≠ local → local se sobreescribe,
+  // se emite toast "Datos actualizados desde GitHub".
+
+  test('Canónico G: arranque needsUpload=false + remote≠local → local sobreescrito + toast', async ({ page }) => {
+    const localDB = BASE_DB;
+    const remoteDB = {
+      ...BASE_DB,
+      exercises: { ...BASE_DB.exercises, dominadas: { id: 'dominadas', name: 'Dominadas' } },
+      history: [
+        ...BASE_DB.history,
+        { date: '2024-05-20', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 70 }] }
+      ]
+    };
+
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.localJson);
+      localStorage.setItem('gym_companion_needs_upload', 'false');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { localJson: JSON.stringify(localDB) });
+
+    let putCount = 0;
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(remoteDB), sha: 'sha_remote_newer', encoding: 'base64' })
+        });
+      } else {
+        putCount++;
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'sha_put_new' } }) });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+
+    // Toast debe aparecer
+    await expect(page.locator('#toast')).toContainText('actualizados desde GitHub', { timeout: 5000 });
+
+    // localStorage contiene el remote (incluye dominadas y el entreno 2024-05-20)
+    const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
+    expect(Object.keys(dbAfter.exercises)).toContain('dominadas');
+    expect(dbAfter.history.some(e => e.date === '2024-05-20')).toBe(true);
+
+    // needs_upload queda en false y no se hizo PUT (no debemos re-subir lo que acabamos de bajar)
+    const needsUpload = await page.evaluate(() => localStorage.getItem('gym_companion_needs_upload'));
+    expect(needsUpload).toBe('false');
+    await page.waitForTimeout(800);
+    expect(putCount).toBe(0);
+  });
+
+  // ── Canónico H ───────────────────────────────────────────────────────────────
+  // Si needsUpload=true, NUNCA hay pull-on-startup (preserva Canónico C: local
+  // es fuente de verdad cuando hay cambios pendientes).
+
+  test('Canónico H: arranque needsUpload=true + remote≠local → NO se sobreescribe', async ({ page }) => {
+    const localDB = {
+      ...BASE_DB,
+      history: [
+        ...BASE_DB.history,
+        { date: '2024-04-10', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [8, 8, 8] }, weight: 55 }] }
+      ]
+    };
+    const remoteDB = BASE_DB;
+
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.localJson);
+      localStorage.setItem('gym_companion_needs_upload', 'true');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { localJson: JSON.stringify(localDB) });
+
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(remoteDB), sha: 'sha_r', encoding: 'base64' })
+        });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'sha_put' } }) });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+    await page.waitForTimeout(1500);
+
+    const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
+    // El entreno local exclusivo (2024-04-10) sigue presente
+    expect(dbAfter.history.some(e => e.date === '2024-04-10')).toBe(true);
+  });
+
+  // ── Canónico I ───────────────────────────────────────────────────────────────
+  // Si hay entreno activo (completed=false) al arrancar, el pull se aborta aunque
+  // remote difiera — protege el entreno en curso.
+
+  test('Canónico I: arranque con entreno activo + remote≠local → NO se sobreescribe', async ({ page }) => {
+    const today = new Date().toISOString().split('T')[0];
+    const localDB = {
+      ...BASE_DB,
+      history: [
+        ...BASE_DB.history,
+        { date: today, type: 'DIA1', completed: false, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, null, null] }, weight: 50 }] }
+      ]
+    };
+    const remoteDB = {
+      ...BASE_DB,
+      exercises: { ...BASE_DB.exercises, remo: { id: 'remo', name: 'Remo' } }
+    };
+
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.localJson);
+      localStorage.setItem('gym_companion_needs_upload', 'false');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { localJson: JSON.stringify(localDB) });
+
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(remoteDB), sha: 'sha_r', encoding: 'base64' })
+        });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'sha_put' } }) });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+    await page.waitForTimeout(1500);
+
+    const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
+    // El entreno activo de hoy sigue presente tal cual
+    const todayEntry = dbAfter.history.find(h => h.date === today);
+    expect(todayEntry).toBeDefined();
+    expect(todayEntry.completed).toBe(false);
+    // Y el ejercicio del remote NO se aplicó
+    expect(Object.keys(dbAfter.exercises)).not.toContain('remo');
+  });
+
+  // ── Canónico J (carrera R1) ──────────────────────────────────────────────────
+  // needsUpload=false al init → durante el fetch, se marca needs_upload=true
+  // (simulando un edit del usuario) → pull aborta, local intacto.
+
+  test('Canónico J: edit local durante el fetch → pull aborta, local sobrevive', async ({ page }) => {
+    const localDB = {
+      ...BASE_DB,
+      exercises: { ...BASE_DB.exercises, local_only: { id: 'local_only', name: 'Local Only' } }
+    };
+    const remoteDB = BASE_DB;
+
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.localJson);
+      localStorage.setItem('gym_companion_needs_upload', 'false');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { localJson: JSON.stringify(localDB) });
+
+    let getResolved = false;
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      if (route.request().method() === 'GET') {
+        // Retardar el GET para poder inyectar el edit durante el fetch
+        await new Promise(r => setTimeout(r, 800));
+        getResolved = true;
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(remoteDB), sha: 'sha_r', encoding: 'base64' })
+        });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: { sha: 'sha_put' } }) });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+
+    // Durante el fetch (antes de que resuelva), marcar needs_upload=true
+    await page.waitForTimeout(200);
+    expect(getResolved).toBe(false);
+    await page.evaluate(() => {
+      localStorage.setItem('gym_companion_needs_upload', 'true');
+    });
+
+    await page.waitForTimeout(1500);
+
+    // Pull debe haber abortado: el ejercicio local_only sigue ahí
+    const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
+    expect(Object.keys(dbAfter.exercises)).toContain('local_only');
+  });
+
+  // ── Canónico K ───────────────────────────────────────────────────────────────
+  // GitHub inaccesible (fetch falla) al arrancar → local intacto, sin toast de error.
+
+  test('Canónico K: GitHub inaccesible al arrancar → local intacto, sin toast de error', async ({ page }) => {
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.dbJson);
+      localStorage.setItem('gym_companion_needs_upload', 'false');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { dbJson: JSON.stringify(BASE_DB) });
+
+    await page.route('**/api.github.com/**', async (route) => {
+      await route.abort('failed');
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+    await page.waitForTimeout(1500);
+
+    const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
+    expect(dbAfter.exercises).toEqual(BASE_DB.exercises);
+    expect(dbAfter.history.length).toBe(BASE_DB.history.length);
+
+    // No debe haber toast con mensaje de error visible
+    const toastVisible = await page.locator('#toast.visible').isVisible().catch(() => false);
+    if (toastVisible) {
+      const toastText = await page.locator('#toast').textContent();
+      expect(toastText).not.toMatch(/error|fall|no se pudo/i);
+    }
+  });
+
+  // ── Canónico L ───────────────────────────────────────────────────────────────
+  // GitHub responde 404 → local intacto, sin overwrite.
+
+  test('Canónico L: GitHub 404 al arrancar → local intacto', async ({ page }) => {
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.dbJson);
+      localStorage.setItem('gym_companion_needs_upload', 'false');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { dbJson: JSON.stringify(BASE_DB) });
+
+    await page.route('**/api.github.com/**', async (route) => {
+      await route.fulfill({ status: 404, contentType: 'application/json', body: '{"message":"Not Found"}' });
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+    await page.waitForTimeout(1500);
+
+    const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
+    expect(dbAfter.exercises).toEqual(BASE_DB.exercises);
+    expect(dbAfter.history.length).toBe(BASE_DB.history.length);
+  });
 });
