@@ -165,21 +165,28 @@ function getPat() {
   return localStorage.getItem(PAT_KEY) || null;
 }
 
+async function fetchGithubDb(cfg, pat) {
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`,
+      { headers: { 'Authorization': `Bearer ${pat}`, 'Accept': 'application/vnd.github.v3+json' } }
+    );
+    if (!res.ok) return { ok: false, status: res.status, parsed: null };
+    const data = await res.json();
+    return { ok: true, status: res.status, parsed: parseGitHubResponse(data) };
+  } catch {
+    return { ok: false, status: 0, parsed: null };
+  }
+}
+
 async function loadDBFromGitHub(patOverride) {
   const cfg = getGithubConfig();
   const pat = patOverride || getPat();
   if (!cfg || !pat) return null;
-  try {
-    const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`, {
-      headers: { 'Authorization': `Bearer ${pat}`, 'Accept': 'application/vnd.github.v3+json' }
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const parsed = parseGitHubResponse(data);
-    if (!parsed) return null;
-    githubSha = parsed.sha;
-    return parsed.db;
-  } catch { return null; }
+  const { parsed } = await fetchGithubDb(cfg, pat);
+  if (!parsed) return null;
+  githubSha = parsed.sha;
+  return parsed.db;
 }
 
 async function saveDBToGitHub(options = {}) {
@@ -1223,17 +1230,13 @@ function setupSettings() {
       return;
     }
 
-    // Sólo verificar que la API responde — NO modificar DB
-    try {
-      const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`, {
-        headers: { 'Authorization': `Bearer ${patInput}`, 'Accept': 'application/vnd.github.v3+json' }
-      });
-      if (res.ok) {
-        setStatus(statusEl, 'Conexión exitosa', 'ok');
-      } else {
-        setStatus(statusEl, `Error ${res.status} — verifica repo, PAT y rama`, 'error');
-      }
-    } catch {
+    // Sólo verificar que la API responde — NO modificar githubSha ni DB
+    const { ok, status } = await fetchGithubDb(cfg, patInput);
+    if (ok) {
+      setStatus(statusEl, 'Conexión exitosa', 'ok');
+    } else if (status > 0) {
+      setStatus(statusEl, `Error ${status} — verifica repo, PAT y rama`, 'error');
+    } else {
       setStatus(statusEl, 'No se pudo conectar', 'error');
     }
   };
