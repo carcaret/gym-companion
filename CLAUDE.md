@@ -13,9 +13,9 @@
 
 ```
 index.html    → Estructura HTML: vistas (Hoy, Historial, Gráficas, Ajustes) + login
-app.js        → Toda la lógica de la app (~1200 líneas)
+app.js        → Toda la lógica de la app
 index.css     → Dark theme con glassmorphism, variables CSS, mobile-first
-db.json       → BD por defecto: ejercicios (~100), rutinas, credenciales; también archivo de sync con GitHub
+db.json       → BD por defecto: ejercicios (~100), rutinas; también archivo de sync con GitHub
 manifest.json → Config PWA
 sw.js         → Service Worker (cache network-first, omite GitHub API) — versión gym-companion-v2
 ```
@@ -25,24 +25,21 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - **Frontend**: Vanilla JS + CSS3 (sin frameworks)
 - **Charts**: Chart.js v4.4.7 + date-fns adapter
 - **Storage**: localStorage (primario) + GitHub REST API v3 (sync opcional)
-- **Hashing**: Web Crypto API (SHA-256) con salt `GYMPRO_SALT_2024 (no cambiar — invalida contraseñas existentes)`
 - **PWA**: Service Worker + Web Manifest
 
 ## Estructura de datos (db.json)
 
 ```javascript
 {
-  auth: { username, passwordHash },
   exercises: { [id]: { id, name } },          // ~100 ejercicios en español
-  routines: { LUNES: [...ids], MIERCOLES: [...ids], VIERNES: [...ids] },
+  routines: { DIA1: [...ids], DIA2: [...ids], DIA3: [...ids] },
   history: [{ date, type, completed, logs: [{ exercise_id, name, series, reps, weight }] }]
 }
 ```
 
 ## Funcionalidades clave
 
-- **Autenticación**: SHA-256 + sal, sesión en localStorage, cambio de contraseña
-- **Entrenamiento**: Rutinas Lun/Mié/Vie, registro por series (reps reales vs esperadas), detección de PRs
+- **Entrenamiento**: Rutinas Día 1 / Día 2 / Día 3, registro por series (reps reales vs esperadas), detección de PRs
 - **Métricas**: Volumen (peso × series × reps_avg), e1RM (peso × (1 + reps_avg/30))
 - **Historial**: Filtro por tipo de rutina, detalle expandible
 - **Gráficas**: Volumen, Peso, e1RM con Chart.js, selector de ejercicio y rango de fechas
@@ -61,7 +58,7 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - IDs de ejercicios en snake_case (`curl_de_biceps_mancuerna`)
 - Estado global en objeto `state` dentro de `app.js`
 - Persistencia siempre vía `saveData()` → localStorage + GitHub sync
-- `db` es la variable global con toda la BD en memoria
+- `DB` es la variable global con toda la BD en memoria
 
 ## Tests
 
@@ -81,11 +78,6 @@ Si la funcionalidad es lógica pura → tests unitarios en `tests/unit/`. Si inv
 - Si hay dudas sobre el enfoque, exponer las opciones con sus pros/contras y preguntar.
 - No hacer cambios colaterales no pedidos (refactors, limpieza, renombrados) aunque parezcan mejoras.
 - Un fix rápido que no entiende la causa raíz es peor que tardar más en dar la solución correcta.
-
-## Credenciales por defecto
-
-- Usuario: `carlos`
-- Password por defecto en db.json (hash SHA-256)
 
 ## Seguridad
 
