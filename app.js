@@ -215,7 +215,7 @@ function saveDBLocal() {
   }
 }
 
-async function persistDB({ forceGitHub = false } = {}) {
+function persistDB({ forceGitHub = false } = {}) {
   saveDBLocal();
   try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'true'); } catch (e) { }
   if (_isWorkoutActive(DB, todayStr()) && !forceGitHub) return;
@@ -480,14 +480,14 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   }
 }
 
-async function startWorkout(dayType) {
+function startWorkout(dayType) {
   const routineIds = DB.routines[dayType] || [];
   const entry = buildWorkoutEntry(todayStr(), dayType, routineIds, getLastValuesForExercise, getExerciseName);
 
   DB.history = DB.history.filter(h => h.date !== todayStr());
   DB.history.push(entry);
   ensureHistorySorted(DB);
-  await persistDB();
+  persistDB();
   renderHoy();
   toast('¡Entreno iniciado!', 'ok');
 }
@@ -710,7 +710,7 @@ function showAddExerciseModal(dayType) {
     }
 
     document.querySelectorAll('#exercise-modal-list .exercise-list-item').forEach(el => {
-      el.onclick = async () => {
+      el.onclick = () => {
         const id = el.dataset.id;
         if (!DB.routines[dayType]) DB.routines[dayType] = [];
         DB.routines[dayType].push(id);
@@ -727,7 +727,7 @@ function showAddExerciseModal(dayType) {
           });
         }
 
-        await persistDB();
+        persistDB();
         hideModal();
         renderHoy();
         toast(`${getExerciseName(id)} añadido`, 'ok');
@@ -753,7 +753,7 @@ function showCreateExerciseModal(dayType) {
   showModal('Crear nuevo ejercicio', bodyHtml, [
     { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => { } },
     {
-      label: 'Crear y añadir', className: 'btn-primary btn-sm', action: async () => {
+      label: 'Crear y añadir', className: 'btn-primary btn-sm', action: () => {
         const name = document.getElementById('new-exercise-name').value.trim();
         if (!name) return;
         const id = slugifyExerciseName(name);
@@ -761,7 +761,7 @@ function showCreateExerciseModal(dayType) {
         DB.exercises[id] = { id, name };
         if (!DB.routines[dayType]) DB.routines[dayType] = [];
         DB.routines[dayType].push(id);
-        await persistDB();
+        persistDB();
         renderHoy();
         toast(`${name} creado y añadido`, 'ok');
       }
@@ -775,9 +775,9 @@ function showCreateExerciseModal(dayType) {
 }
 
 // ── History update helper ──
-async function withHistoryUpdate(mutationFn, date, logIdx) {
+function withHistoryUpdate(mutationFn, date, logIdx) {
   if (!mutationFn()) return;
-  await persistDB();
+  persistDB();
   renderHistorialDetail(date);
   const entry = DB.history.find(h => h.date === date);
   if (entry) applyValidationErrors(logIdx, entry.logs[logIdx], 'h');
@@ -785,37 +785,37 @@ async function withHistoryUpdate(mutationFn, date, logIdx) {
 
 // ── Param adjustments (exposed globally) ──
 window.GymCompanion = {
-  adjustParam: async (logIdx, param, delta) => {
+  adjustParam: (logIdx, param, delta) => {
     const entry = getTodayEntry();
     if (!entry) return;
     adjustParam(entry.logs[logIdx], param, delta);
-    await persistDB();
+    persistDB();
     updateWorkoutCardInPlace(logIdx, entry);
   },
 
-  setParam: async (logIdx, param, value) => {
+  setParam: (logIdx, param, value) => {
     const entry = getTodayEntry();
     if (!entry) return;
     setParam(entry.logs[logIdx], param, value);
-    await persistDB();
+    persistDB();
     updateWorkoutCardInPlace(logIdx, entry);
   },
 
-  adjustRep: async (logIdx, seriesIdx, delta) => {
+  adjustRep: (logIdx, seriesIdx, delta) => {
     const entry = getTodayEntry();
     if (!entry) return;
     adjustRep(entry.logs[logIdx], seriesIdx, delta);
-    await persistDB();
+    persistDB();
     const input = document.getElementById(`w-rep-${logIdx}-${seriesIdx}`);
     if (input) input.value = entry.logs[logIdx].reps.actual[seriesIdx];
     updateWorkoutCardInPlace(logIdx, entry);
   },
 
-  setRep: async (logIdx, seriesIdx, value) => {
+  setRep: (logIdx, seriesIdx, value) => {
     const entry = getTodayEntry();
     if (!entry) return;
     setRep(entry.logs[logIdx], seriesIdx, value);
-    await persistDB();
+    persistDB();
     updateWorkoutCardInPlace(logIdx, entry);
   },
 
@@ -829,9 +829,9 @@ window.GymCompanion = {
       [
         { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
         {
-          label: 'Borrar', className: 'btn-danger btn-sm', action: async () => {
+          label: 'Borrar', className: 'btn-danger btn-sm', action: () => {
             DB.history = DB.history.filter(h => h.date !== date);
-            await persistDB();
+            persistDB();
             renderHistorial();
             toast('Entreno eliminado');
           }
@@ -852,7 +852,7 @@ window.GymCompanion = {
   setHistoryRep: (date, logIdx, seriesIdx, value) =>
     withHistoryUpdate(() => setHistoryRep(DB.history, date, logIdx, seriesIdx, value), date, logIdx),
 
-  reorderExercises: async (dayType, fromIndex, toIndex) => {
+  reorderExercises: (dayType, fromIndex, toIndex) => {
     DB.routines[dayType] = reorderByIndex(DB.routines[dayType], fromIndex, toIndex);
 
     const entry = getTodayEntry();
@@ -860,7 +860,7 @@ window.GymCompanion = {
       entry.logs = reorderByIndex(entry.logs, fromIndex, toIndex);
     }
 
-    await persistDB();
+    persistDB();
     toast('Orden actualizado');
   },
 
@@ -868,13 +868,13 @@ window.GymCompanion = {
     showModal('¿Quitar ejercicio?', `<p class="text-sm">Se eliminará <strong>${getExerciseName(exerciseId)}</strong> de la rutina de ${DAY_LABELS[dayType]}. Los registros históricos se conservarán.</p>`, [
       { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => { } },
       {
-        label: 'Quitar', className: 'btn-danger btn-sm', action: async () => {
+        label: 'Quitar', className: 'btn-danger btn-sm', action: () => {
           DB.routines[dayType] = DB.routines[dayType].filter(id => id !== exerciseId);
           const entry = getTodayEntry();
           if (entry && !entry.completed) {
             entry.logs = entry.logs.filter(l => l.exercise_id !== exerciseId);
           }
-          await persistDB();
+          persistDB();
           renderHoy();
           toast(`Ejercicio eliminado de ${DAY_LABELS[dayType]}`);
         }
