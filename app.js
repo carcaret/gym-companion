@@ -255,6 +255,36 @@ function persistDB({ forceGitHub = false } = {}) {
   }, 500);
 }
 
+// Pull silencioso al arrancar si el local no tiene cambios pendientes y
+// no hay entreno en curso. Seguro: needsUpload=false ⟹ local ya está en GitHub.
+async function pullFromGitHubIfClean() {
+  if (!getGithubConfig() || !getPat()) return;
+  if (localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true') return;
+  if (_isWorkoutActive(DB, todayStr())) return;
+
+  const cfg = getGithubConfig();
+  const pat = getPat();
+  const { parsed } = await fetchGithubDb(cfg, pat);
+  if (!parsed) return;
+
+  // Re-verificar condiciones tras el fetch (carreras R1/R2)
+  if (localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true') return;
+  if (_isWorkoutActive(DB, todayStr())) return;
+
+  githubSha = parsed.sha;
+
+  const localJson = JSON.stringify(DB);
+  const remoteJson = JSON.stringify(parsed.db);
+  if (localJson === remoteJson) return;
+
+  DB = parsed.db;
+  ensureHistorySorted(DB);
+  saveDBLocal();
+  safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
+  renderHoy();
+  toast('Datos actualizados desde GitHub', 'ok');
+}
+
 window.addEventListener('online', () => {
   const needsUpload = localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true';
   if (needsUpload && !conflict && getGithubConfig() && getPat() && !_isWorkoutActive(DB, todayStr())) {
@@ -1365,6 +1395,10 @@ async function init() {
     saveDBToGitHub();
   } else {
     setSyncState('ok');
+    // Sin cambios pendientes: comprobar GitHub en background por si hubo edits externos
+    if (getGithubConfig() && getPat()) {
+      pullFromGitHubIfClean();
+    }
   }
 
   showApp();
