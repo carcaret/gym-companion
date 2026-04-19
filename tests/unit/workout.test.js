@@ -718,3 +718,79 @@ describe('validateEntry', () => {
     expect(result.valid).toBe(true);
   });
 });
+
+// ════════════════════════════════════════════════
+// FASE A.7 — Casos borde adicionales (migrados de log-mutations.test.js)
+// ════════════════════════════════════════════════
+
+describe('adjustParam — casos borde', () => {
+  test('delta 0 en weight no cambia nada', () => {
+    const log = makeLog({ weight: 50 });
+    adjustParam(log, 'weight', 0);
+    expect(log.weight).toBe(50);
+  });
+
+  test('delta 0 en series no cambia nada', () => {
+    const log = makeLog({ series: 3, actual: [10, 8, 9] });
+    adjustParam(log, 'series', 0);
+    expect(log.series).toBe(3);
+    expect(log.reps.actual).toEqual([10, 8, 9]);
+  });
+
+  test('param inválido no hace nada', () => {
+    const log = makeLog({ weight: 50, series: 3, expected: 10 });
+    const before = JSON.parse(JSON.stringify(log));
+    adjustParam(log, 'noexiste', 5);
+    expect(log.weight).toBe(before.weight);
+    expect(log.series).toBe(before.series);
+    expect(log.reps.expected).toBe(before.reps.expected);
+  });
+
+  test('decrementar y volver a incrementar series → nuevo slot usa reps.expected actual', () => {
+    const log = makeLog({ series: 3, expected: 12, actual: [12, 12, 12] });
+    adjustParam(log, 'series', -1);
+    adjustParam(log, 'series', 1);
+    expect(log.reps.actual[2]).toBe(12);
+  });
+
+  test('sincronizar repsExpected con 1 sola serie', () => {
+    const log = makeLog({ series: 1, expected: 8, actual: [6] });
+    adjustParam(log, 'repsExpected', 1);
+    expect(log.reps.expected).toBe(9);
+    expect(log.reps.actual).toEqual([9]);
+  });
+});
+
+describe('setParam — casos borde', () => {
+  test('series con decimal redondea', () => {
+    const log = makeLog({ series: 3, actual: [10, 8, 9] });
+    setParam(log, 'series', '2.7');
+    expect(log.series).toBe(3);
+  });
+
+  test('param inválido no hace nada', () => {
+    const log = makeLog({ weight: 50 });
+    setParam(log, 'noexiste', '999');
+    expect(log.weight).toBe(50);
+  });
+});
+
+describe('adjustRep — casos borde', () => {
+  test('delta 0 con rep null → parte del expected', () => {
+    const log = makeLog({ expected: 12, actual: [null, null, null] });
+    adjustRep(log, 0, 0);
+    expect(log.reps.actual[0]).toBe(12);
+  });
+
+  test('reps.actual array vacío → parte del expected', () => {
+    const log = makeLog({ series: 3, expected: 10, actual: [] });
+    adjustRep(log, 0, 1);
+    expect(log.reps.actual[0]).toBe(11);
+  });
+
+  test('reps.actual con menos elementos que series → parte del expected', () => {
+    const log = makeLog({ series: 3, expected: 8, actual: [10] });
+    adjustRep(log, 2, -1);
+    expect(log.reps.actual[2]).toBe(7);
+  });
+});
