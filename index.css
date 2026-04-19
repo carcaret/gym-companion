@@ -212,7 +212,7 @@ body {
   margin-left: auto;
 }
 
-.header-badge {
+.header-badge:not([hidden]) {
   display: flex;
   align-items: center;
   color: var(--gold);
