@@ -1149,71 +1149,59 @@ function renderChart() {
   const ctx = document.getElementById('chart-canvas').getContext('2d');
   const ctxWeight = document.getElementById('chart-canvas-weight').getContext('2d');
 
-  const commonOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { intersect: false, mode: 'index' },
-    plugins: {
-      legend: { display: true, labels: { color: '#edf0f7', font: { size: 11, family: 'Inter' }, boxWidth: 12 } },
-      tooltip: {
-        backgroundColor: '#1c1c1e',
-        titleColor: '#d4d4d4',
-        bodyColor: '#d4d4d4',
-        borderColor: 'rgba(255,255,255,0.22)',
-        borderWidth: 1,
-        cornerRadius: 8,
-        padding: 10
-      }
+  currentChart = makeChart(ctx, datasets, chartType, { yTitle: 'Volumen', withE1RM: true });
+  currentWeightChart = makeChart(ctxWeight, weightDatasets, chartType, { yTitle: 'Peso (kg)', withE1RM: false });
+}
+
+function makeChart(ctx, datasets, chartType, { yTitle, withE1RM }) {
+  const axisTicks = { color: '#888', font: { size: 10 } };
+  const axisGrid = { color: 'rgba(255,255,255,0.04)' };
+  const titleStyle = { color: '#888', font: { size: 11 } };
+
+  const scales = {
+    x: {
+      type: 'time',
+      time: { unit: 'week', tooltipFormat: 'dd MMM yyyy' },
+      grid: axisGrid,
+      ticks: axisTicks
+    },
+    y: {
+      position: 'left',
+      title: { display: true, text: yTitle, ...titleStyle },
+      grid: axisGrid,
+      ticks: axisTicks
     }
   };
 
-  currentChart = new Chart(ctx, {
+  if (withE1RM) {
+    scales.y1 = {
+      position: 'right',
+      title: { display: true, text: 'e1RM (kg)', ...titleStyle },
+      grid: { drawOnChartArea: false },
+      ticks: axisTicks
+    };
+  }
+
+  return new Chart(ctx, {
     type: chartType,
     data: { datasets },
     options: {
-      ...commonOptions,
-      scales: {
-        x: {
-          type: 'time',
-          time: { unit: 'week', tooltipFormat: 'dd MMM yyyy' },
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: { color: '#888', font: { size: 10 } }
-        },
-        y: {
-          position: 'left',
-          title: { display: true, text: 'Volumen', color: '#888', font: { size: 11 } },
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: { color: '#888', font: { size: 10 } }
-        },
-        y1: {
-          position: 'right',
-          title: { display: true, text: 'e1RM (kg)', color: '#888', font: { size: 11 } },
-          grid: { drawOnChartArea: false },
-          ticks: { color: '#888', font: { size: 10 } }
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: true, labels: { color: '#edf0f7', font: { size: 11, family: 'Inter' }, boxWidth: 12 } },
+        tooltip: {
+          backgroundColor: '#1c1c1e',
+          titleColor: '#d4d4d4',
+          bodyColor: '#d4d4d4',
+          borderColor: 'rgba(255,255,255,0.22)',
+          borderWidth: 1,
+          cornerRadius: 8,
+          padding: 10
         }
-      }
-    }
-  });
-
-  currentWeightChart = new Chart(ctxWeight, {
-    type: chartType,
-    data: { datasets: weightDatasets },
-    options: {
-      ...commonOptions,
-      scales: {
-        x: {
-          type: 'time',
-          time: { unit: 'week', tooltipFormat: 'dd MMM yyyy' },
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: { color: '#888', font: { size: 10 } }
-        },
-        y: {
-          position: 'left',
-          title: { display: true, text: 'Peso (kg)', color: '#888', font: { size: 11 } },
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: { color: '#888', font: { size: 10 } }
-        }
-      }
+      },
+      scales
     }
   });
 }
