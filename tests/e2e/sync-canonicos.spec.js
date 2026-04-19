@@ -102,10 +102,11 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
   });
 
   // ── Canónico C (CRÍTICO) ──────────────────────────────────────────────────
-  // Si hay datos en localStorage, loadDB NUNCA los sobreescribe con remote.
-  // El local es la fuente de verdad — no hay pull automático al arrancar.
+  // Si hay datos locales CON cambios pendientes (needsUpload=true), loadDB NUNCA
+  // los sobreescribe con remote. Local es fuente de verdad cuando hay pendiente.
+  // (El caso needsUpload=false está cubierto por Canónicos F/G con el nuevo pull.)
 
-  test('Canónico C: local con datos + remote diferente → local se mantiene intacto al arrancar', async ({ page }) => {
+  test('Canónico C: needsUpload=true + remote diferente → local intacto al arrancar', async ({ page }) => {
     const localDB = {
       ...BASE_DB,
       history: [
@@ -133,6 +134,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
 
     await page.addInitScript((data) => {
       localStorage.setItem('gym_companion_db', data.localJson);
+      localStorage.setItem('gym_companion_needs_upload', 'true');
       localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
       localStorage.setItem('gym_companion_pat', 'ghp_testpat');
     }, { localJson: JSON.stringify(localDB) });

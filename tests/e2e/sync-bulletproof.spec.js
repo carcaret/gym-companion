@@ -48,6 +48,7 @@ test.describe('Sync a prueba de bombas', () => {
 
     await page.addInitScript((data) => {
       localStorage.setItem('gym_companion_db', data.localJson);
+      localStorage.setItem('gym_companion_needs_upload', 'true');
       localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
       localStorage.setItem('gym_companion_pat', 'ghp_testpat');
     }, { localJson: JSON.stringify(BASE_DB) });
