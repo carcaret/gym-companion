@@ -8,7 +8,7 @@ import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, P
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
-import { buildWorkoutEntry, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, adjustHistoryParam, setHistoryParam, adjustHistoryRep, setHistoryRep } from './src/workout.js';
+import { buildWorkoutEntry, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, findLog } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
 
@@ -474,6 +474,47 @@ function startWorkout(dayType) {
   toast('¡Entreno iniciado!', 'ok');
 }
 
+function setupLogActionDelegation(container, config) {
+  const flag = '_logActionDelegated';
+  if (container[flag]) return;
+  container[flag] = true;
+
+  container.addEventListener('click', e => {
+    const el = e.target.closest('[data-action]');
+    if (!el || el.tagName === 'INPUT') return;
+    const { action } = el.dataset;
+    const idx = parseInt(el.dataset.logidx);
+    const log = config.getLog(el, idx);
+
+    if (action === 'adjustParam' && log) {
+      adjustParam(log, el.dataset.param, parseFloat(el.dataset.delta));
+      config.onSuccess(el, log, idx);
+    } else if (action === 'adjustRep' && log) {
+      adjustRep(log, parseInt(el.dataset.seriesidx), parseFloat(el.dataset.delta));
+      config.onSuccess(el, log, idx);
+    } else if (config.extraActions) {
+      config.extraActions(el, action);
+    }
+  });
+
+  container.addEventListener('change', e => {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    const { action } = el.dataset;
+    const idx = parseInt(el.dataset.logidx);
+    const log = config.getLog(el, idx);
+    if (!log) return;
+
+    if (action === 'setParam') {
+      setParam(log, el.dataset.param, el.value);
+      config.onSuccess(el, log, idx);
+    } else if (action === 'setRep') {
+      setRep(log, parseInt(el.dataset.seriesidx), el.value);
+      config.onSuccess(el, log, idx);
+    }
+  });
+}
+
 function renderActiveWorkout(container, entry) {
   let html = `<div class="workout-status">
   <span class="pulse-dot"></span>
@@ -577,37 +618,18 @@ function renderActiveWorkout(container, entry) {
     });
   }
 
-  if (!container._workoutDelegated) {
-    container._workoutDelegated = true;
-    container.addEventListener('click', e => {
-      const el = e.target.closest('[data-action]');
-      if (!el || el.tagName === 'INPUT') return;
-      const { action, logidx, param, delta, daytype, exerciseid } = el.dataset;
-      const idx = parseInt(logidx);
-      if (action === 'adjustParam') {
-        const en = getTodayEntry(); if (!en) return;
-        adjustParam(en.logs[idx], param, parseFloat(delta)); persistDB(); rerenderWorkout();
-      } else if (action === 'adjustRep') {
-        const en = getTodayEntry(); if (!en) return;
-        adjustRep(en.logs[idx], parseInt(el.dataset.seriesidx), parseFloat(delta)); persistDB(); rerenderWorkout();
-      } else if (action === 'removeExercise') {
-        removeExerciseFromRoutine(daytype, exerciseid);
+  setupLogActionDelegation(container, {
+    getLog: (_el, idx) => {
+      const en = getTodayEntry();
+      return en?.logs[idx] ?? null;
+    },
+    onSuccess: () => { persistDB(); rerenderWorkout(); },
+    extraActions: (el, action) => {
+      if (action === 'removeExercise') {
+        removeExerciseFromRoutine(el.dataset.daytype, el.dataset.exerciseid);
       }
-    });
-    container.addEventListener('change', e => {
-      const el = e.target.closest('[data-action]');
-      if (!el) return;
-      const { action, logidx, param } = el.dataset;
-      const idx = parseInt(logidx);
-      if (action === 'setParam') {
-        const en = getTodayEntry(); if (!en) return;
-        setParam(en.logs[idx], param, el.value); persistDB(); rerenderWorkout();
-      } else if (action === 'setRep') {
-        const en = getTodayEntry(); if (!en) return;
-        setRep(en.logs[idx], parseInt(el.dataset.seriesidx), el.value); persistDB(); rerenderWorkout();
-      }
-    });
-  }
+    }
+  });
 }
 
 async function finishWorkout() {
@@ -927,37 +949,21 @@ function renderHistorialDetail(date) {
 
   document.getElementById('historial-back-btn').onclick = () => renderHistorial();
 
-  if (!content._historialDelegated) {
-    content._historialDelegated = true;
-    content.addEventListener('click', e => {
-      const el = e.target.closest('[data-action]');
-      if (!el || el.tagName === 'INPUT') return;
-      const { action, logidx, param, delta, date: elDate } = el.dataset;
-      if (!elDate) return;
-      const idx = parseInt(logidx);
-      let success;
-      if (action === 'adjustParam') {
-        success = adjustHistoryParam(DB.history, elDate, idx, param, parseFloat(delta));
-      } else if (action === 'adjustRep') {
-        success = adjustHistoryRep(DB.history, elDate, idx, parseInt(el.dataset.seriesidx), parseFloat(delta));
-      }
-      if (success) { persistDB(); renderHistorialDetail(elDate); const en = DB.history.find(h => h.date === elDate); if (en) applyValidationErrors(idx, en.logs[idx], 'h'); }
-    });
-    content.addEventListener('change', e => {
-      const el = e.target.closest('[data-action]');
-      if (!el) return;
-      const { action, logidx, param, date: elDate } = el.dataset;
-      if (!elDate) return;
-      const idx = parseInt(logidx);
-      let success;
-      if (action === 'setParam') {
-        success = setHistoryParam(DB.history, elDate, idx, param, el.value);
-      } else if (action === 'setRep') {
-        success = setHistoryRep(DB.history, elDate, idx, parseInt(el.dataset.seriesidx), el.value);
-      }
-      if (success) { persistDB(); renderHistorialDetail(elDate); const en = DB.history.find(h => h.date === elDate); if (en) applyValidationErrors(idx, en.logs[idx], 'h'); }
-    });
-  }
+  setupLogActionDelegation(content, {
+    getLog: (el, idx) => {
+      const d = el.dataset.date;
+      if (!d) return null;
+      const found = findLog(DB.history, d, idx);
+      return found?.log ?? null;
+    },
+    onSuccess: (el, _log, idx) => {
+      const d = el.dataset.date;
+      persistDB();
+      renderHistorialDetail(d);
+      const en = DB.history.find(h => h.date === d);
+      if (en) applyValidationErrors(idx, en.logs[idx], 'h');
+    }
+  });
 
   content.querySelectorAll('.historial-edit-btn').forEach(btn => {
     btn.onclick = () => {

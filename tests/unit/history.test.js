@@ -1,12 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import {
-  filterHistory,
-  sortHistory,
-  adjustHistoryParam,
-  setHistoryParam,
-  adjustHistoryRep,
-  setHistoryRep
-} from '../../src/workout.js';
+import { filterHistory, sortHistory, findLog } from '../../src/workout.js';
 
 // ── Helpers ──
 
@@ -105,279 +98,29 @@ describe('sortHistory', () => {
 });
 
 // ════════════════════════════════════════════════
-// adjustHistoryParam
+// findLog
 // ════════════════════════════════════════════════
 
-describe('adjustHistoryParam — weight', () => {
-  test('incrementa peso en +delta', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ weight: 50 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'weight', 2.5);
-    expect(h[0].logs[0].weight).toBe(52.5);
-  });
-
-  test('decrementa peso en -delta', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ weight: 50 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'weight', -2.5);
-    expect(h[0].logs[0].weight).toBe(47.5);
-  });
-
-  test('peso no baja de 0 (clamp)', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ weight: 1 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'weight', -5);
-    expect(h[0].logs[0].weight).toBe(0);
-  });
-
-  test('redondea a 1 decimal', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ weight: 0.1 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'weight', 0.2);
-    expect(h[0].logs[0].weight).toBe(0.3);
-  });
-});
-
-describe('adjustHistoryParam — series', () => {
-  test('incrementa series en +1', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'series', 1);
-    expect(h[0].logs[0].series).toBe(4);
-  });
-
-  test('decrementa series en -1', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'series', -1);
-    expect(h[0].logs[0].series).toBe(2);
-  });
-
-  test('series no baja de 1', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 1 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'series', -1);
-    expect(h[0].logs[0].series).toBe(1);
-  });
-
-  test('al incrementar, añade reps.expected a reps.actual', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3, expected: 10, actual: [10, 10, 10] })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'series', 1);
-    expect(h[0].logs[0].reps.actual).toEqual([10, 10, 10, 10]);
-  });
-
-  test('al decrementar, elimina último de reps.actual', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3, actual: [10, 10, 10] })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'series', -1);
-    expect(h[0].logs[0].reps.actual).toEqual([10, 10]);
-  });
-});
-
-describe('adjustHistoryParam — repsExpected', () => {
-  test('incrementa reps esperadas en +1', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', 1);
-    expect(h[0].logs[0].reps.expected).toBe(11);
-  });
-
-  test('decrementa reps esperadas en -1', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', -1);
-    expect(h[0].logs[0].reps.expected).toBe(9);
-  });
-
-  test('reps esperadas no bajan de 1', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 1 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', -1);
-    expect(h[0].logs[0].reps.expected).toBe(1);
-  });
-
-  test('sincroniza reps actual al nuevo expected (caso clave: 11→12 con [11,11,9])', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 11, actual: [11, 11, 9] })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', 1);
-    expect(h[0].logs[0].reps.expected).toBe(12);
-    expect(h[0].logs[0].reps.actual).toEqual([12, 12, 12]);
-  });
-
-  test('sincroniza reps actual al decrementar expected', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10, actual: [10, 8, 10] })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', -1);
-    expect(h[0].logs[0].reps.expected).toBe(9);
-    expect(h[0].logs[0].reps.actual).toEqual([9, 9, 9]);
-  });
-
-  test('sincroniza reps actual con nulls al nuevo expected', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10 })] })];
-    adjustHistoryParam(h, '2026-03-25', 0, 'repsExpected', 2);
-    expect(h[0].logs[0].reps.actual).toEqual([12, 12, 12]);
-  });
-});
-
-describe('adjustHistoryParam — edge cases', () => {
-  test('con fecha inexistente retorna null y no crashea', () => {
+describe('findLog', () => {
+  test('con fecha existente y logIdx válido devuelve {entry, log}', () => {
     const h = makeHistory();
-    const result = adjustHistoryParam(h, '1999-01-01', 0, 'weight', 5);
-    expect(result).toBeNull();
+    const found = findLog(h, '2026-03-25', 0);
+    expect(found).not.toBeNull();
+    expect(found.entry.date).toBe('2026-03-25');
+    expect(found.log.exercise_id).toBe('press_banca');
   });
 
-  test('con logIdx fuera de rango retorna null', () => {
+  test('con fecha inexistente devuelve null', () => {
+    const h = makeHistory();
+    expect(findLog(h, '1999-01-01', 0)).toBeNull();
+  });
+
+  test('con logIdx fuera de rango devuelve null', () => {
     const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({})] })];
-    const result = adjustHistoryParam(h, '2026-03-25', 99, 'weight', 5);
-    expect(result).toBeNull();
-  });
-});
-
-// ════════════════════════════════════════════════
-// setHistoryParam
-// ════════════════════════════════════════════════
-
-describe('setHistoryParam', () => {
-  test('establece peso directamente', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ weight: 50 })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'weight', '65');
-    expect(h[0].logs[0].weight).toBe(65);
+    expect(findLog(h, '2026-03-25', 99)).toBeNull();
   });
 
-  test('peso con valor negativo → clamp a 0', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ weight: 50 })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'weight', '-10');
-    expect(h[0].logs[0].weight).toBe(0);
-  });
-
-  test('peso con NaN → 0', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ weight: 50 })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'weight', 'abc');
-    expect(h[0].logs[0].weight).toBe(0);
-  });
-
-  test('establece series con resize de reps.actual (expand)', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 2, expected: 10, actual: [10, 10] })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'series', '4');
-    expect(h[0].logs[0].series).toBe(4);
-    expect(h[0].logs[0].reps.actual).toEqual([10, 10, 10, 10]);
-  });
-
-  test('establece series con resize de reps.actual (truncate)', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 4, actual: [10, 10, 10, 10] })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'series', '2');
-    expect(h[0].logs[0].series).toBe(2);
-    expect(h[0].logs[0].reps.actual).toEqual([10, 10]);
-  });
-
-  test('series con 0 → clamp a 1', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3 })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'series', '0');
-    expect(h[0].logs[0].series).toBe(1);
-  });
-
-  test('establece repsExpected con valor válido', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10 })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'repsExpected', '12');
-    expect(h[0].logs[0].reps.expected).toBe(12);
-  });
-
-  test('repsExpected con 0 → clamp a 1', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10 })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'repsExpected', '0');
-    expect(h[0].logs[0].reps.expected).toBe(1);
-  });
-
-  test('setear repsExpected sincroniza reps actual al nuevo valor', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10, actual: [10, 10, 8] })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'repsExpected', '12');
-    expect(h[0].logs[0].reps.expected).toBe(12);
-    expect(h[0].logs[0].reps.actual).toEqual([12, 12, 12]);
-  });
-
-  test('setear weight NO sincroniza reps actual', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ weight: 50, actual: [10, 8, 9] })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'weight', '60');
-    expect(h[0].logs[0].reps.actual).toEqual([10, 8, 9]);
-  });
-
-  test('setear series NO sincroniza reps actual (añade reps.expected)', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ series: 3, expected: 10, actual: [10, 8, 9] })] })];
-    setHistoryParam(h, '2026-03-25', 0, 'series', '4');
-    expect(h[0].logs[0].reps.actual).toEqual([10, 8, 9, 10]);
-  });
-
-  test('con fecha inexistente retorna null', () => {
-    const h = makeHistory();
-    const result = setHistoryParam(h, '1999-01-01', 0, 'weight', '50');
-    expect(result).toBeNull();
-  });
-});
-
-// ════════════════════════════════════════════════
-// adjustHistoryRep
-// ════════════════════════════════════════════════
-
-describe('adjustHistoryRep', () => {
-  test('incrementa rep de una serie específica', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ actual: [10, 10, 10] })] })];
-    adjustHistoryRep(h, '2026-03-25', 0, 1, 1);
-    expect(h[0].logs[0].reps.actual[1]).toBe(11);
-  });
-
-  test('decrementa rep de una serie específica', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ actual: [10, 10, 10] })] })];
-    adjustHistoryRep(h, '2026-03-25', 0, 0, -1);
-    expect(h[0].logs[0].reps.actual[0]).toBe(9);
-  });
-
-  test('si rep era null, usa expected como base y aplica delta', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ expected: 10, actual: [null, null, null] })] })];
-    adjustHistoryRep(h, '2026-03-25', 0, 0, 1);
-    expect(h[0].logs[0].reps.actual[0]).toBe(11);
-  });
-
-  test('rep no baja de 0', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ actual: [1, 10, 10] })] })];
-    adjustHistoryRep(h, '2026-03-25', 0, 0, -5);
-    expect(h[0].logs[0].reps.actual[0]).toBe(0);
-  });
-
-  test('con fecha inexistente retorna null', () => {
-    const h = makeHistory();
-    expect(adjustHistoryRep(h, '1999-01-01', 0, 0, 1)).toBeNull();
-  });
-
-  test('con logIdx fuera de rango retorna null', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({})] })];
-    expect(adjustHistoryRep(h, '2026-03-25', 99, 0, 1)).toBeNull();
-  });
-});
-
-// ════════════════════════════════════════════════
-// setHistoryRep
-// ════════════════════════════════════════════════
-
-describe('setHistoryRep', () => {
-  test('establece rep a valor dado', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ actual: [10, 10, 10] })] })];
-    setHistoryRep(h, '2026-03-25', 0, 1, '8');
-    expect(h[0].logs[0].reps.actual[1]).toBe(8);
-  });
-
-  test('valor vacío → null (rep no completada)', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ actual: [10, 10, 10] })] })];
-    setHistoryRep(h, '2026-03-25', 0, 0, '');
-    expect(h[0].logs[0].reps.actual[0]).toBeNull();
-  });
-
-  test('valor NaN → null', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ actual: [10, 10, 10] })] })];
-    setHistoryRep(h, '2026-03-25', 0, 0, 'abc');
-    expect(h[0].logs[0].reps.actual[0]).toBeNull();
-  });
-
-  test('valor 0 → acepta (0 reps completadas)', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ actual: [10, 10, 10] })] })];
-    setHistoryRep(h, '2026-03-25', 0, 0, '0');
-    expect(h[0].logs[0].reps.actual[0]).toBe(0);
-  });
-
-  test('valor negativo → clamp a 0', () => {
-    const h = [makeEntry({ date: '2026-03-25', logs: [makeLog({ actual: [10, 10, 10] })] })];
-    setHistoryRep(h, '2026-03-25', 0, 0, '-5');
-    expect(h[0].logs[0].reps.actual[0]).toBe(0);
-  });
-
-  test('con fecha inexistente retorna null', () => {
-    const h = makeHistory();
-    expect(setHistoryRep(h, '1999-01-01', 0, 0, '5')).toBeNull();
+  test('con history vacío devuelve null', () => {
+    expect(findLog([], '2026-03-25', 0)).toBeNull();
   });
 });
