@@ -246,23 +246,23 @@ Estos tests disparan clicks y rellenos en el DOM y validan el resultado renderiz
 
 ## Plan de aplicación
 
-Todo en un único commit (es un refactor cohesivo, partirlo lo deja en estado inconsistente):
+✅ **Completado** — commit `54f4b3b` (2026-04-19)
 
-1. Exportar `findLog` en workout.js (renombrando `findEntryLog`).
-2. Eliminar los 4 wrappers.
-3. Añadir `setupLogActionDelegation` en app.js.
-4. Reemplazar los dos bloques de delegación.
-5. Actualizar imports en app.js.
-6. Limpiar tests en history.test.js (borrar los 4 describes wrapper + añadir 4 tests de `findLog`).
-7. Correr `npm test` y `npm run test:e2e` (o equivalente) — **todo debe pasar**.
+Pasos ejecutados en un único commit cohesivo:
 
-**Si cualquier e2e falla, revertir el commit completo** — es señal de que hay comportamiento no cubierto por los tests unitarios que el refactor rompe.
+1. ✅ Exportar `findLog` en workout.js (renombrando `findEntryLog`).
+2. ✅ Eliminar los 4 wrappers.
+3. ✅ Añadir `setupLogActionDelegation` en app.js.
+4. ✅ Reemplazar los dos bloques de delegación.
+5. ✅ Actualizar imports en app.js.
+6. ✅ Limpiar tests en history.test.js (borrar los 4 describes wrapper + añadir 4 tests de `findLog`).
+7. ✅ `npm test` → 313/313 passed. `npm run test:e2e` → 154/159 passed (5 fallos en workout-reorder.spec.js pre-existentes, no relacionados con este refactor).
 
-## Resultado esperado
+## Resultado real
 
-- [src/workout.js](src/workout.js): −25 líneas (wrappers eliminados, `findEntryLog` renombrado a `findLog` y exportado)
-- [app.js](app.js): −30 líneas (delegación unificada)
-- [tests/unit/history.test.js](tests/unit/history.test.js): −180 líneas
-- **Total: ~235 líneas menos**, y una sola ruta para mutar logs
+- [src/workout.js](src/workout.js): −28 líneas
+- [app.js](app.js): −18 líneas netas (−30 delegación + +40 helper)
+- [tests/unit/history.test.js](tests/unit/history.test.js): −279 líneas
+- **Total: ~279 líneas menos** (git: 83 inserciones, 362 eliminaciones)
 
 Arquitectura más limpia: las 4 funciones puras mutan un log y ya; la UI sabe cómo localizar el log en cada contexto y llama al dispatcher común.
