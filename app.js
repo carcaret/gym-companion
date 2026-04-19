@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.13';
+const APP_VERSION = '1.0.14';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate } from './src/dates.js';
@@ -1359,12 +1359,10 @@ async function init() {
   ensureHistorySorted(DB);
   saveDBLocal();
 
-  if (getGithubConfig() && getPat()) {
+  if (getGithubConfig() && getPat() && needsUpload) {
+    // Entrenos offline detectados en el merge — subir a GitHub sin bloquear UI
     setSyncState('pending');
-    if (needsUpload) {
-      // Entrenos offline detectados en el merge — subir a GitHub sin bloquear UI
-      saveDBToGitHub();
-    }
+    saveDBToGitHub();
   } else {
     setSyncState('ok');
   }

@@ -4,6 +4,19 @@
 
 **Gym Companion** es una PWA (Progressive Web App) en español para seguimiento personal de gimnasio. Permite registrar entrenamientos, métricas de rendimiento, visualizar progreso y sincronizar datos con GitHub. Sin frameworks — vanilla JS puro.
 
+## Caso de uso real (muy importante para dimensionar soluciones)
+
+- **Un único usuario** (el dueño del repo) y **un único dispositivo activo**: su móvil con la PWA instalada.
+- El usuario **de vez en cuando edita `db.json` directamente en GitHub** (desde la web). No hay otros editores ni otros dispositivos en paralelo.
+- **Requisito innegociable**: la sincronización con GitHub debe funcionar siempre y **nunca perder datos** — ni los del móvil ni los editados a mano en GitHub.
+
+**Implicaciones para el diseño**:
+
+- No hay concurrencia real entre dispositivos. No diseñar para multi-device, multi-usuario, colaboración ni merges tipo CRDT.
+- El único "conflicto" plausible es: móvil con cambios locales + GitHub editado a mano entre medias. La política actual (local es fuente de verdad al arrancar, modal de conflicto si el PUT devuelve 409/422) es adecuada.
+- Preferir **soluciones simples y obvias** sobre abstracciones genéricas. Si una solución parece que necesita un sistema de sync sofisticado, casi seguro estamos sobrediseñando.
+- Sí es aceptable añadir chequeos de seguridad baratos (p. ej. fetch de remote al arrancar para poblar `githubSha` y evitar 422 espurios) — pero siempre cuestionando si aportan valor real al flujo de un único usuario.
+
 ## Despliegue
 
 - **Producción**: GitHub Pages (HTTPS) — rama `master`, raíz del repo

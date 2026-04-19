@@ -270,4 +270,34 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
     await page.click('text=Cancelar');
     await expect(page.locator('#modal-overlay')).toBeHidden();
   });
+
+  // ── Canónico E ───────────────────────────────────────────────────────────────
+  // Al arrancar sin cambios pendientes, el indicador debe estar en "ok",
+  // aunque GitHub esté configurado. Regresión: bug del reloj fantasma (v1.0.13).
+
+  test('Canónico E: arranque con needsUpload=false → indicador "ok", sin PUT', async ({ page }) => {
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.dbJson);
+      localStorage.setItem('gym_companion_needs_upload', 'false');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { dbJson: JSON.stringify(BASE_DB) });
+
+    let putCount = 0;
+    await page.route('**/api.github.com/**', async (route) => {
+      if (route.request().method() === 'PUT') putCount++;
+      await route.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_x', encoding: 'base64' })
+      });
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+    await page.waitForTimeout(1500);
+
+    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
+    expect(state).toBe('ok');
+    expect(putCount).toBe(0);
+  });
 });
