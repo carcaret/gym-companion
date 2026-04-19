@@ -139,7 +139,7 @@ No hay lógica pura aislable fácilmente (todo es orquestación con `localStorag
 1. Implementar `pullFromGitHubIfClean()` en `app.js`.
 2. Añadir la llamada en `init()` tras el bloque de `needsUpload`.
 3. Escribir Canónicos F, G, H, I, J, K, L en `sync-canonicos.spec.js`.
-4. Ejecutar `npm test` (unit) y `npx playwright test tests/e2e/sync-canonicos.spec.js tests/e2e/sync-bulletproof.spec.js tests/e2e/github-sync.spec.js tests/e2e/workout-github-sync.spec.js tests/e2e/persistence.spec.js` (e2e de sync). Verde en todo.
+4. Ejecutar `npm test` (unit) y `npx playwright test tests/e2e/sync-canonicos.spec.js tests/e2e/sync-ui.spec.js tests/e2e/github-sync.spec.js tests/e2e/workout-github-sync.spec.js tests/e2e/persistence.spec.js` (e2e de sync). Verde en todo.
 5. Bump `APP_VERSION` → `1.0.15`.
 6. Commit.
 

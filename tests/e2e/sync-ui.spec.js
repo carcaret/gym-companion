@@ -1,10 +1,10 @@
 /**
- * Tests para el sistema de sync a prueba de bombas:
- * - Merge de historiales (local + remoto)
- * - Backup antes de sobrescribir
- * - Indicador de estado de sync
- * - PAT en claro (migración de PAT cifrado legacy)
- * - finishWorkout muestra alerta si GitHub falla
+ * Tests de UI y ajustes relacionados con sync (casos no canónicos):
+ * - Estado del indicador de sync (sin GitHub, tras sync ok, toast al clicar)
+ * - PAT guardado en claro (regresión de migración de PAT cifrado legacy)
+ * - "Probar conexión" no modifica la DB local
+ *
+ * Los invariantes de resiliencia viven en sync-canonicos.spec.js.
  */
 const { test, expect } = require('@playwright/test');
 const { injectTestDB, clearStorage, fillAllWorkoutReps } = require('./helpers.js');
@@ -24,7 +24,7 @@ function encodeDBToBase64(db) {
   return Buffer.from(JSON.stringify(db, null, 2), 'utf-8').toString('base64');
 }
 
-test.describe('Sync a prueba de bombas', () => {
+test.describe('Sync — UI y ajustes', () => {
   test.beforeEach(async ({ context }) => {
     await context.addInitScript(() => {
       if ('serviceWorker' in navigator) {
