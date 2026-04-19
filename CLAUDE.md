@@ -79,10 +79,13 @@ Si la funcionalidad es lógica pura → tests unitarios en `tests/unit/`. Si inv
 - No hacer cambios colaterales no pedidos (refactors, limpieza, renombrados) aunque parezcan mejoras.
 - Un fix rápido que no entiende la causa raíz es peor que tardar más en dar la solución correcta.
 
-## Seguridad
+## Versionado
 
-- **NUNCA** commitear `.env` (contiene API keys)
-- El PAT de GitHub se almacena cifrado con XOR en localStorage
+La app tiene una `APP_VERSION` en [app.js](app.js) (formato semver `major.minor.patch`). El bump se hace **a mano**, no por hooks.
+
+- **Cuándo bumpear**: al finalizar un plan (`.aiplans/*.md` marcado como completado), cuando el usuario lo pida explícitamente, o si no ha habido plan, cuando se vaya a hacer un commit.
+- **Procedimiento**: Claude DEBE preguntar al usuario si quiere incrementar la versión antes de hacerlo. Si acepta, editar `APP_VERSION` en `app.js` (normalmente `+1` en patch) e incluir el bump en el commit del cambio.
+- **No existen hooks de versionado** — si aparece un `.hooks/pre-push` que bumpea versión, eliminarlo: dejaba commits colgando en local y causaba divergencias con la sync del PWA.
 
 ## Commits
 
