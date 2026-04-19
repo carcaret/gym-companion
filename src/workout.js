@@ -170,3 +170,50 @@ export function detectRecords(log, prevHistory) {
     isE1RMRecord: currentE1RM > 0 && currentE1RM > prevMaxE1RM && hasActualReps
   };
 }
+
+// ── History helpers (find-by-date + delegate) ──
+
+export function filterHistory(history, filter) {
+  if (filter === 'TODOS') return [...history];
+  return history.filter(e => e.type === filter);
+}
+
+export function sortHistory(history) {
+  return [...history].sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function findEntryLog(history, date, logIdx) {
+  const entry = history.find(h => h.date === date);
+  if (!entry) return null;
+  const log = entry.logs[logIdx];
+  if (!log) return null;
+  return { entry, log };
+}
+
+export function adjustHistoryParam(history, date, logIdx, param, delta) {
+  const found = findEntryLog(history, date, logIdx);
+  if (!found) return null;
+  adjustParam(found.log, param, delta);
+  return found.entry;
+}
+
+export function setHistoryParam(history, date, logIdx, param, value) {
+  const found = findEntryLog(history, date, logIdx);
+  if (!found) return null;
+  setParam(found.log, param, value);
+  return found.entry;
+}
+
+export function adjustHistoryRep(history, date, logIdx, seriesIdx, delta) {
+  const found = findEntryLog(history, date, logIdx);
+  if (!found) return null;
+  adjustRep(found.log, seriesIdx, delta);
+  return found.entry;
+}
+
+export function setHistoryRep(history, date, logIdx, seriesIdx, value) {
+  const found = findEntryLog(history, date, logIdx);
+  if (!found) return null;
+  setRep(found.log, seriesIdx, value);
+  return found.entry;
+}

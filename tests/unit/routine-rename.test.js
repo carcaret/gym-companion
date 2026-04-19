@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { DAY_LABELS, ROUTINE_KEYS } from '../../src/constants.js';
-import { filterHistory, sortHistory } from '../../src/history.js';
+import { filterHistory, sortHistory } from '../../src/workout.js';
 
 describe('Renombrado de rutinas: sin referencias a días de la semana', () => {
 

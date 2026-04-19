@@ -361,11 +361,12 @@ github.js     ← opcional, si no se colapsa en app.js
 6. ~~`refactor: simplificar indicador de sync a ok/pendiente`~~ ✅ (commit 9a0ac9e)
 
 **Fase 3 (variable):**
-1. `refactor: colapsar log-mutations dentro de workout`
-2. `refactor: eliminar wrappers pasarela en app.js`
-3. `refactor: quitar async/await ceremonial en handlers`
-4. (opcional) `refactor: unificar rendering de cards`
-5. (opcional) `refactor: event delegation en cards de workout`
+1. ~~`refactor: colapsar log-mutations dentro de workout`~~ ✅ (commit f187c86)
+2. ~~`refactor: colapsar history.js en workout.js — find-by-date + delegate`~~ ✅ (en progreso)
+3. ~~`refactor: eliminar wrappers pasarela en app.js`~~ ✅ — wrappers de data.js son partial application válida, no pasarela pura; los `_` de workout.js ya eliminados en f187c86
+4. `refactor: quitar async/await ceremonial en handlers`
+5. (opcional) `refactor: unificar rendering de cards`
+6. (opcional) `refactor: event delegation en cards de workout`
 
 ---
 

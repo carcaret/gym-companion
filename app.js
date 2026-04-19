@@ -8,8 +8,7 @@ import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, P
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
-import { buildWorkoutEntry, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex } from './src/workout.js';
-import { filterHistory, sortHistory, adjustHistoryParam, setHistoryParam, adjustHistoryRep, setHistoryRep } from './src/history.js';
+import { buildWorkoutEntry, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, adjustHistoryParam, setHistoryParam, adjustHistoryRep, setHistoryRep } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
 

@@ -6,7 +6,7 @@ import {
   setHistoryParam,
   adjustHistoryRep,
   setHistoryRep
-} from '../../src/history.js';
+} from '../../src/workout.js';
 
 // ── Helpers ──
 
