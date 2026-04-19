@@ -1,6 +1,7 @@
 # Plan — Limpieza y deduplicación de código
 
 Fecha: 2026-04-19
+Estado: **COMPLETADO** 2026-04-19 — 8/8 tareas aplicadas, 8 commits, 350 tests unitarios verdes.
 
 ## Objetivo
 
@@ -25,7 +26,7 @@ Ordenadas por coste/beneficio. Cada una es independiente — se pueden aplicar p
 
 ---
 
-### 1. Borrar carpetas vacías en `src/`
+### ✅ 1. Borrar carpetas vacías en `src/`
 
 **Motivación:** restos de un refactor abandonado que confunden al leer el árbol.
 
@@ -61,7 +62,7 @@ Ordenadas por coste/beneficio. Cada una es independiente — se pueden aplicar p
 
 ---
 
-### 2. Actualizar `CLAUDE.md`
+### ✅ 2. Actualizar `CLAUDE.md`
 
 **Motivación:** contiene información desactualizada que confunde a quien lee (humano o asistente).
 
@@ -82,7 +83,7 @@ Ordenadas por coste/beneficio. Cada una es independiente — se pueden aplicar p
 
 ---
 
-### 3. Extraer `formatLogSummary(log)` en `src/formatting.js`
+### ✅ 3. Extraer `formatLogSummary(log)` en `src/formatting.js`
 
 **Motivación:** el mismo patrón de 3 líneas se repite en 4 sitios de [app.js](app.js) para generar el subtítulo `"60 kg · 3×10 · 10-10-8"`. Además, en uno de los sitios está metido como IIFE en un template string (ilegible).
 
@@ -132,7 +133,7 @@ export function formatLogSummary(log) {
 
 ---
 
-### 4. Unificar SVGs inline con el helper `icon()`
+### ✅ 4. Unificar SVGs inline con el helper `icon()`
 
 **Motivación:** [app.js](app.js) tiene `SVG_PATHS` + función `icon(name, size, extraClass)` para centralizar iconos, pero hay 4 SVGs inline (20-30 líneas de HTML cada uno) en historial que ignoran el helper.
 
@@ -166,7 +167,7 @@ Nota: el icono "check" ya existe en `SVG_PATHS`.
 
 ---
 
-### 5. Helper `setStatus(el, msg, type)` para los mensajes de Settings
+### ✅ 5. Helper `setStatus(el, msg, type)` para los mensajes de Settings
 
 **Motivación:** 6 bloques casi idénticos en [app.js:1215-1263](app.js#L1215-L1263) que hacen:
 
@@ -207,7 +208,7 @@ function setStatus(el, msg, type = null) {
 
 ---
 
-### 6. Fusionar `adjustLogParam` / `setLogParam` con sus wrappers exportados
+### ✅ 6. Fusionar `adjustLogParam` / `setLogParam` con sus wrappers exportados
 
 **Motivación:** en [src/workout.js:85-127](src/workout.js#L85-L127) hay 4 funciones cuando podrían ser 2. Los internos `adjustLogParam` y `setLogParam` sólo existen para que los externos añadan un `log.reps.actual = log.reps.actual.map(() => log.reps.expected)` cuando `param === 'repsExpected'`.
 
@@ -276,7 +277,7 @@ export function setParam(log, param, value) {
 
 ---
 
-### 7. Helper `safeSetLocal(key, value)` para `localStorage.setItem` con catch vacío
+### ✅ 7. Helper `safeSetLocal(key, value)` para `localStorage.setItem` con catch vacío
 
 **Motivación:** el patrón `try { localStorage.setItem(K, V); } catch (e) {}` aparece 5 veces en [app.js](app.js):
 - Línea 97 (conflict resolve)
@@ -306,7 +307,7 @@ function safeSetLocal(key, value) {
 
 ---
 
-### 8. Helper `fetchGithubDb(cfg, pat)` compartido
+### ✅ 8. Helper `fetchGithubDb(cfg, pat)` compartido
 
 **Motivación:** [app.js:157-166](app.js#L157-L166) y [app.js:1222-1235](app.js#L1222-L1235) hacen la misma llamada `fetch` con los mismos headers. El de "test-github-btn" fue escrito a mano sólo para NO tocar `githubSha` (comentario explícito en línea 1220).
 
