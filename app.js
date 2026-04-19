@@ -1373,3 +1373,5 @@ async function init() {
 }
 
 init();
+
+window.GymCompanion = { reorderExercises };
