@@ -39,6 +39,10 @@ const SVG_PATHS = {
 
 const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+function safeSetLocal(key, value) {
+  try { localStorage.setItem(key, value); } catch { /* quota/privacy — best effort */ }
+}
+
 function icon(name, size = 16, extraClass = '') {
   const sw = (name === 'check' || name === 'cross') ? '2.5' : '2';
   const cls = extraClass ? ` class="${extraClass}"` : '';
@@ -106,7 +110,7 @@ function showConflictModal() {
           DB = remote;
           ensureHistorySorted(DB);
           saveDBLocal();
-          try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'false'); } catch (e) { }
+          safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
           conflict = false;
           setSyncState('ok');
           renderHoy();
@@ -210,7 +214,7 @@ async function saveDBToGitHub(options = {}) {
 
     const data = await res.json();
     githubSha = data.content.sha;
-    try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'false'); } catch (e) { }
+    safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
     conflict = false;
     setSyncState('ok');
     return true;
@@ -223,13 +227,13 @@ async function saveDBToGitHub(options = {}) {
 
 function saveDBLocal() {
   if (DB) {
-    try { localStorage.setItem(DB_LOCAL_KEY, JSON.stringify(DB)); } catch (e) { }
+    safeSetLocal(DB_LOCAL_KEY, JSON.stringify(DB));
   }
 }
 
 function persistDB({ forceGitHub = false } = {}) {
   saveDBLocal();
-  try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'true'); } catch (e) { }
+  safeSetLocal(NEEDS_UPLOAD_KEY, 'true');
   if (_isWorkoutActive(DB, todayStr()) && !forceGitHub) return;
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async () => {
@@ -1254,7 +1258,7 @@ function setupSettings() {
             DB = remote;
             ensureHistorySorted(DB);
             saveDBLocal();
-            try { localStorage.setItem(NEEDS_UPLOAD_KEY, 'false'); } catch (e) { }
+            safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
             conflict = false;
             setSyncState('ok');
             renderHoy();
