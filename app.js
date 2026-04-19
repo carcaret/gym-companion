@@ -32,6 +32,9 @@ const SVG_PATHS = {
   save:      `<polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>`,
   trophy:    `<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>`,
   clipboard: `<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>`,
+  pause:     `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`,
+  trash:     `<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>`,
+  pencil:    `<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>`,
 };
 
 const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -831,10 +834,10 @@ function renderHistorial() {
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
     html += `<div class="card historial-entry-btn" data-date="${entry.date}">
     <span class="day-info">
-      <span class="day-name">${DAY_LABELS[entry.type] || entry.type}${completed ? '' : ' <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'} <span class="day-date">${formatDate(entry.date)}</span></span>
+      <span class="day-name">${DAY_LABELS[entry.type] || entry.type}${completed ? '' : ' ' + icon('pause', 14, 'icon-svg')} <span class="day-date">${formatDate(entry.date)}</span></span>
       <span class="day-exercises">${entry.logs.length} ejercicios · ${preview}</span>
     </span>
-    <button class="btn-icon historial-delete-btn" data-date="${entry.date}"><svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+    <button class="btn-icon historial-delete-btn" data-date="${entry.date}">${icon('trash', 16, 'icon-svg')}</button>
   </div>`;
   });
   html += '</div>';
@@ -877,7 +880,7 @@ function renderHistorialDetail(date) {
       <div class="exercise-row exercise-row--editing">
         <div class="exercise-row-controls">
           <div class="exercise-name">${name}</div>
-          <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}">${icon('check', 14, 'icon-svg')}</button>
         </div>
         ${buildParamRowsHtml('h', logIdx, log, date)}
         <div class="mt-sm"><p class="text-xs text-muted mb-sm">Reps por serie:</p>`;
@@ -890,7 +893,7 @@ function renderHistorialDetail(date) {
           <div class="card-title">${name}</div>
           <div class="card-subtitle">${formatLogSummary(log)}</div>
         </div>
-        <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+        <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}">${icon('pencil', 14, 'icon-svg')}</button>
       </div>
     </div>`;
     }
