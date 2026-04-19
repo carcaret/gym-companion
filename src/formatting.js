@@ -1,3 +1,11 @@
+export function formatLogSummary(log) {
+  const weightStr = log.weight > 0 ? `${log.weight} kg · ` : '';
+  const base = `${log.series}×${log.reps.expected}`;
+  const repsFmt = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected);
+  const repsPart = repsFmt ? ` · ${repsFmt}` : '';
+  return `${weightStr}${base}${repsPart}`;
+}
+
 export function formatRepsInteligente(actualArr, series, expected) {
   if (actualArr && actualArr.length > 0 && actualArr.some(r => r !== null)) {
     const vals = actualArr.filter(r => r !== null);

@@ -6,7 +6,7 @@ const APP_VERSION = '1.0.12';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate } from './src/dates.js';
-import { formatRepsInteligente, slugifyExerciseName } from './src/formatting.js';
+import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
 import { buildWorkoutEntry, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, adjustHistoryParam, setHistoryParam, adjustHistoryRep, setHistoryRep } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
@@ -402,14 +402,11 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   exerciseIds.forEach(id => {
     const last = getLastValuesForExercise(id, dayType);
     const name = getExerciseName(id);
-    const weightStr = last.weight > 0 ? `${last.weight} kg · ` : '';
-    const repsFmt = formatRepsInteligente(last.repsActual, last.series, last.repsExpected);
-    const repsPart = repsFmt ? ` · ${repsFmt}` : '';
     html += `<div class="card compact-card">
     <div class="card-header">
       <div>
         <div class="card-title">${name}</div>
-        <div class="card-subtitle">${weightStr}${last.series}×${last.repsExpected}${repsPart}</div>
+        <div class="card-subtitle">${formatLogSummary({ weight: last.weight, series: last.series, reps: { expected: last.repsExpected, actual: last.repsActual } })}</div>
       </div>
     </div>
   </div>`;
@@ -479,7 +476,7 @@ function renderActiveWorkout(container, entry) {
           ${isVolRecord ? `<span class="record-badge">${icon('trophy', 10)} Volumen</span>` : ''}
           ${isE1RMRecord ? `<span class="record-badge">${icon('trophy', 10)} e1RM</span>` : ''}
         </div>
-        <div class="card-subtitle" id="w-subtitle-${logIdx}">${log.weight > 0 ? log.weight + ' kg · ' : ''}${log.series}×${log.reps.expected}${(() => { const r = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected); return r ? ' · ' + r : ''; })()}</div>
+        <div class="card-subtitle" id="w-subtitle-${logIdx}">${formatLogSummary(log)}</div>
       </div>
       <span class="card-chevron" id="chevron-${logIdx}">▼</span>
     </div>
@@ -647,14 +644,11 @@ function renderCompletedToday(container, entry) {
 
   entry.logs.forEach(log => {
     const name = getExerciseName(log.exercise_id);
-    const weightStr = log.weight > 0 ? `${log.weight} kg · ` : '';
-    const repsFmt = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected);
-    const repsPart = repsFmt ? ` · ${repsFmt}` : '';
     html += `<div class="card compact-card historial-detail-card">
       <div class="card-header">
         <div>
           <div class="card-title">${name}</div>
-          <div class="card-subtitle">${weightStr}${log.series}×${log.reps.expected}${repsPart}</div>
+          <div class="card-subtitle">${formatLogSummary(log)}</div>
         </div>
       </div>
     </div>`;
@@ -890,14 +884,11 @@ function renderHistorialDetail(date) {
       html += buildAllSeriesRowsHtml('h', logIdx, log, date);
       html += `</div></div></div>`;
     } else {
-      const weightStr = log.weight > 0 ? `${log.weight} kg · ` : '';
-      const repsFmt = formatRepsInteligente(log.reps.actual, log.series, log.reps.expected);
-      const repsPart = repsFmt ? ` · ${repsFmt}` : '';
       html += `<div class="card compact-card historial-detail-card">
       <div class="card-header">
         <div>
           <div class="card-title">${name}</div>
-          <div class="card-subtitle">${weightStr}${log.series}×${log.reps.expected}${repsPart}</div>
+          <div class="card-subtitle">${formatLogSummary(log)}</div>
         </div>
         <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
       </div>
