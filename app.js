@@ -50,24 +50,26 @@ function icon(name, size = 16, extraClass = '') {
 }
 
 // ── Utility ──
-function toast(msg, type = null, duration = 2500) {
-  const t = document.getElementById('toast');
-  const toastIcons = { ok: 'check', error: 'cross', warn: 'warn', save: 'save' };
-  const iconName = toastIcons[type];
-  t.innerHTML = iconName
+const STATUS_ICONS = { ok: 'check', error: 'cross', warn: 'warn', save: 'save' };
+
+function buildStatusHtml(msg, type) {
+  const iconName = STATUS_ICONS[type];
+  return iconName
     ? `<span class="toast-icon toast-${type}">${icon(iconName, 14)}</span>${escHtml(msg)}`
     : escHtml(msg);
+}
+
+function toast(msg, type = null, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.innerHTML = buildStatusHtml(msg, type);
   clearTimeout(t._timer);
   t.classList.add('visible');
   t._timer = setTimeout(() => t.classList.remove('visible'), duration);
 }
 
 function setStatus(el, msg, type = null) {
-  const iconName = { ok: 'check', error: 'cross', warn: 'warn' }[type];
   el.hidden = false;
-  el.innerHTML = iconName
-    ? `<span class="toast-icon toast-${type}">${icon(iconName, 14)}</span>${escHtml(msg)}`
-    : escHtml(msg);
+  el.innerHTML = buildStatusHtml(msg, type);
   el.className = 'status-msg' + (type === 'ok' ? ' success' : (type === 'error' || type === 'warn') ? ' error' : '');
 }
 
