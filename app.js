@@ -107,13 +107,7 @@ function showConflictModal() {
           if (!remote || !remote.exercises || !remote.history) {
             toast('No se pudo descargar desde GitHub', 'error'); return false;
           }
-          DB = remote;
-          ensureHistorySorted(DB);
-          saveDBLocal();
-          safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
-          conflict = false;
-          setSyncState('ok');
-          renderHoy();
+          applyRemoteDB(remote);
           toast('Datos de GitHub aplicados localmente', 'ok');
         }
       }
@@ -238,6 +232,18 @@ function saveDBLocal() {
   }
 }
 
+// Reemplaza DB con los datos remotos y deja el estado consistente
+// (sorted, persistido, sin pendientes, sin conflicto, indicador ok, UI refrescada).
+function applyRemoteDB(remote) {
+  DB = remote;
+  ensureHistorySorted(DB);
+  saveDBLocal();
+  safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
+  conflict = false;
+  setSyncState('ok');
+  renderHoy();
+}
+
 function persistDB({ forceGitHub = false } = {}) {
   saveDBLocal();
   safeSetLocal(NEEDS_UPLOAD_KEY, 'true');
@@ -277,11 +283,7 @@ async function pullFromGitHubIfClean() {
   const remoteJson = JSON.stringify(parsed.db);
   if (localJson === remoteJson) return;
 
-  DB = parsed.db;
-  ensureHistorySorted(DB);
-  saveDBLocal();
-  safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
-  renderHoy();
+  applyRemoteDB(parsed.db);
   toast('Datos actualizados desde GitHub', 'ok');
 }
 
@@ -1282,13 +1284,7 @@ function setupSettings() {
               setStatus(statusEl, 'No se pudo descargar o formato inválido', 'error');
               return false;
             }
-            DB = remote;
-            ensureHistorySorted(DB);
-            saveDBLocal();
-            safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
-            conflict = false;
-            setSyncState('ok');
-            renderHoy();
+            applyRemoteDB(remote);
             setStatus(statusEl, 'Datos sincronizados desde GitHub', 'ok');
           }
         }
