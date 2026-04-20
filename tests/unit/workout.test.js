@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import {
   buildWorkoutEntry,
+  buildLog,
   finishWorkoutEntry,
   adjustParam,
   setParam,
@@ -173,6 +174,62 @@ describe('buildWorkoutEntry', () => {
     entry.logs.forEach(log => {
       expect(log.reps.actual.every(v => typeof v === 'number')).toBe(true);
     });
+  });
+});
+
+// ════════════════════════════════════════════════
+// FASE A.1b — buildLog (helper compartido)
+// ════════════════════════════════════════════════
+
+describe('buildLog', () => {
+  test('devuelve log con shape correcto a partir de last', () => {
+    const last = { series: 3, repsExpected: 10, weight: 50, repsActual: [10, 9, 8] };
+    const log = buildLog('press_banca', 'Press Banca', last);
+    expect(log).toEqual({
+      exercise_id: 'press_banca',
+      name: 'Press Banca',
+      series: 3,
+      reps: { expected: 10, actual: [10, 9, 8] },
+      weight: 50
+    });
+  });
+
+  test('sin historial (repsActual vacío) prerellena actual con repsExpected', () => {
+    const last = { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
+    const log = buildLog('press_banca', 'Press Banca', last);
+    expect(log.reps.actual).toEqual([10, 10, 10]);
+    expect(log.reps.actual.every(v => v !== null)).toBe(true);
+  });
+
+  test('prevActual más corto que series rellena la cola con repsExpected', () => {
+    const last = { series: 4, repsExpected: 8, weight: 60, repsActual: [8, 7] };
+    const log = buildLog('press_banca', 'Press Banca', last);
+    expect(log.reps.actual).toEqual([8, 7, 8, 8]);
+  });
+
+  test('prevActual más largo que series trunca', () => {
+    const last = { series: 2, repsExpected: 10, weight: 60, repsActual: [10, 9, 8] };
+    const log = buildLog('press_banca', 'Press Banca', last);
+    expect(log.reps.actual).toEqual([10, 9]);
+  });
+
+  test('prevActual con nulls intercalados los reemplaza por repsExpected', () => {
+    const last = { series: 3, repsExpected: 10, weight: 60, repsActual: [10, null, 8] };
+    const log = buildLog('press_banca', 'Press Banca', last);
+    expect(log.reps.actual).toEqual([10, 10, 8]);
+  });
+
+  test('repsActual undefined se trata como []', () => {
+    const last = { series: 2, repsExpected: 12, weight: 15 };
+    const log = buildLog('curl', 'Curl', last);
+    expect(log.reps.actual).toEqual([12, 12]);
+  });
+
+  test('log producido pasa validación', () => {
+    const last = { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
+    const log = buildLog('press_banca', 'Press Banca', last);
+    const errors = validateLog(log);
+    expect(errors).toEqual([]);
   });
 });
 

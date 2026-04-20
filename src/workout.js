@@ -42,6 +42,25 @@ export function validateEntry(entry) {
 }
 
 /**
+ * Construye un log de ejercicio a partir de los últimos valores conocidos.
+ * `actual` se prerellena con `last.repsActual` (los nulls intercalados se reemplazan
+ * por `last.repsExpected`), y si `last.series` > prev, el resto también cae a expected.
+ */
+export function buildLog(id, name, last) {
+  const prevActual = last.repsActual || [];
+  const actual = Array.from({ length: last.series }, (_, i) =>
+    i < prevActual.length && prevActual[i] !== null ? prevActual[i] : last.repsExpected
+  );
+  return {
+    exercise_id: id,
+    name,
+    series: last.series,
+    reps: { expected: last.repsExpected, actual },
+    weight: last.weight
+  };
+}
+
+/**
  * Build a new workout entry from routine exercise IDs.
  * @param {string} date - YYYY-MM-DD
  * @param {string} dayType - DIA1|DIA2|DIA3
@@ -50,21 +69,7 @@ export function validateEntry(entry) {
  * @param {function} getExerciseName - (exerciseId) => string
  */
 export function buildWorkoutEntry(date, dayType, routineIds, getLastValues, getExerciseName) {
-  const logs = routineIds.map(id => {
-    const last = getLastValues(id, dayType);
-    const prevActual = last.repsActual || [];
-    const actual = Array.from({ length: last.series }, (_, i) =>
-      i < prevActual.length && prevActual[i] !== null ? prevActual[i] : last.repsExpected
-    );
-    return {
-      exercise_id: id,
-      name: getExerciseName(id),
-      series: last.series,
-      reps: { expected: last.repsExpected, actual },
-      weight: last.weight
-    };
-  });
-
+  const logs = routineIds.map(id => buildLog(id, getExerciseName(id), getLastValues(id, dayType)));
   return {
     date,
     type: dayType,

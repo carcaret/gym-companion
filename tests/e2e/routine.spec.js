@@ -145,4 +145,55 @@ test.describe('Gestion de rutina', () => {
       expect(newCards).toBe(initialCards + 1);
     }
   });
+
+  test('crear ejercicio nuevo a mitad de entreno aparece como card y en logs', async ({ page }) => {
+    await goToRoutine(page);
+    await page.locator('#start-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
+
+    const initialCards = await page.locator('.card').count();
+
+    await page.locator('#add-exercise-mid-btn').click();
+    await page.locator('#create-exercise-btn').click();
+    await page.fill('#new-exercise-name', 'Ejercicio Mid Entreno');
+    await page.locator('#modal-actions .btn-primary').click();
+
+    // Nueva card visible en el entreno
+    const newCards = await page.locator('.card').count();
+    expect(newCards).toBe(initialCards + 1);
+
+    // Y el log está persistido en el entry activo de hoy
+    const result = await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('gym_companion_db'));
+      const today = new Date().toISOString().split('T')[0];
+      const entry = db.history.find(h => h.date === today);
+      const last = entry?.logs[entry.logs.length - 1];
+      return {
+        inRoutine: db.routines.DIA1.includes('ejercicio_mid_entreno'),
+        inExercises: !!db.exercises['ejercicio_mid_entreno'],
+        lastLogId: last?.exercise_id,
+        lastActualAllNumbers: last ? last.reps.actual.every(v => typeof v === 'number') : false
+      };
+    });
+    expect(result.inRoutine).toBe(true);
+    expect(result.inExercises).toBe(true);
+    expect(result.lastLogId).toBe('ejercicio_mid_entreno');
+    expect(result.lastActualAllNumbers).toBe(true);
+  });
+
+  test('crear ejercicio nuevo a mitad de entreno NO desaparece de la lista al re-abrir', async ({ page }) => {
+    // Regresión: antes se creaba en rutina pero no en logs, y al re-abrir el modal
+    // "añadir" la lista lo filtraba (ya está en routineIds) → el usuario lo buscaba y no estaba.
+    await goToRoutine(page);
+    await page.locator('#start-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
+
+    await page.locator('#add-exercise-mid-btn').click();
+    await page.locator('#create-exercise-btn').click();
+    await page.fill('#new-exercise-name', 'Hammer Curl Unicornio');
+    await page.locator('#modal-actions .btn-primary').click();
+
+    // Reaparece como card en el entreno, no hay que buscarlo en la lista
+    await expect(page.locator('.card-title', { hasText: 'Hammer Curl Unicornio' })).toBeVisible();
+  });
 });

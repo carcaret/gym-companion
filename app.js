@@ -2,13 +2,13 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.16';
+const APP_VERSION = '1.0.17';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
-import { buildWorkoutEntry, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, findLog } from './src/workout.js';
+import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, findLog } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
 
@@ -750,6 +750,20 @@ function renderCompletedToday(container, entry) {
 }
 
 // ── Exercise Management ──
+
+// Añade un ejercicio a la rutina y, si hay entreno activo de ese dayType,
+// también al entry de hoy con el mismo shape que buildWorkoutEntry (actual prerellenado).
+function addExerciseToRoutineAndActiveWorkout(id, dayType) {
+  if (!DB.routines[dayType]) DB.routines[dayType] = [];
+  DB.routines[dayType].push(id);
+
+  const todayEntry = getTodayEntry();
+  if (todayEntry && !todayEntry.completed && todayEntry.type === dayType) {
+    const last = getLastValuesForExercise(id, dayType);
+    todayEntry.logs.push(buildLog(id, getExerciseName(id), last));
+  }
+}
+
 function showAddExerciseModal(dayType) {
   const currentIds = DB.routines[dayType] || [];
   const allExercises = Object.values(DB.exercises).sort((a, b) => a.name.localeCompare(b.name, 'es'));
@@ -782,21 +796,7 @@ function showAddExerciseModal(dayType) {
     document.querySelectorAll('#exercise-modal-list .exercise-list-item').forEach(el => {
       el.onclick = () => {
         const id = el.dataset.id;
-        if (!DB.routines[dayType]) DB.routines[dayType] = [];
-        DB.routines[dayType].push(id);
-
-        const todayEntry = getTodayEntry();
-        if (todayEntry && !todayEntry.completed && todayEntry.type === dayType) {
-          const last = getLastValuesForExercise(id, dayType);
-          todayEntry.logs.push({
-            exercise_id: id,
-            name: getExerciseName(id),
-            series: last.series,
-            reps: { expected: last.repsExpected, actual: new Array(last.series).fill(null) },
-            weight: last.weight
-          });
-        }
-
+        addExerciseToRoutineAndActiveWorkout(id, dayType);
         persistDB();
         hideModal();
         renderHoy();
@@ -829,8 +829,7 @@ function showCreateExerciseModal(dayType) {
         const id = slugifyExerciseName(name);
         if (DB.exercises[id]) { toast('Ya existe ese ejercicio', 'warn'); return false; }
         DB.exercises[id] = { id, name };
-        if (!DB.routines[dayType]) DB.routines[dayType] = [];
-        DB.routines[dayType].push(id);
+        addExerciseToRoutineAndActiveWorkout(id, dayType);
         persistDB();
         renderHoy();
         toast(`${name} creado y añadido`, 'ok');
