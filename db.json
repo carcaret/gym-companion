@@ -223,6 +223,10 @@
     "reverse_delt_con_mancuernas": {
       "id": "reverse_delt_con_mancuernas",
       "name": "Reverse Delt con Mancuernas"
+    },
+    "hammer_curl_mancuernas": {
+      "id": "hammer_curl_mancuernas",
+      "name": "Hammer curl mancuernas"
     }
   },
   "routines": {
@@ -230,8 +234,9 @@
       "prensa_de_piernas",
       "press_banca_mancuernas",
       "hammer_row_prono",
-      "landmine_press",
-      "curl_femoral_sentado"
+      "curl_femoral_sentado",
+      "elevaciones_laterales_con_mancuernas",
+      "hammer_curl_mancuernas"
     ],
     "DIA2": [
       "abductores",
@@ -19125,6 +19130,86 @@
             ]
           },
           "weight": 100
+        }
+      ]
+    },
+    {
+      "date": "2026-04-20",
+      "type": "DIA1",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "prensa_de_piernas",
+          "name": "Prensa de Piernas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 200
+        },
+        {
+          "exercise_id": "press_banca_mancuernas",
+          "name": "Press de Banca con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              9,
+              8
+            ]
+          },
+          "weight": 28
+        },
+        {
+          "exercise_id": "hammer_row_prono",
+          "name": "Hammer Row Prono",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              12,
+              11,
+              11,
+              11
+            ]
+          },
+          "weight": 25
+        },
+        {
+          "exercise_id": "curl_femoral_sentado",
+          "name": "Curl Femoral Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11
+            ]
+          },
+          "weight": 90
+        },
+        {
+          "exercise_id": "elevaciones_laterales_con_mancuernas",
+          "name": "Elevaciones Laterales con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 10
         }
       ]
     }
