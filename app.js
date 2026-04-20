@@ -2,12 +2,12 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.17';
+const APP_VERSION = '1.0.18';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
+import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, findLog } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
@@ -410,6 +410,7 @@ function applyValidationErrors(logIdx, log, prefix = 'w') {
 const getExerciseName = (id) => _getExerciseName(DB, id);
 const getTodayEntry = () => _getTodayEntry(DB, todayStr());
 const getLastValuesForExercise = (exerciseId, dayType) => _getLastValuesForExercise(DB, exerciseId, dayType);
+const getBestRecentValuesForExercise = (exerciseId, dayType) => _getBestRecentValuesForExercise(DB, exerciseId, dayType, todayStr());
 
 // ── View: Rutinas ──
 function renderHoy() {
@@ -461,7 +462,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   let html = '';
 
   exerciseIds.forEach(id => {
-    const last = getLastValuesForExercise(id, dayType);
+    const last = getBestRecentValuesForExercise(id, dayType);
     const name = getExerciseName(id);
     html += `<div class="card compact-card">
     <div class="card-header">
@@ -502,7 +503,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
 
 function startWorkout(dayType) {
   const routineIds = DB.routines[dayType] || [];
-  const entry = buildWorkoutEntry(todayStr(), dayType, routineIds, getLastValuesForExercise, getExerciseName);
+  const entry = buildWorkoutEntry(todayStr(), dayType, routineIds, getBestRecentValuesForExercise, getExerciseName);
 
   DB.history = DB.history.filter(h => h.date !== todayStr());
   DB.history.push(entry);

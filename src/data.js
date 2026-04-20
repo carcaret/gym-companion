@@ -1,4 +1,4 @@
-import { getMaxMetrics } from './metrics.js';
+import { getMaxMetrics, computeVolume } from './metrics.js';
 
 export function ensureHistorySorted(db) {
   if (db && db.history) {
@@ -38,6 +38,35 @@ export function getLastValuesForExercise(db, exerciseId, dayType) {
     if (log) return { series: log.series, repsExpected: log.reps.expected, weight: log.weight, repsActual: log.reps.actual || [] };
   }
   return { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
+}
+
+export function getBestRecentValuesForExercise(db, exerciseId, dayType, today) {
+  const recentSameDay = db.history
+    .filter(h => h.type === dayType && h.date !== today)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 4);
+
+  let bestLog = null;
+  let bestVolume = -1;
+  for (const entry of recentSameDay) {
+    const log = entry.logs.find(l => l.exercise_id === exerciseId);
+    if (!log) continue;
+    const volume = computeVolume(log);
+    if (volume > bestVolume) {
+      bestVolume = volume;
+      bestLog = log;
+    }
+  }
+
+  if (bestLog) {
+    return {
+      series: bestLog.series,
+      repsExpected: bestLog.reps.expected,
+      weight: bestLog.weight,
+      repsActual: bestLog.reps.actual || []
+    };
+  }
+  return getLastValuesForExercise(db, exerciseId, dayType);
 }
 
 export function getHistoricalRecords(db, exerciseId) {
