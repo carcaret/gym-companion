@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, getHistoricalRecords, ensureHistorySorted, getRecentSessionsForExercise } from '../../src/data.js';
+import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, getHistoricalRecords, ensureHistorySorted, getRecentSessionsForExercise, getWeeklyBucketsForExercise } from '../../src/data.js';
 
 const DB_FIXTURE = {
   exercises: {
@@ -648,5 +648,172 @@ describe('getRecentSessionsForExercise', () => {
     expect(result[0]).toHaveProperty('date');
     expect(result[0]).toHaveProperty('log');
     expect(result[0].log).toHaveProperty('weight');
+  });
+});
+
+describe('getWeeklyBucketsForExercise', () => {
+  // Semanas (Lun-Dom) alrededor del ancla 2026-04-24 (viernes):
+  //   W0 (actual):     2026-04-20 .. 2026-04-26
+  //   W-1 (pasada):    2026-04-13 .. 2026-04-19
+  //   W-2:             2026-04-06 .. 2026-04-12
+  //   W-3:             2026-03-30 .. 2026-04-05
+  const ANCHOR = '2026-04-24';
+
+  const mkLog = (weight, series, actual, expected = 10) =>
+    ({ exercise_id: 'press_banca', series, reps: { expected, actual }, weight });
+
+  test('devuelve 4 buckets por defecto, ordenados de más antiguo a actual', () => {
+    const db = { history: [] };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
+    expect(buckets).toHaveLength(4);
+    expect(buckets[0].weekStart).toBe('2026-03-30');
+    expect(buckets[0].weekEnd).toBe('2026-04-05');
+    expect(buckets[3].weekStart).toBe('2026-04-20');
+    expect(buckets[3].weekEnd).toBe('2026-04-26');
+    expect(buckets.every(b => b.session === null)).toBe(true);
+  });
+
+  test('respeta el parámetro weeks', () => {
+    const db = { history: [] };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR, 2);
+    expect(buckets).toHaveLength(2);
+    expect(buckets[0].weekStart).toBe('2026-04-13');
+    expect(buckets[1].weekStart).toBe('2026-04-20');
+  });
+
+  test('asigna sesión a su bucket semanal correcto', () => {
+    const db = {
+      history: [
+        { date: '2026-04-22', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] }, // W0
+        { date: '2026-04-15', type: 'DIA1', completed: true, logs: [mkLog(55, 3, [10,10,10])] }, // W-1
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
+    expect(buckets[2].session?.date).toBe('2026-04-15');
+    expect(buckets[3].session?.date).toBe('2026-04-22');
+    expect(buckets[0].session).toBeNull();
+    expect(buckets[1].session).toBeNull();
+  });
+
+  test('sesiones fuera de la ventana se ignoran', () => {
+    const db = {
+      history: [
+        { date: '2025-10-01', type: 'DIA1', completed: true, logs: [mkLog(80, 3, [10,10,10])] },
+        { date: '2026-04-22', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] },
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
+    const sessionsFound = buckets.filter(b => b.session);
+    expect(sessionsFound).toHaveLength(1);
+    expect(sessionsFound[0].session.date).toBe('2026-04-22');
+  });
+
+  test('semanas sin sesión quedan null (hueco visual)', () => {
+    // Entreno hace 2 semanas y esta semana, pero nada en W-1 ni W-2... espera,
+    // el spec del usuario: nada hace 4 y 3 semanas, y sí la pasada y esta.
+    // Con 4 buckets (W-3..W0): queremos W-3=null, W-2=null, W-1=sesión, W0=sesión.
+    const db = {
+      history: [
+        { date: '2026-04-22', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] }, // W0
+        { date: '2026-04-15', type: 'DIA1', completed: true, logs: [mkLog(55, 3, [10,10,10])] }, // W-1
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
+    expect(buckets[0].session).toBeNull();
+    expect(buckets[1].session).toBeNull();
+    expect(buckets[2].session).not.toBeNull();
+    expect(buckets[3].session).not.toBeNull();
+  });
+
+  test('entries no completadas se ignoran', () => {
+    const db = {
+      history: [
+        { date: '2026-04-22', type: 'DIA1', completed: false, logs: [mkLog(60, 3, [null,null,null])] },
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
+    expect(buckets[3].session).toBeNull();
+  });
+
+  test('excludeDate omite esa fecha aunque caiga en ventana', () => {
+    const db = {
+      history: [
+        { date: '2026-04-22', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] },
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR, 4, '2026-04-22');
+    expect(buckets[3].session).toBeNull();
+  });
+
+  test('varias sesiones en la misma semana: gana la de mayor volumen', () => {
+    const db = {
+      history: [
+        { date: '2026-04-20', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] }, // vol 1800
+        { date: '2026-04-23', type: 'DIA1', completed: true, logs: [mkLog(60, 4, [10,10,10,10])] }, // vol 2400 — gana
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
+    expect(buckets[3].session.date).toBe('2026-04-23');
+  });
+
+  test('empate de volumen en la misma semana: gana la más reciente', () => {
+    const db = {
+      history: [
+        { date: '2026-04-20', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] },
+        { date: '2026-04-23', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] },
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
+    expect(buckets[3].session.date).toBe('2026-04-23');
+  });
+
+  test('ejercicio sin historial: todos null', () => {
+    const db = {
+      history: [
+        { date: '2026-04-22', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] },
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'otro_ejercicio', ANCHOR);
+    expect(buckets.every(b => b.session === null)).toBe(true);
+  });
+
+  test('db null devuelve buckets vacíos bien formados', () => {
+    const buckets = getWeeklyBucketsForExercise(null, 'press_banca', ANCHOR);
+    expect(buckets).toHaveLength(4);
+    expect(buckets.every(b => b.session === null)).toBe(true);
+    expect(buckets[3].weekStart).toBe('2026-04-20');
+  });
+
+  test('no muta db.history', () => {
+    const db = {
+      history: [
+        { date: '2026-04-15', type: 'DIA1', completed: true, logs: [mkLog(55, 3, [10,10,10])] },
+        { date: '2026-04-22', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] },
+      ],
+    };
+    const originalOrder = db.history.map(h => h.date);
+    getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
+    expect(db.history.map(h => h.date)).toEqual(originalOrder);
+  });
+
+  test('ancla en lunes funciona igual (W0 empieza ese día)', () => {
+    const db = {
+      history: [
+        { date: '2026-04-20', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] },
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', '2026-04-20');
+    expect(buckets[3].weekStart).toBe('2026-04-20');
+    expect(buckets[3].session.date).toBe('2026-04-20');
+  });
+
+  test('sesión el domingo cuenta en su semana (no se desliza a la siguiente)', () => {
+    const db = {
+      history: [
+        { date: '2026-04-26', type: 'DIA1', completed: true, logs: [mkLog(60, 3, [10,10,10])] },
+      ],
+    };
+    const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
+    expect(buckets[3].session.date).toBe('2026-04-26');
   });
 });

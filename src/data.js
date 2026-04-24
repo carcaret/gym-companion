@@ -1,4 +1,5 @@
 import { getMaxMetrics, computeVolume } from './metrics.js';
+import { getWeekStartStr, addDaysStr } from './dates.js';
 
 export function ensureHistorySorted(db) {
   if (db && db.history) {
@@ -74,6 +75,39 @@ export function getBestRecentValuesForExercise(db, exerciseId, dayType, today) {
 
 export function getHistoricalRecords(db, exerciseId) {
   return getMaxMetrics(db.history, exerciseId);
+}
+
+export function getWeeklyBucketsForExercise(db, exerciseId, anchorDate, weeks = 4, excludeDate = null) {
+  const anchorWeekStart = getWeekStartStr(anchorDate);
+  const buckets = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const weekStart = addDaysStr(anchorWeekStart, -7 * i);
+    const weekEnd = addDaysStr(weekStart, 6);
+    buckets.push({ weekStart, weekEnd, session: null });
+  }
+
+  if (!db?.history) return buckets;
+
+  for (const entry of db.history) {
+    if (!entry.completed) continue;
+    if (excludeDate && entry.date === excludeDate) continue;
+    const log = entry.logs.find(l => l.exercise_id === exerciseId);
+    if (!log) continue;
+    const bucket = buckets.find(b => entry.date >= b.weekStart && entry.date <= b.weekEnd);
+    if (!bucket) continue;
+
+    if (!bucket.session) {
+      bucket.session = { date: entry.date, log };
+      continue;
+    }
+    const vol = computeVolume(log);
+    const currentVol = computeVolume(bucket.session.log);
+    if (vol > currentVol || (vol === currentVol && entry.date > bucket.session.date)) {
+      bucket.session = { date: entry.date, log };
+    }
+  }
+
+  return buckets;
 }
 
 export function getRecentSessionsForExercise(db, exerciseId, limit = 4, excludeDate = null) {

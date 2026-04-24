@@ -2,12 +2,12 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.18';
+const APP_VERSION = '1.0.19';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getRecentSessionsForExercise as _getRecentSessionsForExercise } from './src/data.js';
+import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getWeeklyBucketsForExercise as _getWeeklyBucketsForExercise } from './src/data.js';
 import { computeVolume } from './src/metrics.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, findLog } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
@@ -116,6 +116,16 @@ function showConflictModal() {
       }
     ]
   );
+}
+
+function setupBarTooltips() {
+  document.addEventListener('click', (e) => {
+    const wrap = e.target.closest('.bar-wrap[data-tooltip]');
+    document.querySelectorAll('.bar-wrap.tooltip-active').forEach(el => {
+      if (el !== wrap) el.classList.remove('tooltip-active');
+    });
+    if (wrap) wrap.classList.toggle('tooltip-active');
+  });
 }
 
 function setupSyncIndicator() {
@@ -336,43 +346,77 @@ function showApp() {
 
 // ── Shared HTML Builders ──
 
-function buildHistoryStripHtml(exerciseId, currentLog, excludeDate = null) {
-  const past = getRecentSessionsForExercise(exerciseId, excludeDate);
+function formatActualReps(log) {
+  const actual = log.reps && log.reps.actual;
+  if (!actual || actual.length === 0) return '';
+  const hasAny = actual.some(r => r !== null && r !== undefined);
+  if (!hasAny) return '';
+  return actual.map(r => (r !== null && r !== undefined) ? r : '-').join('-');
+}
+
+function buildBarTooltip(log) {
+  const repsStr = formatActualReps(log);
+  const weightPart = log.weight > 0 ? `${log.weight}kg` : '';
+  if (weightPart && repsStr) return `${weightPart} · ${repsStr}`;
+  return weightPart || repsStr || '';
+}
+
+function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
+  const buckets = getWeeklyBucketsForExercise(exerciseId, anchorDate);
   const currentVol = computeVolume(currentLog);
   const hasCurrent = currentVol > 0;
 
-  const maxPast = hasCurrent ? 3 : 4;
-  const pastToShow = past.slice(-maxPast);
+  if (hasCurrent) {
+    const lastBucket = buckets[buckets.length - 1];
+    lastBucket.session = { date: anchorDate, log: currentLog, isCurrent: true };
+  }
 
-  const sessions = pastToShow.map(s => ({ date: s.date, vol: computeVolume(s.log), isCurrent: false }));
-  if (hasCurrent) sessions.push({ date: 'Hoy', vol: currentVol, isCurrent: true });
+  const sessionsCount = buckets.filter(b => b.session).length;
+  if (sessionsCount === 0) return '';
 
-  if (sessions.length < 2) return '';
-
-  const maxVol = Math.max(...sessions.map(s => s.vol));
+  const maxVol = Math.max(...buckets.filter(b => b.session).map(b => computeVolume(b.session.log)));
 
   let deltaHtml = '';
-  if (hasCurrent && pastToShow.length > 0) {
-    const lastPastVol = computeVolume(pastToShow[pastToShow.length - 1].log);
-    if (lastPastVol > 0) {
-      const pct = Math.round(((currentVol - lastPastVol) / lastPastVol) * 100);
-      const cls = pct >= 0 ? 'vol-delta' : 'vol-delta down';
-      const arrow = pct >= 0 ? '↑' : '↓';
-      const sign = pct >= 0 ? '+' : '';
-      deltaHtml = `<span class="${cls}">${arrow} ${sign}${pct}% vs última</span>`;
+  if (hasCurrent) {
+    const prevBucket = [...buckets].slice(0, -1).reverse().find(b => b.session);
+    if (prevBucket) {
+      const prevVol = computeVolume(prevBucket.session.log);
+      if (prevVol > 0) {
+        const pct = Math.round(((currentVol - prevVol) / prevVol) * 100);
+        const cls = pct >= 0 ? 'vol-delta' : 'vol-delta down';
+        const arrow = pct >= 0 ? '↑' : '↓';
+        const sign = pct >= 0 ? '+' : '';
+        deltaHtml = `<span class="${cls}">${arrow} ${sign}${pct}% vs última</span>`;
+      }
     }
   }
 
-  const barsHtml = sessions.map((s, i) => {
-    const height = maxVol > 0 ? Math.max(3, Math.round((s.vol / maxVol) * 100)) : 3;
-    let barClass = 'current';
-    if (!s.isCurrent) {
-      const fromRight = sessions.length - 1 - i - (hasCurrent ? 1 : 0);
-      barClass = `prev${fromRight + 1}`;
+  const barsHtml = buckets.map((bucket, i) => {
+    const weeksBack = buckets.length - 1 - i;
+    const hasSession = bucket.session !== null;
+    const isCurrent = hasSession && bucket.session.isCurrent;
+
+    const vol = hasSession ? computeVolume(bucket.session.log) : 0;
+    const height = hasSession && maxVol > 0 ? Math.max(6, Math.round((vol / maxVol) * 100)) : 0;
+
+    let barClass;
+    if (!hasSession) barClass = 'empty';
+    else if (isCurrent) barClass = 'current';
+    else barClass = `prev${weeksBack}`;
+
+    const label = isCurrent
+      ? 'Hoy'
+      : (hasSession ? formatDateShort(bucket.session.date) : formatDateShort(bucket.weekStart));
+
+    let tooltipAttr = '';
+    if (hasSession) {
+      const tooltip = buildBarTooltip(bucket.session.log);
+      if (tooltip) tooltipAttr = ` data-tooltip="${tooltip}" tabindex="0" aria-label="${tooltip}"`;
     }
-    const label = s.isCurrent ? 'Hoy' : formatDateShort(s.date);
-    return `<div class="history-bar-col">
-      <div class="bar-wrap"><div class="bar ${barClass}" style="height:${height}%"></div></div>
+
+    const colClass = hasSession ? 'history-bar-col' : 'history-bar-col empty';
+    return `<div class="${colClass}">
+      <div class="bar-wrap"${tooltipAttr}><div class="bar ${barClass}" style="height:${height}%"></div></div>
       <div class="bar-date">${label}</div>
     </div>`;
   }).join('');
@@ -477,7 +521,7 @@ const getExerciseName = (id) => _getExerciseName(DB, id);
 const getTodayEntry = () => _getTodayEntry(DB, todayStr());
 const getLastValuesForExercise = (exerciseId, dayType) => _getLastValuesForExercise(DB, exerciseId, dayType);
 const getBestRecentValuesForExercise = (exerciseId, dayType) => _getBestRecentValuesForExercise(DB, exerciseId, dayType, todayStr());
-const getRecentSessionsForExercise = (exerciseId, excludeDate) => _getRecentSessionsForExercise(DB, exerciseId, 4, excludeDate);
+const getWeeklyBucketsForExercise = (exerciseId, anchorDate) => _getWeeklyBucketsForExercise(DB, exerciseId, anchorDate, 4, anchorDate);
 
 // ── View: Rutinas ──
 function renderHoy() {
@@ -1441,6 +1485,7 @@ async function init() {
   setupFilters();
   setupSettings();
   setupSyncIndicator();
+  setupBarTooltips();
 
   // Cargar DB: local es fuente de verdad; sin local → GitHub → default
   let { data, needsUpload } = await loadDB();
