@@ -72,3 +72,18 @@ export function getBestRecentValuesForExercise(db, exerciseId, dayType, today) {
 export function getHistoricalRecords(db, exerciseId) {
   return getMaxMetrics(db.history, exerciseId);
 }
+
+export function getRecentSessionsForExercise(db, exerciseId, limit = 4, excludeDate = null) {
+  if (!db?.history) return [];
+  const result = [];
+  // history is sorted ascending (oldest first), iterate from the end to get most recent
+  for (let i = db.history.length - 1; i >= 0; i--) {
+    const entry = db.history[i];
+    if (excludeDate && entry.date === excludeDate) continue;
+    if (!entry.completed) continue;
+    const log = entry.logs.find(l => l.exercise_id === exerciseId);
+    if (log) result.push({ date: entry.date, log });
+    if (result.length >= limit) break;
+  }
+  return result.reverse();
+}

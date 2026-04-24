@@ -69,7 +69,7 @@ test.describe('Deteccion de PRs', () => {
     await page.locator('.card-header').first().click();
 
     // First clear all rep inputs so no reps are completed
-    const seriesCount = await page.locator('#w-seriesrows-0 .series-row').count();
+    const seriesCount = await page.locator('#w-seriesrows-0 .series-cell').count();
     for (let i = 0; i < seriesCount; i++) {
       const repInput = page.locator(`#w-rep-0-${i}`);
       await repInput.fill('');

@@ -51,12 +51,12 @@ test.describe('Workout flow completo', () => {
     await selectRoutineAndStart(page);
     await page.locator('.card-header').first().click();
 
-    const initialSeriesRows = await page.locator('#w-seriesrows-0 .series-row').count();
+    const initialSeriesRows = await page.locator('#w-seriesrows-0 .series-cell').count();
 
     // Click + on series row (second param-row)
     await page.locator('#exercise-card-0 .param-row').nth(1).locator('.btn-icon:last-child').click();
 
-    const newSeriesRows = await page.locator('#w-seriesrows-0 .series-row').count();
+    const newSeriesRows = await page.locator('#w-seriesrows-0 .series-cell').count();
     expect(newSeriesRows).toBe(initialSeriesRows + 1);
   });
 
@@ -64,12 +64,12 @@ test.describe('Workout flow completo', () => {
     await selectRoutineAndStart(page);
     await page.locator('.card-header').first().click();
 
-    const initialSeriesRows = await page.locator('#w-seriesrows-0 .series-row').count();
+    const initialSeriesRows = await page.locator('#w-seriesrows-0 .series-cell').count();
 
     // Click - on series row
     await page.locator('#exercise-card-0 .param-row').nth(1).locator('.btn-icon:first-child').click();
 
-    const newSeriesRows = await page.locator('#w-seriesrows-0 .series-row').count();
+    const newSeriesRows = await page.locator('#w-seriesrows-0 .series-cell').count();
     expect(newSeriesRows).toBe(initialSeriesRows - 1);
   });
 

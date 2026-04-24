@@ -5,9 +5,10 @@
 const APP_VERSION = '1.0.18';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
-import { todayStr, formatDate } from './src/dates.js';
+import { todayStr, formatDate, formatDateShort } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted } from './src/data.js';
+import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getRecentSessionsForExercise as _getRecentSessionsForExercise } from './src/data.js';
+import { computeVolume } from './src/metrics.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, findLog } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
@@ -335,6 +336,60 @@ function showApp() {
 
 // ── Shared HTML Builders ──
 
+function buildHistoryStripHtml(exerciseId, currentLog, excludeDate = null) {
+  const past = getRecentSessionsForExercise(exerciseId, excludeDate);
+  const currentVol = computeVolume(currentLog);
+  const hasCurrent = currentVol > 0;
+
+  const maxPast = hasCurrent ? 3 : 4;
+  const pastToShow = past.slice(-maxPast);
+
+  const sessions = pastToShow.map(s => ({ date: s.date, vol: computeVolume(s.log), isCurrent: false }));
+  if (hasCurrent) sessions.push({ date: 'Hoy', vol: currentVol, isCurrent: true });
+
+  if (sessions.length < 2) return '';
+
+  const maxVol = Math.max(...sessions.map(s => s.vol));
+
+  let deltaHtml = '';
+  if (hasCurrent && pastToShow.length > 0) {
+    const lastPastVol = computeVolume(pastToShow[pastToShow.length - 1].log);
+    if (lastPastVol > 0) {
+      const pct = Math.round(((currentVol - lastPastVol) / lastPastVol) * 100);
+      const cls = pct >= 0 ? 'vol-delta' : 'vol-delta down';
+      const arrow = pct >= 0 ? '↑' : '↓';
+      const sign = pct >= 0 ? '+' : '';
+      deltaHtml = `<span class="${cls}">${arrow} ${sign}${pct}% vs última</span>`;
+    }
+  }
+
+  const barsHtml = sessions.map((s, i) => {
+    const height = maxVol > 0 ? Math.max(3, Math.round((s.vol / maxVol) * 100)) : 3;
+    let barClass = 'current';
+    if (!s.isCurrent) {
+      const fromRight = sessions.length - 1 - i - (hasCurrent ? 1 : 0);
+      barClass = `prev${fromRight + 1}`;
+    }
+    const label = s.isCurrent ? 'Hoy' : formatDateShort(s.date);
+    return `<div class="history-bar-col">
+      <div class="bar-wrap"><div class="bar ${barClass}" style="height:${height}%"></div></div>
+      <div class="bar-date">${label}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="history-strip">
+    <div class="history-strip-label">Últimas sesiones</div>
+    <div class="history-bars">${barsHtml}</div>
+    <div class="history-strip-meta">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot legend-dot-current"></div><div class="legend-txt">hoy</div></div>
+        <div class="legend-item"><div class="legend-dot legend-dot-prev"></div><div class="legend-txt">anterior</div></div>
+      </div>
+      ${deltaHtml}
+    </div>
+  </div>`;
+}
+
 function buildParamRowsHtml(prefix, logIdx, log, date = null) {
   const d = date ? ` data-date="${date}"` : '';
   return `<div class="param-row">
@@ -365,17 +420,28 @@ function buildParamRowsHtml(prefix, logIdx, log, date = null) {
 
 function buildAllSeriesRowsHtml(prefix, logIdx, log, date = null) {
   const d = date ? ` data-date="${date}"` : '';
-  let html = '';
+  let cellsHtml = '';
   for (let s = 0; s < log.series; s++) {
     const val = log.reps.actual[s];
-    html += `<div class="series-row">
-      <span class="series-label">S${s + 1}</span>
-      <button class="btn-icon" data-action="adjustRep" data-logidx="${logIdx}"${d} data-seriesidx="${s}" data-delta="-1">−</button>
-      <input id="${prefix}-rep-${logIdx}-${s}" class="input-compact series-input" type="number" inputmode="numeric" value="${val !== null ? val : ''}" placeholder="${log.reps.expected}" data-action="setRep" data-logidx="${logIdx}"${d} data-seriesidx="${s}">
-      <button class="btn-icon" data-action="adjustRep" data-logidx="${logIdx}"${d} data-seriesidx="${s}" data-delta="1">+</button>
+    let stateClass = '';
+    if (val !== null && val !== undefined) {
+      stateClass = val >= log.reps.expected ? ' done' : ' filled';
+    }
+    cellsHtml += `<div class="series-cell">
+      <div class="series-cell-label">S${s + 1}</div>
+      <input
+        id="${prefix}-rep-${logIdx}-${s}"
+        class="series-cell-input${stateClass}"
+        type="number"
+        inputmode="numeric"
+        value="${val !== null ? val : ''}"
+        placeholder="${log.reps.expected}"
+        data-action="setRep"
+        data-logidx="${logIdx}"${d}
+        data-seriesidx="${s}">
     </div>`;
   }
-  return html;
+  return `<div class="series-row-inline">${cellsHtml}</div>`;
 }
 
 function rerenderWorkout() {
@@ -411,6 +477,7 @@ const getExerciseName = (id) => _getExerciseName(DB, id);
 const getTodayEntry = () => _getTodayEntry(DB, todayStr());
 const getLastValuesForExercise = (exerciseId, dayType) => _getLastValuesForExercise(DB, exerciseId, dayType);
 const getBestRecentValuesForExercise = (exerciseId, dayType) => _getBestRecentValuesForExercise(DB, exerciseId, dayType, todayStr());
+const getRecentSessionsForExercise = (exerciseId, excludeDate) => _getRecentSessionsForExercise(DB, exerciseId, 4, excludeDate);
 
 // ── View: Rutinas ──
 function renderHoy() {
@@ -585,15 +652,23 @@ function renderActiveWorkout(container, entry) {
     </div>
     <div class="card-body" id="body-${logIdx}">`;
 
-    html += buildParamRowsHtml('w', logIdx, log);
+    html += buildHistoryStripHtml(log.exercise_id, log, entry.date);
 
-    html += `<div class="mt-sm"><p class="text-xs text-muted mb-sm" >Reps realizadas por serie:</p><div id="w-seriesrows-${logIdx}">`;
+    html += '<div class="params-section">';
+    html += buildParamRowsHtml('w', logIdx, log);
+    html += '</div>';
+
+    html += '<div class="divider"></div>';
+
+    html += `<div class="series-section">
+      <div class="series-section-label">Reps por serie</div>
+      <div id="w-seriesrows-${logIdx}">`;
     html += buildAllSeriesRowsHtml('w', logIdx, log);
     html += '</div></div>';
 
-    html += `<div class="routine-actions">
-    <button class="btn-sm btn-danger" data-action="removeExercise" data-daytype="${entry.type}" data-exerciseid="${log.exercise_id}">Quitar de rutina</button>
-  </div>`;
+    html += `<div class="card-footer">
+      <button class="remove-btn" data-action="removeExercise" data-daytype="${entry.type}" data-exerciseid="${log.exercise_id}">Quitar de rutina</button>
+    </div>`;
 
     html += '</div></div>';
   });
@@ -961,9 +1036,14 @@ function renderHistorialDetail(date) {
         <div class="exercise-row-controls">
           <div class="exercise-name">${name}</div>
           <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}">${icon('check', 14, 'icon-svg')}</button>
-        </div>
-        ${buildParamRowsHtml('h', logIdx, log, date)}
-        <div class="mt-sm"><p class="text-xs text-muted mb-sm">Reps por serie:</p>`;
+        </div>`;
+      html += buildHistoryStripHtml(log.exercise_id, log, date);
+      html += '<div class="params-section">';
+      html += buildParamRowsHtml('h', logIdx, log, date);
+      html += '</div>';
+      html += '<div class="divider"></div>';
+      html += `<div class="series-section">
+        <div class="series-section-label">Reps por serie</div>`;
       html += buildAllSeriesRowsHtml('h', logIdx, log, date);
       html += `</div></div></div>`;
     } else {

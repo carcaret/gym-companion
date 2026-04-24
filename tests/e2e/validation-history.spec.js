@@ -97,8 +97,9 @@ test.describe('Validación en edición de Historial', () => {
     const repInput = page.locator('#h-rep-0-0');
     await expect(repInput).toHaveValue('10');
 
-    // +/- buttons should work
-    await page.locator('.historial-detail-card.editing .series-row .btn-icon >> text="+"').first().click();
+    // Input directo de rep funciona (los botones +/- de serie se eliminaron en el rediseño)
+    await repInput.fill('11');
+    await repInput.dispatchEvent('change');
     await expect(repInput).toHaveValue('11');
 
     // Save should work

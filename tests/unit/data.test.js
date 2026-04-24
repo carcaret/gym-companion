@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, getHistoricalRecords, ensureHistorySorted } from '../../src/data.js';
+import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, getHistoricalRecords, ensureHistorySorted, getRecentSessionsForExercise } from '../../src/data.js';
 
 const DB_FIXTURE = {
   exercises: {
@@ -565,5 +565,61 @@ describe('ensureHistorySorted', () => {
 
   test('db sin history no lanza error', () => {
     expect(() => ensureHistorySorted({})).not.toThrow();
+  });
+});
+
+describe('getRecentSessionsForExercise', () => {
+  const DB = {
+    history: [
+      { date: '2024-01-01', type: 'DIA1', completed: true,  logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [10,10,10] }, weight: 50 }] },
+      { date: '2024-01-08', type: 'DIA1', completed: true,  logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [10,10,10] }, weight: 55 }] },
+      { date: '2024-01-15', type: 'DIA1', completed: true,  logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [10,10,10] }, weight: 60 }] },
+      { date: '2024-01-22', type: 'DIA1', completed: true,  logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [10,10,10] }, weight: 65 }] },
+      { date: '2024-01-29', type: 'DIA1', completed: false, logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [null,null,null] }, weight: 70 }] },
+    ],
+  };
+
+  test('devuelve las N sesiones completadas más recientes, ordenadas asc', () => {
+    const result = getRecentSessionsForExercise(DB, 'press_banca', 3);
+    expect(result).toHaveLength(3);
+    expect(result[0].date).toBe('2024-01-08');
+    expect(result[1].date).toBe('2024-01-15');
+    expect(result[2].date).toBe('2024-01-22');
+  });
+
+  test('no incluye sesiones no completadas', () => {
+    const result = getRecentSessionsForExercise(DB, 'press_banca', 4);
+    expect(result.every(s => s.log)).toBe(true);
+    expect(result.find(s => s.date === '2024-01-29')).toBeUndefined();
+  });
+
+  test('excluye la fecha indicada en excludeDate', () => {
+    const result = getRecentSessionsForExercise(DB, 'press_banca', 4, '2024-01-22');
+    expect(result.find(s => s.date === '2024-01-22')).toBeUndefined();
+    expect(result).toHaveLength(3);
+  });
+
+  test('historial vacío devuelve array vacío', () => {
+    expect(getRecentSessionsForExercise({ history: [] }, 'press_banca')).toEqual([]);
+  });
+
+  test('db null devuelve array vacío', () => {
+    expect(getRecentSessionsForExercise(null, 'press_banca')).toEqual([]);
+  });
+
+  test('ejercicio sin sesiones devuelve array vacío', () => {
+    expect(getRecentSessionsForExercise(DB, 'curl_biceps')).toEqual([]);
+  });
+
+  test('menos sesiones que el límite devuelve las disponibles', () => {
+    const result = getRecentSessionsForExercise(DB, 'press_banca', 10);
+    expect(result).toHaveLength(4);
+  });
+
+  test('cada elemento tiene shape { date, log }', () => {
+    const result = getRecentSessionsForExercise(DB, 'press_banca', 1);
+    expect(result[0]).toHaveProperty('date');
+    expect(result[0]).toHaveProperty('log');
+    expect(result[0].log).toHaveProperty('weight');
   });
 });
