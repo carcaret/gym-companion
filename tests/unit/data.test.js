@@ -364,7 +364,34 @@ describe('getLastValuesForExercise — no muta DB.history', () => {
 describe('getBestRecentValuesForExercise', () => {
   const TODAY = '2024-05-01';
 
-  test('happy path: de las últimas 4 entries DIA1, gana la de mayor volumen (no la más reciente)', () => {
+  test('mayor peso gana aunque su volumen sea menor (progresión por peso pisa progresión por reps)', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'prensa', name: 'Prensa', series: 4, reps: { expected: 12, actual: [12, 12, 12, 14] }, weight: 180 }] }, // vol 9000
+        { date: '2024-04-22', type: 'DIA1', completed: true, logs: [{ exercise_id: 'prensa', name: 'Prensa', series: 4, reps: { expected: 10, actual: [10, 10, 10, 10] }, weight: 200 }] }, // vol 8000
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'prensa', 'DIA1', TODAY);
+    expect(best.weight).toBe(200);
+    expect(best.repsExpected).toBe(10);
+    expect(best.repsActual).toEqual([10, 10, 10, 10]);
+  });
+
+  test('a igualdad de peso, gana mayor volumen', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 12, actual: [12, 12, 12] }, weight: 50 }] }, // vol 1800
+        { date: '2024-04-22', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] }, // vol 1500
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'press_banca', 'DIA1', TODAY);
+    expect(best.weight).toBe(50);
+    expect(best.repsActual).toEqual([12, 12, 12]);
+  });
+
+  test('happy path: de las últimas 4 entries DIA1 a mismo peso, gana la de mayor volumen (no la más reciente)', () => {
     const db = {
       exercises: {}, routines: {},
       history: [

@@ -47,12 +47,15 @@ export function getBestRecentValuesForExercise(db, exerciseId, dayType, today) {
     .slice(0, 4);
 
   let bestLog = null;
-  let bestVolume = -1;
+  let bestWeight = -Infinity;
+  let bestVolume = -Infinity;
   for (const entry of recentSameDay) {
     const log = entry.logs.find(l => l.exercise_id === exerciseId);
     if (!log) continue;
+    const weight = log.weight;
     const volume = computeVolume(log);
-    if (volume > bestVolume) {
+    if (weight > bestWeight || (weight === bestWeight && volume > bestVolume)) {
+      bestWeight = weight;
       bestVolume = volume;
       bestLog = log;
     }
