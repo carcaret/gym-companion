@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.20';
+const APP_VERSION = '1.0.21';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort } from './src/dates.js';
@@ -1014,7 +1014,12 @@ function renderHistorial() {
   const filters = document.getElementById('historial-filters');
   const header = document.querySelector('#view-historial .view-header h2');
   if (filters) filters.style.display = '';
-  if (header) header.textContent = 'Historial';
+  if (header) {
+    header.textContent = 'Historial';
+    header.style.flexDirection = '';
+    header.style.alignItems = '';
+    header.style.gap = '';
+  }
 
   editingHistorialExercise = null;
 
@@ -1071,14 +1076,12 @@ function renderHistorialDetail(date) {
   if (filters) filters.style.display = 'none';
 
   const isIncomplete = entry.completed === false;
-  const badgeHtml = isIncomplete
-    ? `<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;
-         background:rgba(86,156,214,0.18);color:var(--accent-light);
-         display:inline-flex;align-items:center;gap:4px;vertical-align:middle;">
-         ${icon('clock', 11)} Incompleto
-       </span>`
-    : '';
-  if (header) header.innerHTML = `${DAY_LABELS[entry.type] || entry.type} ${badgeHtml} — ${formatDate(date)}`;
+  if (header) {
+    header.innerHTML = `<span>${DAY_LABELS[entry.type] || entry.type} — ${formatDate(date)}</span>${isIncomplete ? `<span class="incomplete-header-badge">${icon('clock', 11)} Incompleto</span>` : ''}`;
+    header.style.flexDirection = isIncomplete ? 'column' : '';
+    header.style.alignItems = isIncomplete ? 'flex-start' : '';
+    header.style.gap = isIncomplete ? '4px' : '';
+  }
 
   let html = '';
 
@@ -1132,7 +1135,11 @@ function renderHistorialDetail(date) {
 
   const completeBtn = document.getElementById('complete-workout-btn');
   if (completeBtn) {
-    completeBtn.onclick = () => navigateToTab('hoy');
+    completeBtn.onclick = () => {
+      entry.completed = true;
+      persistDB();
+      navigateToTab('hoy');
+    };
   }
 
   setupLogActionDelegation(content, {

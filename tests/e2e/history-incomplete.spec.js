@@ -208,4 +208,38 @@ test.describe('Historial — entrenos incompletos', () => {
     await expect(page.locator('#view-hoy')).toHaveClass(/active/);
     await expect(page.locator('[data-view="hoy"]')).toHaveClass(/active/);
   });
+
+  test('botón "Completar entreno" marca el entreno como completado en DB', async ({ page }) => {
+    const card = await getIncompleteCard(page);
+    await card.click();
+    await page.click('#complete-workout-btn');
+    const db = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db') || '{}'));
+    const entry = db.history?.find(h => h.date === '2026-04-24');
+    expect(entry?.completed).toBe(true);
+  });
+
+  test('tras completar, el entreno ya no aparece con tinte azul en historial', async ({ page }) => {
+    const card = await getIncompleteCard(page);
+    await card.click();
+    await page.click('#complete-workout-btn');
+    await page.click('[data-view="historial"]');
+    await expect(page.locator('.historial-entry-btn').first()).toBeVisible();
+    const cards = page.locator('.historial-entry-btn');
+    const count = await cards.count();
+    for (let i = 0; i < count; i++) {
+      const style = await cards.nth(i).getAttribute('style');
+      expect(style || '').not.toContain('rgba(86,156,214');
+    }
+  });
+
+  test('badge "Incompleto" aparece debajo del título, no incrustado en él', async ({ page }) => {
+    const card = await getIncompleteCard(page);
+    await card.click();
+    const header = page.locator('#view-historial .view-header h2');
+    const titleSpan = header.locator('span').first();
+    const badgeSpan = header.locator('.incomplete-header-badge');
+    await expect(titleSpan).toContainText('—');
+    await expect(titleSpan).not.toContainText('Incompleto');
+    await expect(badgeSpan).toContainText('Incompleto');
+  });
 });
