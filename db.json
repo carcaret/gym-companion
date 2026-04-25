@@ -18761,7 +18761,7 @@
     {
       "date": "2026-04-10",
       "type": "DIA3",
-      "completed": false,
+      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
