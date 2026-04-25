@@ -73,7 +73,21 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - Persistencia siempre vía `saveData()` → localStorage + GitHub sync
 - `DB` es la variable global con toda la BD en memoria
 
+## Principios de programación
+
+Todo el código de este proyecto debe seguir estos principios. Son no negociables:
+
+- **SOLID**: responsabilidad única, abierto/cerrado, sustitución de Liskov, segregación de interfaces, inversión de dependencias.
+- **DRY** (Don't Repeat Yourself): no duplicar lógica. Si algo se repite dos veces, extraerlo.
+- **KISS** (Keep It Simple, Stupid): la solución más simple que funcione correctamente es la buena. Complejidad solo cuando es inevitable.
+- **YAGNI** (You Aren't Gonna Need It): no añadir código para casos hipotéticos futuros que nadie ha pedido.
+- **Clean Code**: nombres descriptivos, funciones cortas con una sola responsabilidad, sin efectos colaterales inesperados, sin código muerto.
+
+Cuando un diseño viola estos principios de forma significativa, señalarlo al usuario antes de implementar y proponer una alternativa más limpia.
+
 ## Tests
+
+**Los tests son la especificación ejecutable de la funcionalidad.** Un test que falla no es un obstáculo — es la forma en que el código comunica que algo cambió o que la nueva feature tiene un conflicto con comportamiento existente.
 
 **Toda funcionalidad nueva DEBE llevar tests exhaustivos asociados.** No se considera terminado un cambio si no tiene tests que cubran:
 
@@ -82,6 +96,14 @@ sw.js         → Service Worker (cache network-first, omite GitHub API) — ver
 - Regresiones (que lo anterior sigue funcionando)
 
 Si la funcionalidad es lógica pura → tests unitarios en `tests/unit/`. Si involucra DOM/interacción → tests E2E en `tests/e2e/`. Idealmente ambos.
+
+**Política ante tests que fallan por una feature nueva**: si al programar algo nuevo un test existente falla o necesita actualizarse, Claude DEBE:
+
+1. Explicar al usuario qué test falla y por qué (qué comportamiento entra en conflicto).
+2. Preguntar si el comportamiento anterior era correcto o si la nueva feature lo reemplaza.
+3. **Nunca borrar ni modificar un test sin aprobación explícita del usuario.**
+
+Borrar un test porque "ya no aplica" sin consultar es inaceptable — puede estar protegiendo un comportamiento que el usuario quiere conservar.
 
 ## Filosofía de cambios
 
