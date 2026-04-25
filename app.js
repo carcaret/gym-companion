@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.19';
+const APP_VERSION = '1.0.20';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort } from './src/dates.js';
@@ -1028,12 +1028,15 @@ function renderHistorial() {
 
   let html = '<div class="historial-list">';
   filtered.forEach(entry => {
-    const completed = entry.completed !== false;
+    const isIncomplete = entry.completed === false;
     const exercises = entry.logs.map(l => getExerciseName(l.exercise_id));
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
-    html += `<div class="card historial-entry-btn" data-date="${entry.date}">
+    const cardStyle = isIncomplete ? 'background:rgba(86,156,214,0.07);border:1px solid rgba(86,156,214,0.35);' : '';
+    const nameStyle = isIncomplete ? 'color:var(--accent-light);' : '';
+    const pauseStyle = isIncomplete ? 'color:var(--accent);' : '';
+    html += `<div class="card historial-entry-btn" data-date="${entry.date}" style="${cardStyle}">
     <span class="day-info">
-      <span class="day-name">${DAY_LABELS[entry.type] || entry.type}${completed ? '' : ' ' + icon('pause', 14, 'icon-svg')} <span class="day-date">${formatDate(entry.date)}</span></span>
+      <span class="day-name" style="${nameStyle}">${DAY_LABELS[entry.type] || entry.type}${isIncomplete ? ` <span style="${pauseStyle}">${icon('pause', 14, 'icon-svg')}</span>` : ''} <span class="day-date">${formatDate(entry.date)}</span></span>
       <span class="day-exercises">${entry.logs.length} ejercicios · ${preview}</span>
     </span>
     <button class="btn-icon historial-delete-btn" data-date="${entry.date}">${icon('trash', 16, 'icon-svg')}</button>
@@ -1066,7 +1069,16 @@ function renderHistorialDetail(date) {
   const filters = document.getElementById('historial-filters');
   const header = document.querySelector('#view-historial .view-header h2');
   if (filters) filters.style.display = 'none';
-  if (header) header.textContent = `${DAY_LABELS[entry.type] || entry.type} — ${formatDate(date)}`;
+
+  const isIncomplete = entry.completed === false;
+  const badgeHtml = isIncomplete
+    ? `<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;
+         background:rgba(86,156,214,0.18);color:var(--accent-light);
+         display:inline-flex;align-items:center;gap:4px;vertical-align:middle;">
+         ${icon('clock', 11)} Incompleto
+       </span>`
+    : '';
+  if (header) header.innerHTML = `${DAY_LABELS[entry.type] || entry.type} ${badgeHtml} — ${formatDate(date)}`;
 
   let html = '';
 
@@ -1103,13 +1115,25 @@ function renderHistorialDetail(date) {
     }
   });
 
-  html += `<div class="view-nav-actions">
-    <button class="btn-secondary" id="historial-back-btn">← Volver</button>
-  </div>`;
+  if (isIncomplete) {
+    html += `<div class="workout-actions">
+      <button class="btn-secondary" id="historial-back-btn">← Volver</button>
+      <button class="btn-primary" id="complete-workout-btn">Completar entreno</button>
+    </div>`;
+  } else {
+    html += `<div class="view-nav-actions">
+      <button class="btn-secondary" id="historial-back-btn">← Volver</button>
+    </div>`;
+  }
 
   content.innerHTML = html;
 
   document.getElementById('historial-back-btn').onclick = () => renderHistorial();
+
+  const completeBtn = document.getElementById('complete-workout-btn');
+  if (completeBtn) {
+    completeBtn.onclick = () => navigateToTab('hoy');
+  }
 
   setupLogActionDelegation(content, {
     getLog: (el, idx) => {
@@ -1424,20 +1448,22 @@ function setupSettings() {
 }
 
 // ── Navigation ──
+function navigateToTab(view) {
+  document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
+  const tab = document.querySelector(`#tab-bar .tab[data-view="${view}"]`);
+  if (tab) tab.classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${view}`)?.classList.add('active');
+
+  if (view === 'hoy') renderHoy();
+  else if (view === 'historial') renderHistorial();
+  else if (view === 'graficas') initCharts();
+  else if (view === 'ajustes') initSettings();
+}
+
 function setupTabs() {
   document.querySelectorAll('#tab-bar .tab').forEach(tab => {
-    tab.onclick = () => {
-      document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const view = tab.dataset.view;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById(`view-${view}`).classList.add('active');
-
-      if (view === 'hoy') renderHoy();
-      else if (view === 'historial') renderHistorial();
-      else if (view === 'graficas') { initCharts(); }
-      else if (view === 'ajustes') initSettings();
-    };
+    tab.onclick = () => navigateToTab(tab.dataset.view);
   });
 }
 
