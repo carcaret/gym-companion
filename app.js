@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.21';
+const APP_VERSION = '1.0.22';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort } from './src/dates.js';
@@ -413,9 +413,7 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
     else if (isCurrent) barClass = 'current';
     else barClass = `prev${weeksBack}`;
 
-    const label = isCurrent
-      ? 'Hoy'
-      : (hasSession ? formatDateShort(bucket.session.date) : formatDateShort(bucket.weekStart));
+    const label = hasSession ? formatDateShort(isCurrent ? anchorDate : bucket.session.date) : formatDateShort(bucket.weekStart);
 
     let tooltipAttr = '';
     if (hasSession) {
@@ -530,7 +528,7 @@ const getExerciseName = (id) => _getExerciseName(DB, id);
 const getTodayEntry = () => _getTodayEntry(DB, todayStr());
 const getLastValuesForExercise = (exerciseId, dayType) => _getLastValuesForExercise(DB, exerciseId, dayType);
 const getBestRecentValuesForExercise = (exerciseId, dayType) => _getBestRecentValuesForExercise(DB, exerciseId, dayType, todayStr());
-const getWeeklyBucketsForExercise = (exerciseId, anchorDate) => _getWeeklyBucketsForExercise(DB, exerciseId, anchorDate, 4, anchorDate);
+const getWeeklyBucketsForExercise = (exerciseId, anchorDate) => _getWeeklyBucketsForExercise(DB, exerciseId, anchorDate, 6, anchorDate);
 
 // ── View: Rutinas ──
 function renderHoy() {
