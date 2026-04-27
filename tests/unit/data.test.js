@@ -95,10 +95,13 @@ describe('getHistoricalRecords', () => {
 
   test('múltiples entries del mismo ejercicio → toma el max de todos', () => {
     const records = getHistoricalRecords(DB_FIXTURE, 'press_banca');
-    // Entry 2024-01-15: weight=65, series=4, actual=[10,10,10,8] → avg=9.5 → vol=65*4*9.5=2470, e1RM=65*(1+9.5/30)=85.58
-    // Entry 2024-01-08: weight=60, series=3, actual=[10,10,8] → avg=9.33 → vol=60*3*9.33=1680, e1RM=60*(1+9.33/30)=78.67
+    // Entry 2024-01-15: weight=65, series=4, actual=[10,10,10,8] → vol=65*4*9.5=2470
+    //   e1RM por serie: max(65*(1+10/30), 65*(1+8/30)) = 65*(1+10/30) ≈ 86.67
+    // Entry 2024-01-08: weight=60, series=3, actual=[10,10,8]
+    //   e1RM por serie: max(60*(1+10/30), 60*(1+8/30)) = 60*(1+10/30) = 80
+    // maxE1RM = 65*(1+10/30) ≈ 86.67
     expect(records.maxVolume).toBeCloseTo(65 * 4 * 9.5, 0);
-    expect(records.maxE1RM).toBeCloseTo(65 * (1 + 9.5 / 30), 1);
+    expect(records.maxE1RM).toBeCloseTo(65 * (1 + 10 / 30), 1);
   });
 
   test('ejercicio con peso=0 → maxE1RM es 0, maxVolume se calcula con bodyweight', () => {

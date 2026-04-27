@@ -12,8 +12,15 @@ export function computeVolume(log) {
 
 export function computeE1RM(log) {
   if (log.weight <= 0) return 0;
-  const avg = computeAvgReps(log);
-  return log.weight * (1 + avg / 30);
+  const actual = log.reps.actual && log.reps.actual.length > 0 ? log.reps.actual : null;
+  const repValues = actual ? actual : [log.reps.expected];
+  let maxE1RM = 0;
+  for (const r of repValues) {
+    if (r == null || r <= 0 || r > 30) continue;
+    const e = log.weight * (1 + r / 30);
+    if (e > maxE1RM) maxE1RM = e;
+  }
+  return maxE1RM;
 }
 
 /**

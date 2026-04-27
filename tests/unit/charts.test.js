@@ -89,34 +89,45 @@ describe('getExercisesInRange', () => {
 // ── buildChartDatasets ──
 
 describe('buildChartDatasets', () => {
-  test('genera datasets de volumen con valores correctos', () => {
+  test('devuelve e1rmDatasets y weightDatasets (sin datasets de volumen)', () => {
+    const history = [
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, actual: [10, 10, 10] })] }),
+    ];
+    const result = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(result).toHaveProperty('e1rmDatasets');
+    expect(result).toHaveProperty('weightDatasets');
+    expect(result).not.toHaveProperty('datasets');
+  });
+
+  test('e1RM usa la mejor serie (max, no promedio)', () => {
+    // [12, 11, 10] → max e1RM = 60*(1+12/30) = 84, promedio daría 60*(1+11/30)≈82
+    const history = [
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, actual: [12, 11, 10] })] }),
+    ];
+    const { e1rmDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets.length).toBe(1);
+    expect(e1rmDatasets[0].data[0].y).toBeCloseTo(84, 1);
+  });
+
+  test('e1RM con series uniformes coincide con la fórmula directa', () => {
+    // [10, 10, 10] → e1RM = 60*(1+10/30) = 80
     const history = [
       makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, series: 3, expected: 10, actual: [10, 10, 10] })] }),
     ];
-    const { datasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
-    const volDs = datasets.find(d => d.label.includes('Volumen'));
-    expect(volDs).toBeDefined();
-    // volume = 60 * 3 * 10 = 1800
-    expect(volDs.data[0].y).toBe(1800);
-    expect(volDs.data[0].x).toBe('2024-03-01');
+    const { e1rmDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets[0].data[0].y).toBe(80);
+    expect(e1rmDatasets[0].data[0].x).toBe('2024-03-01');
   });
 
-  test('genera datasets de e1RM (excluye puntos donde e1RM=0)', () => {
+  test('ejercicio bodyweight (weight=0) no genera e1rmDataset', () => {
     const history = [
-      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, series: 3, expected: 10, actual: [10, 10, 10] })] }),
-      makeEntry({ date: '2024-03-02', logs: [makeLog({ id: 'press_banca', weight: 0, series: 3, expected: 10, actual: [10, 10, 10] })] }),
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 0, actual: [10, 10, 10] })] }),
     ];
-    const { datasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
-    const e1rmDs = datasets.find(d => d.label.includes('e1RM'));
-    expect(e1rmDs).toBeDefined();
-    // Only the first entry has e1RM > 0 (weight=60)
-    expect(e1rmDs.data.length).toBe(1);
-    expect(e1rmDs.data[0].x).toBe('2024-03-01');
-    // e1RM = 60 * (1 + 10/30) = 60 * 1.333... = 80
-    expect(e1rmDs.data[0].y).toBe(80);
+    const { e1rmDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets.length).toBe(0);
   });
 
-  test('genera datasets de peso (excluye puntos donde weight=0)', () => {
+  test('genera weightDatasets excluyendo puntos donde weight=0', () => {
     const history = [
       makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60 })] }),
       makeEntry({ date: '2024-03-02', logs: [makeLog({ id: 'press_banca', weight: 0 })] }),
@@ -127,94 +138,92 @@ describe('buildChartDatasets', () => {
     expect(weightDatasets[0].data[0].y).toBe(60);
   });
 
-  test('con un solo entry → un punto por dataset', () => {
-    const history = [
-      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 50, series: 4, expected: 8, actual: [8, 8, 8, 8] })] }),
-    ];
-    const { datasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
-    const volDs = datasets.find(d => d.label.includes('Volumen'));
-    expect(volDs.data.length).toBe(1);
-  });
-
-  test('con múltiples entries → múltiples puntos ordenados por fecha', () => {
-    const history = [
-      makeEntry({ date: '2024-03-05', logs: [makeLog({ id: 'press_banca', weight: 60 })] }),
-      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 50 })] }),
-      makeEntry({ date: '2024-03-03', logs: [makeLog({ id: 'press_banca', weight: 55 })] }),
-    ];
-    const { datasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
-    const volDs = datasets.find(d => d.label.includes('Volumen'));
-    expect(volDs.data.length).toBe(3);
-    // Should be sorted by date ascending
-    expect(volDs.data[0].x).toBe('2024-03-01');
-    expect(volDs.data[1].x).toBe('2024-03-03');
-    expect(volDs.data[2].x).toBe('2024-03-05');
-  });
-
-  test('ejercicio sin datos en rango → datasets vacíos', () => {
+  test('ejercicio sin datos en rango → e1rmDatasets y weightDatasets vacíos', () => {
     const history = [
       makeEntry({ date: '2024-01-01', logs: [makeLog({ id: 'press_banca', weight: 60 })] }),
     ];
-    const { datasets, weightDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
-    const volDs = datasets.find(d => d.label.includes('Volumen'));
-    expect(volDs.data).toEqual([]);
-    // No e1RM dataset since no data
-    const e1rmDs = datasets.find(d => d.label.includes('e1RM'));
-    expect(e1rmDs).toBeUndefined();
+    const { e1rmDatasets, weightDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets.length).toBe(0);
     expect(weightDatasets.length).toBe(0);
   });
 
-  test('ejercicio en múltiples entries del mismo día → toma todos', () => {
+  test('múltiples entries ordenadas por fecha en e1rmDatasets', () => {
     const history = [
-      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60 })] }),
-      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 70 })] }),
+      makeEntry({ date: '2024-03-05', logs: [makeLog({ id: 'press_banca', weight: 60, actual: [10, 10, 10] })] }),
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 50, actual: [10, 10, 10] })] }),
+      makeEntry({ date: '2024-03-03', logs: [makeLog({ id: 'press_banca', weight: 55, actual: [10, 10, 10] })] }),
     ];
-    const { datasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
-    const volDs = datasets.find(d => d.label.includes('Volumen'));
-    expect(volDs.data.length).toBe(2);
+    const { e1rmDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets[0].data.length).toBe(3);
+    expect(e1rmDatasets[0].data[0].x).toBe('2024-03-01');
+    expect(e1rmDatasets[0].data[1].x).toBe('2024-03-03');
+    expect(e1rmDatasets[0].data[2].x).toBe('2024-03-05');
   });
 
-  test('con chartType bar, fill es false y type es bar', () => {
+  test('e1RM dataset usa eje Y primario (yAxisID: y)', () => {
     const history = [
-      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60 })] }),
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, actual: [10, 10, 10] })] }),
     ];
-    const { datasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName, 'bar');
-    const volDs = datasets.find(d => d.label.includes('Volumen'));
-    expect(volDs.fill).toBe(false);
-    expect(volDs.type).toBe('bar');
+    const { e1rmDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets[0].yAxisID).toBe('y');
   });
 
-  test('con chartType line, fill es true en volumen', () => {
+  test('e1RM dataset no tiene borderDash (es la métrica principal)', () => {
     const history = [
-      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60 })] }),
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, actual: [10, 10, 10] })] }),
     ];
-    const { datasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName, 'line');
-    const volDs = datasets.find(d => d.label.includes('Volumen'));
-    expect(volDs.fill).toBe(true);
+    const { e1rmDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets[0].borderDash).toBeUndefined();
+  });
+
+  test('chartType line → fill=true en e1RM y peso', () => {
+    const history = [
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, actual: [10, 10, 10] })] }),
+    ];
+    const { e1rmDatasets, weightDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName, 'line');
+    expect(e1rmDatasets[0].fill).toBe(true);
+    expect(weightDatasets[0].fill).toBe(true);
+  });
+
+  test('chartType bar → fill=false y type=bar en e1RM y peso', () => {
+    const history = [
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, actual: [10, 10, 10] })] }),
+    ];
+    const { e1rmDatasets, weightDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName, 'bar');
+    expect(e1rmDatasets[0].fill).toBe(false);
+    expect(e1rmDatasets[0].type).toBe('bar');
+    expect(weightDatasets[0].fill).toBe(false);
+    expect(weightDatasets[0].type).toBe('bar');
   });
 
   test('múltiples ejercicios generan datasets separados con colores distintos', () => {
     const history = [
       makeEntry({ date: '2024-03-01', logs: [
-        makeLog({ id: 'press_banca', weight: 60 }),
-        makeLog({ id: 'curl_biceps', weight: 20 }),
+        makeLog({ id: 'press_banca', weight: 60, actual: [10, 10, 10] }),
+        makeLog({ id: 'curl_biceps', weight: 20, actual: [10, 10, 10] }),
       ]}),
     ];
-    const { datasets } = buildChartDatasets(history, ['press_banca', 'curl_biceps'], '2024-03-01', '2024-03-31', getName);
-    const volDatasets = datasets.filter(d => d.label.includes('Volumen'));
-    expect(volDatasets.length).toBe(2);
-    expect(volDatasets[0].borderColor).not.toBe(volDatasets[1].borderColor);
+    const { e1rmDatasets } = buildChartDatasets(history, ['press_banca', 'curl_biceps'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets.length).toBe(2);
+    expect(e1rmDatasets[0].borderColor).not.toBe(e1rmDatasets[1].borderColor);
   });
 
-  test('e1RM dataset tiene borderDash y yAxisID y1', () => {
+  test('e1RM redondeado a 1 decimal', () => {
+    // 55*(1+10/30) = 73.333... → debe redondear a 73.3
     const history = [
-      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, actual: [10, 10, 10] })] }),
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 55, actual: [10, 10, 10] })] }),
     ];
-    const { datasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
-    const e1rmDs = datasets.find(d => d.label.includes('e1RM'));
-    expect(e1rmDs.borderDash).toEqual([5, 5]);
-    expect(e1rmDs.yAxisID).toBe('y1');
-    expect(e1rmDs.type).toBe('line');
+    const { e1rmDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets[0].data[0].y).toBe(73.3);
+  });
+
+  test('reps > 30 excluidas del e1RM (no genera punto)', () => {
+    // Serie con 35 reps → excluida → sin e1RM → no dataset
+    const history = [
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 60, actual: [35, 35] })] }),
+    ];
+    const { e1rmDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    expect(e1rmDatasets.length).toBe(0);
   });
 });
 

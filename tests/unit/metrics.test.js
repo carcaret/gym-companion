@@ -38,32 +38,85 @@ describe('computeVolume', () => {
   });
 });
 
+// ── computeE1RM ──
+
 describe('computeE1RM', () => {
-  test('con peso > 0: peso * (1 + avgReps/30)', () => {
+  test('peso > 0, series uniformes: max coincide con valor de cualquier serie', () => {
+    // [6, 6, 6] → cada serie = 100*(1+6/30) = 120; max = 120
     const log = makeLog({ weight: 100, series: 3, actual: [6, 6, 6] });
-    expect(computeE1RM(log)).toBeCloseTo(100 * (1 + 6 / 30), 2);
+    expect(computeE1RM(log)).toBeCloseTo(100 * (1 + 6 / 30), 5);
   });
 
-  test('con peso = 0 retorna 0', () => {
+  test('series con reps distintas: devuelve la de mayor reps (no el promedio)', () => {
+    // [12, 11, 10] → e1RM por serie: 90*(1+12/30)=126, 90*(1+11/30)=123, 90*(1+10/30)=120
+    // max = 126, promedio habría dado 90*(1+11/30)=123
+    const log = makeLog({ weight: 90, series: 3, actual: [12, 11, 10] });
+    expect(computeE1RM(log)).toBeCloseTo(90 * (1 + 12 / 30), 5);
+  });
+
+  test('ejemplo de la spec: 90kg × 12 reps → 126 kg', () => {
+    const log = makeLog({ weight: 90, series: 1, actual: [12] });
+    expect(computeE1RM(log)).toBeCloseTo(126, 1);
+  });
+
+  test('peso = 0 (bodyweight) → retorna 0', () => {
     const log = makeLog({ weight: 0, series: 3, actual: [10, 10, 10] });
+    expect(computeE1RM(log)).toBe(0);
+  });
+
+  test('peso negativo → retorna 0', () => {
+    const log = makeLog({ weight: -10, series: 3, actual: [10, 10, 10] });
     expect(computeE1RM(log)).toBe(0);
   });
 
   test('series=1, una rep', () => {
     const log = makeLog({ weight: 80, series: 1, actual: [1] });
-    expect(computeE1RM(log)).toBeCloseTo(80 * (1 + 1 / 30), 2);
+    expect(computeE1RM(log)).toBeCloseTo(80 * (1 + 1 / 30), 5);
   });
 
-  test('peso negativo → retorna negativo', () => {
-    const log = makeLog({ weight: -10, series: 3, actual: [10, 10, 10] });
-    // weight <= 0 → returns 0
+  test('reps = 0 en todas las series → excluidas → e1RM = 0', () => {
+    // Spec: "Reps = 0: excluir esa serie del cálculo"
+    const log = { weight: 50, series: 3, reps: { expected: 0, actual: [0, 0, 0] } };
     expect(computeE1RM(log)).toBe(0);
   });
 
-  test('avgReps=0 → e1RM = peso * 1 = peso', () => {
-    const log = { weight: 50, series: 3, reps: { expected: 0, actual: [0, 0, 0] } };
-    // avgReps = 0, e1RM = 50 * (1 + 0/30) = 50
-    expect(computeE1RM(log)).toBe(50);
+  test('reps > 30 en todas las series → excluidas → e1RM = 0', () => {
+    // Spec: "Rango válido: 1–30 reps. Más de 30 produce resultados poco fiables"
+    const log = makeLog({ weight: 50, series: 2, actual: [31, 35] });
+    expect(computeE1RM(log)).toBe(0);
+  });
+
+  test('mix de reps válidas e inválidas: solo considera las válidas', () => {
+    // [0, 12, 35] → solo 12 es válida → e1RM = 50*(1+12/30)
+    const log = makeLog({ weight: 50, series: 3, actual: [0, 12, 35] });
+    expect(computeE1RM(log)).toBeCloseTo(50 * (1 + 12 / 30), 5);
+  });
+
+  test('reps null en series incompletas → se ignoran', () => {
+    // [12, null, 10] → max e1RM = peso*(1+12/30)
+    const log = { weight: 60, series: 3, reps: { expected: 10, actual: [12, null, 10] } };
+    expect(computeE1RM(log)).toBeCloseTo(60 * (1 + 12 / 30), 5);
+  });
+
+  test('actual vacío → usa expected como rep única', () => {
+    // Sin actual → usa expected=10 → e1RM = 50*(1+10/30)
+    const log = makeLog({ weight: 50, expected: 10 });
+    expect(computeE1RM(log)).toBeCloseTo(50 * (1 + 10 / 30), 5);
+  });
+
+  test('expected > 30 sin actual → excluido → e1RM = 0', () => {
+    const log = makeLog({ weight: 50, expected: 40 });
+    expect(computeE1RM(log)).toBe(0);
+  });
+
+  test('reps = 30 (límite superior válido): se incluye', () => {
+    const log = makeLog({ weight: 40, series: 1, actual: [30] });
+    expect(computeE1RM(log)).toBeCloseTo(40 * (1 + 30 / 30), 5); // = 80
+  });
+
+  test('reps = 1 (límite inferior válido): se incluye', () => {
+    const log = makeLog({ weight: 100, series: 1, actual: [1] });
+    expect(computeE1RM(log)).toBeCloseTo(100 * (1 + 1 / 30), 5);
   });
 });
 
@@ -151,5 +204,17 @@ describe('getMaxMetrics', () => {
     const result = getMaxMetrics(entries, 'sentadilla');
     expect(result.maxVolume).toBe(0);
     expect(result.maxE1RM).toBe(0);
+  });
+
+  test('max e1RM es el de la mejor serie de la mejor sesión', () => {
+    // Sesión A: [12, 8] → max e1RM = 90*(1+12/30) = 126
+    // Sesión B: [10, 10] → e1RM = 90*(1+10/30) = 120
+    // maxE1RM debería ser 126
+    const entries = [
+      makeEntry('2026-01-01', [makeFullLog('press', { weight: 90, actual: [12, 8] })]),
+      makeEntry('2026-01-02', [makeFullLog('press', { weight: 90, actual: [10, 10] })]),
+    ];
+    const result = getMaxMetrics(entries, 'press');
+    expect(result.maxE1RM).toBeCloseTo(90 * (1 + 12 / 30), 5);
   });
 });

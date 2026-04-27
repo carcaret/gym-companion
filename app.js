@@ -8,7 +8,7 @@ import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, P
 import { todayStr, formatDate, formatDateShort } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getWeeklyBucketsForExercise as _getWeeklyBucketsForExercise } from './src/data.js';
-import { computeVolume } from './src/metrics.js';
+import { computeVolume, computeE1RM } from './src/metrics.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, findLog } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
@@ -357,14 +357,23 @@ function formatActualReps(log) {
 function buildBarTooltip(log) {
   const repsStr = formatActualReps(log);
   const weightPart = log.weight > 0 ? `${log.weight}kg` : '';
-  if (weightPart && repsStr) return `${weightPart} · ${repsStr}`;
-  return weightPart || repsStr || '';
+  const e1rm = computeE1RM(log);
+  const parts = [];
+  if (e1rm > 0) parts.push(`e1RM ${Math.round(e1rm * 10) / 10}kg`);
+  if (weightPart) parts.push(weightPart);
+  if (repsStr) parts.push(repsStr);
+  return parts.join(' · ');
+}
+
+function getPrimaryMetric(log) {
+  const e1rm = computeE1RM(log);
+  return e1rm > 0 ? e1rm : computeVolume(log);
 }
 
 function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
   const buckets = getWeeklyBucketsForExercise(exerciseId, anchorDate);
-  const currentVol = computeVolume(currentLog);
-  const hasCurrent = currentVol > 0;
+  const currentMetric = getPrimaryMetric(currentLog);
+  const hasCurrent = currentMetric > 0;
 
   if (hasCurrent) {
     const lastBucket = buckets[buckets.length - 1];
@@ -374,15 +383,15 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
   const sessionsCount = buckets.filter(b => b.session).length;
   if (sessionsCount === 0) return '';
 
-  const maxVol = Math.max(...buckets.filter(b => b.session).map(b => computeVolume(b.session.log)));
+  const maxMetric = Math.max(...buckets.filter(b => b.session).map(b => getPrimaryMetric(b.session.log)));
 
   let deltaHtml = '';
   if (hasCurrent) {
     const prevBucket = [...buckets].slice(0, -1).reverse().find(b => b.session);
     if (prevBucket) {
-      const prevVol = computeVolume(prevBucket.session.log);
-      if (prevVol > 0) {
-        const pct = Math.round(((currentVol - prevVol) / prevVol) * 100);
+      const prevMetric = getPrimaryMetric(prevBucket.session.log);
+      if (prevMetric > 0) {
+        const pct = Math.round(((currentMetric - prevMetric) / prevMetric) * 100);
         const cls = pct >= 0 ? 'vol-delta' : 'vol-delta down';
         const arrow = pct >= 0 ? '↑' : '↓';
         const sign = pct >= 0 ? '+' : '';
@@ -396,8 +405,8 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
     const hasSession = bucket.session !== null;
     const isCurrent = hasSession && bucket.session.isCurrent;
 
-    const vol = hasSession ? computeVolume(bucket.session.log) : 0;
-    const height = hasSession && maxVol > 0 ? Math.max(6, Math.round((vol / maxVol) * 100)) : 0;
+    const metric = hasSession ? getPrimaryMetric(bucket.session.log) : 0;
+    const height = hasSession && maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 0;
 
     let barClass;
     if (!hasSession) barClass = 'empty';
@@ -1304,7 +1313,7 @@ function renderChart() {
     return;
   }
 
-  const { datasets, weightDatasets } = buildChartDatasets(DB.history, selectedExercises, from, to, getExerciseName, chartType);
+  const { e1rmDatasets, weightDatasets } = buildChartDatasets(DB.history, selectedExercises, from, to, getExerciseName, chartType);
 
   if (currentChart) currentChart.destroy();
   if (currentWeightChart) currentWeightChart.destroy();
@@ -1312,11 +1321,11 @@ function renderChart() {
   const ctx = document.getElementById('chart-canvas').getContext('2d');
   const ctxWeight = document.getElementById('chart-canvas-weight').getContext('2d');
 
-  currentChart = makeChart(ctx, datasets, chartType, { yTitle: 'Volumen', withE1RM: true });
-  currentWeightChart = makeChart(ctxWeight, weightDatasets, chartType, { yTitle: 'Peso (kg)', withE1RM: false });
+  currentChart = makeChart(ctx, e1rmDatasets, chartType, { yTitle: 'e1RM (kg)' });
+  currentWeightChart = makeChart(ctxWeight, weightDatasets, chartType, { yTitle: 'Peso (kg)' });
 }
 
-function makeChart(ctx, datasets, chartType, { yTitle, withE1RM }) {
+function makeChart(ctx, datasets, chartType, { yTitle }) {
   const axisTicks = { color: '#888', font: { size: 10 } };
   const axisGrid = { color: 'rgba(255,255,255,0.04)' };
   const titleStyle = { color: '#888', font: { size: 11 } };
@@ -1335,15 +1344,6 @@ function makeChart(ctx, datasets, chartType, { yTitle, withE1RM }) {
       ticks: axisTicks
     }
   };
-
-  if (withE1RM) {
-    scales.y1 = {
-      position: 'right',
-      title: { display: true, text: 'e1RM (kg)', ...titleStyle },
-      grid: { drawOnChartArea: false },
-      ticks: axisTicks
-    };
-  }
 
   return new Chart(ctx, {
     type: chartType,
