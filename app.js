@@ -383,7 +383,17 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
   const sessionsCount = buckets.filter(b => b.session).length;
   if (sessionsCount === 0) return '';
 
-  const maxMetric = Math.max(...buckets.filter(b => b.session).map(b => getPrimaryMetric(b.session.log)));
+  const sessionMetrics = buckets.filter(b => b.session).map(b => getPrimaryMetric(b.session.log));
+  const maxMetric = Math.max(...sessionMetrics);
+  const minMetric = Math.min(...sessionMetrics);
+
+  const barColor = metric => {
+    const t = maxMetric === minMetric ? 1 : (metric - minMetric) / (maxMetric - minMetric);
+    const r = Math.round(0x1e + (0x56 - 0x1e) * t);
+    const g = Math.round(0x3a + (0x9c - 0x3a) * t);
+    const b = Math.round(0x50 + (0xd6 - 0x50) * t);
+    return `rgb(${r},${g},${b})`;
+  };
 
   let deltaHtml = '';
   if (hasCurrent) {
@@ -400,18 +410,24 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
     }
   }
 
+  const currentColor = hasCurrent ? barColor(currentMetric) : barColor(maxMetric);
+  const prevColor = barColor(minMetric);
+
   const barsHtml = buckets.map((bucket, i) => {
-    const weeksBack = buckets.length - 1 - i;
     const hasSession = bucket.session !== null;
     const isCurrent = hasSession && bucket.session.isCurrent;
 
     const metric = hasSession ? getPrimaryMetric(bucket.session.log) : 0;
     const height = hasSession && maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 0;
 
-    let barClass;
-    if (!hasSession) barClass = 'empty';
-    else if (isCurrent) barClass = 'current';
-    else barClass = `prev${weeksBack}`;
+    let barClass, barStyle;
+    if (!hasSession) {
+      barClass = 'empty';
+      barStyle = `height:${height}%`;
+    } else {
+      barClass = isCurrent ? 'current' : 'prev';
+      barStyle = `height:${height}%; background:${barColor(metric)}`;
+    }
 
     const label = hasSession ? formatDateShort(isCurrent ? anchorDate : bucket.session.date) : formatDateShort(bucket.weekStart);
 
@@ -423,7 +439,7 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
 
     const colClass = hasSession ? 'history-bar-col' : 'history-bar-col empty';
     return `<div class="${colClass}">
-      <div class="bar-wrap"${tooltipAttr}><div class="bar ${barClass}" style="height:${height}%"></div></div>
+      <div class="bar-wrap"${tooltipAttr}><div class="bar ${barClass}" style="${barStyle}"></div></div>
       <div class="bar-date">${label}</div>
     </div>`;
   }).join('');
@@ -433,8 +449,8 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
     <div class="history-bars">${barsHtml}</div>
     <div class="history-strip-meta">
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot legend-dot-current"></div><div class="legend-txt">hoy</div></div>
-        <div class="legend-item"><div class="legend-dot legend-dot-prev"></div><div class="legend-txt">anterior</div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:${currentColor}"></div><div class="legend-txt">hoy</div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:${prevColor}"></div><div class="legend-txt">anterior</div></div>
       </div>
       ${deltaHtml}
     </div>
