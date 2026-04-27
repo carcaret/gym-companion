@@ -1095,9 +1095,11 @@ body {
   min-height: 3px;
 }
 .bar.current { background: #569cd6; }
-.bar.prev1   { background: #3a6f99; }
-.bar.prev2   { background: #2a5070; }
-.bar.prev3   { background: #1e3a50; }
+.bar.prev1   { background: #4b88bb; }
+.bar.prev2   { background: #4075a0; }
+.bar.prev3   { background: #346185; }
+.bar.prev4   { background: #294e6b; }
+.bar.prev5   { background: #1e3a50; }
 .bar.empty {
   background: var(--border);
   opacity: 0.4;
