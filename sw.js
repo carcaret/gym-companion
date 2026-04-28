@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gym-companion-v4';
+const CACHE_NAME = 'gym-companion-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -10,8 +10,6 @@ const ASSETS = [
   './src/formatting.js',
   './src/data.js',
   './src/workout.js',
-  './src/log-mutations.js',
-  './src/history.js',
   './src/github.js',
   './src/charts.js',
   './db.json',

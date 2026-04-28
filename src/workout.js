@@ -174,8 +174,5 @@ export function sortHistory(history) {
 
 export function findLog(history, date, logIdx) {
   const entry = history.find(h => h.date === date);
-  if (!entry) return null;
-  const log = entry.logs[logIdx];
-  if (!log) return null;
-  return { entry, log };
+  return entry?.logs[logIdx] ?? null;
 }

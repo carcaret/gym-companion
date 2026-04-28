@@ -1,3 +1,11 @@
+// Convención de zonas horarias:
+// - Funciones que devuelven YYYY-MM-DD (todayStr, addDaysStr, getWeekStartStr):
+//   parsean con 'T12:00:00Z' (UTC noon). Inmune a DST y a saltos a otro día
+//   por offset local.
+// - Funciones de presentación (formatDate, formatDateShort, relativeDate, dateBlock):
+//   parsean con 'T00:00:00' (local) para que la fecha mostrada coincida con la
+//   zona horaria del dispositivo del usuario.
+
 export function todayStr() {
   return new Date().toISOString().split('T')[0];
 }

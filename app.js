@@ -19,7 +19,7 @@ let currentChart = null;
 let currentWeightChart = null;
 let saveTimeout = null;
 
-// ── sync state: 'none' | 'ok' | 'pending' | 'error' ──────────────────────────
+// ── sync state: 'ok' | 'pending' ──────────────────────────────────────────────
 let syncState = 'ok';
 let conflict = false;
 
@@ -72,7 +72,7 @@ function toast(msg, type = null, duration = 2500) {
 function setStatus(el, msg, type = null) {
   el.hidden = false;
   el.innerHTML = buildStatusHtml(msg, type);
-  el.className = 'status-msg' + (type === 'ok' ? ' success' : (type === 'error' || type === 'warn') ? ' error' : '');
+  el.className = 'status-msg' + (type === 'ok' ? ' success' : type === 'warn' ? ' warning' : type === 'error' ? ' error' : '');
 }
 
 // ── Sync status indicator ──────────────────────────────────────────────────────
@@ -262,10 +262,10 @@ function applyRemoteDB(remote) {
   renderHoy();
 }
 
-function persistDB({ forceGitHub = false } = {}) {
+function persistDB() {
   saveDBLocal();
   safeSetLocal(NEEDS_UPLOAD_KEY, 'true');
-  if (_isWorkoutActive(DB, todayStr()) && !forceGitHub) return;
+  if (_isWorkoutActive(DB, todayStr())) return;
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async () => {
     saveTimeout = null;
@@ -1040,16 +1040,14 @@ function renderHistorial() {
   const header = document.querySelector('#view-historial .view-header h2');
   if (header) {
     header.textContent = 'Historial';
-    header.style.flexDirection = '';
-    header.style.alignItems = '';
-    header.style.gap = '';
+    header.classList.remove('detail-incomplete');
   }
 
   if (historialDetailDate) {
     const staleEntry = DB.history.find(h => h.date === historialDetailDate);
     if (staleEntry) {
       historialSnapshots.forEach((snapshot, idx) => {
-        staleEntry.logs[idx] = JSON.parse(JSON.stringify(snapshot));
+        staleEntry.logs[idx] = structuredClone(snapshot);
       });
     }
   }
@@ -1119,9 +1117,7 @@ function renderHistorialDetail(date) {
   const isIncomplete = entry.completed === false;
   if (header) {
     header.innerHTML = `<span>${DAY_LABELS[entry.type] || entry.type} — ${formatDate(date)}</span>${isIncomplete ? `<span class="incomplete-header-badge">${icon('clock', 11)} Incompleto</span>` : ''}`;
-    header.style.flexDirection = isIncomplete ? 'column' : '';
-    header.style.alignItems = isIncomplete ? 'flex-start' : '';
-    header.style.gap = isIncomplete ? '4px' : '';
+    header.classList.toggle('detail-incomplete', isIncomplete);
   }
 
   let html = '';
@@ -1194,14 +1190,14 @@ function renderHistorialDetail(date) {
         historialOpenCards.delete(idx);
         if (historialDirtyCards.has(idx)) {
           const snapshot = historialSnapshots.get(idx);
-          if (snapshot) entry.logs[idx] = JSON.parse(JSON.stringify(snapshot));
+          if (snapshot) entry.logs[idx] = structuredClone(snapshot);
           historialDirtyCards.delete(idx);
           historialSnapshots.delete(idx);
           setTimeout(() => renderHistorialDetail(date), 350);
         }
       } else {
         if (!historialSnapshots.has(idx)) {
-          historialSnapshots.set(idx, JSON.parse(JSON.stringify(entry.logs[idx])));
+          historialSnapshots.set(idx, structuredClone(entry.logs[idx]));
         }
         const log = entry.logs[idx];
         log.reps.actual = Array.from({ length: log.series }, (_, i) =>
@@ -1244,8 +1240,7 @@ function renderHistorialDetail(date) {
     getLog: (el, idx) => {
       const d = el.dataset.date;
       if (!d) return null;
-      const found = findLog(DB.history, d, idx);
-      return found?.log ?? null;
+      return findLog(DB.history, d, idx);
     },
     onSuccess: (el, _log, idx) => {
       const d = el.dataset.date;
@@ -1457,8 +1452,8 @@ function setupSettings() {
 
     if (!repo || !pat) { toast('Repo y PAT requeridos', 'warn'); return; }
 
-    localStorage.setItem(GITHUB_KEY, JSON.stringify({ repo, branch, path }));
-    localStorage.setItem(PAT_KEY, pat);
+    safeSetLocal(GITHUB_KEY, JSON.stringify({ repo, branch, path }));
+    safeSetLocal(PAT_KEY, pat);
     setSyncState('pending');
     toast('Configuración guardada — sincronizando...', 'ok');
 

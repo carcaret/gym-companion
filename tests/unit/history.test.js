@@ -102,12 +102,11 @@ describe('sortHistory', () => {
 // ════════════════════════════════════════════════
 
 describe('findLog', () => {
-  test('con fecha existente y logIdx válido devuelve {entry, log}', () => {
+  test('con fecha existente y logIdx válido devuelve el log', () => {
     const h = makeHistory();
-    const found = findLog(h, '2026-03-25', 0);
-    expect(found).not.toBeNull();
-    expect(found.entry.date).toBe('2026-03-25');
-    expect(found.log.exercise_id).toBe('press_banca');
+    const log = findLog(h, '2026-03-25', 0);
+    expect(log).not.toBeNull();
+    expect(log.exercise_id).toBe('press_banca');
   });
 
   test('con fecha inexistente devuelve null', () => {

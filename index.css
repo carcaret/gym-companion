@@ -208,6 +208,7 @@ body {
   gap: 6px;
 }
 .view-header h2 .icon-done { color: #6a9955; display: flex; }
+.view-header h2.detail-incomplete { flex-direction: column; align-items: flex-start; gap: 4px; }
 
 .header-right {
   display: flex;
@@ -247,8 +248,6 @@ body {
 .sync-indicator:active { background: var(--bg-hover); }
 .sync-indicator[data-state="ok"]      { color: #6a9955; }
 .sync-indicator[data-state="pending"] { color: #dcdcaa; }
-.sync-indicator[data-state="error"]   { color: #f44747; }
-.sync-indicator[data-state="none"]    { color: var(--text-muted); }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
@@ -843,6 +842,7 @@ body {
 }
 .status-msg.success { color: var(--green); background: rgba(106, 153, 85, 0.12); }
 .status-msg.error { color: var(--red); background: rgba(244, 71, 71, 0.1); }
+.status-msg.warning { color: var(--gold); background: rgba(220, 220, 170, 0.10); }
 
 .error-msg {
   color: var(--red);
