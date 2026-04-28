@@ -820,7 +820,7 @@ body {
   background: var(--bg-card);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: var(--radius);
-  padding: 20px 16px;
+  padding: 16px;
   margin-bottom: 16px;
   backdrop-filter: blur(10px);
 }
@@ -828,7 +828,7 @@ body {
 .settings-section h3 {
   font-size: 16px;
   font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .status-msg {
