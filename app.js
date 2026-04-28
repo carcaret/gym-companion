@@ -1494,7 +1494,7 @@ function setupSettings() {
       'Sincronizar desde GitHub',
       '<p class="text-sm">Esto <strong>sobreescribirá tus datos locales</strong> con los de GitHub. Los cambios no subidos se perderán. ¿Continuar?</p>',
       [
-        { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => false },
+        { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
         {
           label: 'Sobreescribir local', className: 'btn-primary btn-sm', action: async () => {
             const statusEl = document.getElementById('sync-status');
