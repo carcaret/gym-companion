@@ -1029,14 +1029,11 @@ function deleteHistoryEntry(date) {
 }
 
 // ── View: Historial ──
-let historialFilter = 'TODOS';
 let editingHistorialExercise = null;
 
 function renderHistorial() {
   const content = document.getElementById('historial-content');
-  const filters = document.getElementById('historial-filters');
   const header = document.querySelector('#view-historial .view-header h2');
-  if (filters) filters.style.display = '';
   if (header) {
     header.textContent = 'Historial';
     header.style.flexDirection = '';
@@ -1047,7 +1044,7 @@ function renderHistorial() {
   editingHistorialExercise = null;
 
   const entries = sortHistory(DB.history);
-  const filtered = filterHistory(entries, historialFilter);
+  const filtered = filterHistory(entries, 'TODOS');
 
   if (filtered.length === 0) {
     content.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon('clipboard', 48)}</div><p>No hay sesiones registradas</p></div>`;
@@ -1094,10 +1091,7 @@ function renderHistorialDetail(date) {
   if (!entry) return;
 
   const content = document.getElementById('historial-content');
-  const filters = document.getElementById('historial-filters');
   const header = document.querySelector('#view-historial .view-header h2');
-  if (filters) filters.style.display = 'none';
-
   const isIncomplete = entry.completed === false;
   if (header) {
     header.innerHTML = `<span>${DAY_LABELS[entry.type] || entry.type} — ${formatDate(date)}</span>${isIncomplete ? `<span class="incomplete-header-badge">${icon('clock', 11)} Incompleto</span>` : ''}`;
@@ -1317,7 +1311,7 @@ function initExerciseSearchDropdown() {
 function renderChart() {
   const from = document.getElementById('chart-from').value;
   const to = document.getElementById('chart-to').value;
-  const chartType = document.querySelector('.toggle-btn.active')?.dataset.chart || 'line';
+  const chartType = 'line';
   const selectedExercise = document.getElementById('chart-exercise-select').value;
   const selectedExercises = selectedExercise ? [selectedExercise] : [];
 
@@ -1489,26 +1483,9 @@ function setupTabs() {
 }
 
 function setupFilters() {
-  document.querySelectorAll('#historial-filters .filter-btn').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('#historial-filters .filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      historialFilter = btn.dataset.filter;
-      renderHistorial();
-    };
-  });
-
   document.getElementById('chart-from')?.addEventListener('change', () => { updateChartExercises(); renderChart(); });
   document.getElementById('chart-to')?.addEventListener('change', () => { updateChartExercises(); renderChart(); });
   initExerciseSearchDropdown();
-
-  document.querySelectorAll('.toggle-btn').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderChart();
-    };
-  });
 }
 
 // ── Default DB (fetch local file) ──
