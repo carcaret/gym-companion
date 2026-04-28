@@ -125,7 +125,7 @@ body {
 /* ── Buttons ── */
 .btn-primary, .btn-secondary, .btn-danger {
   width: 100%;
-  padding: 14px;
+  padding: 8px 14px;
   border: none;
   border-radius: var(--radius-sm);
   font-family: var(--font);
@@ -1100,7 +1100,7 @@ body {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  padding: 14px;
+  padding: 8px 14px;
   transition: transform 0.15s var(--ease), background 0.2s;
 }
 .btn-accent-subtle:active { transform: scale(0.97); }
@@ -1270,10 +1270,13 @@ body {
 
 /* ── Card footer con remove-btn discreto ─────────────────────────────────── */
 .card-footer {
-  padding: 2px 14px 10px;
+  padding: 12px 14px 6px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+.historial-save-btn {
+  margin-bottom: 0;
 }
 .remove-btn {
   font-size: 11px;
