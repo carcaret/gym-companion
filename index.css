@@ -653,19 +653,10 @@ body {
 .historial-delete-btn:hover { opacity: 1; }
 
 /* ── Historial Detail ── */
-.historial-detail-card .historial-edit-btn {
-  flex-shrink: 0;
-}
-
 /* ── Flat matte SVG icons (matches tab bar style) ── */
 .icon-svg { display: inline-block; vertical-align: middle; opacity: 0.5; }
 .btn-icon .icon-svg { opacity: 0.5; }
 .btn-icon:hover .icon-svg, .btn-icon:active .icon-svg { opacity: 0.8; }
-
-.historial-detail-card.editing {
-  border-color: var(--accent-glow);
-  box-shadow: 0 0 12px var(--accent-glow);
-}
 
 .type-badge.DIA1 { background: rgba(122, 174, 224, 0.15); color: var(--color-dia1); }
 .type-badge.DIA2 { background: rgba(127, 202, 177, 0.12); color: var(--color-dia2); }

@@ -139,7 +139,6 @@ test.describe('Vista de entreno completado', () => {
     expect(historyCount).toBeGreaterThan(0);
 
     const historyClasses = await historyCards.first().getAttribute('class');
-    expect(historyClasses).toContain('compact-card');
     expect(historyClasses).toContain('historial-detail-card');
     await expect(page.locator('#view-historial .historial-detail-card .card-title').first()).toBeVisible();
     await expect(page.locator('#view-historial .historial-detail-card .card-subtitle').first()).toBeVisible();

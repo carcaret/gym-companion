@@ -6,7 +6,6 @@ test.describe('Validación en edición de Historial', () => {
     await injectTestSession(page);
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
-    // Navigate to historial
     await page.click('[data-view="historial"]');
     await expect(page.locator('.historial-entry-btn').first()).toBeVisible();
   });
@@ -15,111 +14,133 @@ test.describe('Validación en edición de Historial', () => {
     await clearStorage(page);
   });
 
-  async function openFirstEntryAndEdit(page) {
-    // Click first history entry
+  async function openFirstEntryAndExpand(page) {
     await page.locator('.historial-entry-btn').first().click();
     await expect(page.locator('#historial-content')).toBeVisible();
-
-    // Click edit button (✏️) on first exercise
-    const editBtn = page.locator('.historial-edit-btn').first();
-    await editBtn.click();
-
-    // Should be in edit mode (card has class editing)
-    await expect(page.locator('.historial-detail-card.editing')).toBeVisible();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
   }
 
-  test('editar entry → vaciar una rep → click ✅ → se bloquea + input-error', async ({ page }) => {
-    await openFirstEntryAndEdit(page);
+  test('expandir entry → vaciar rep → click Guardar → se bloquea + input-error', async ({ page }) => {
+    await openFirstEntryAndExpand(page);
 
-    // Clear first rep
     const repInput = page.locator('#h-rep-0-0');
     await repInput.fill('');
     await repInput.dispatchEvent('change');
 
-    // Click save (✅)
-    const saveBtn = page.locator('.historial-edit-btn').first();
-    await saveBtn.click();
+    await page.locator('.historial-save-btn').first().click();
 
-    // Should still be in edit mode (blocked)
-    await expect(page.locator('.historial-detail-card.editing')).toBeVisible();
-
-    // Rep input should have error class
+    // Card debe seguir abierta
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
     await expect(repInput).toHaveClass(/input-error/);
   });
 
-  test('editar entry → vaciar una rep → rellenarla → click ✅ → se cierra ok', async ({ page }) => {
-    await openFirstEntryAndEdit(page);
+  test('expandir entry → vaciar rep → rellenarla → click Guardar → se cierra ok', async ({ page }) => {
+    await openFirstEntryAndExpand(page);
 
-    // Clear first rep
     const repInput = page.locator('#h-rep-0-0');
     await repInput.fill('');
     await repInput.dispatchEvent('change');
 
-    // Try to save - should block
-    const saveBtn = page.locator('.historial-edit-btn').first();
-    await saveBtn.click();
-    await expect(page.locator('.historial-detail-card.editing')).toBeVisible();
+    await page.locator('.historial-save-btn').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
 
-    // Fix the rep
     await repInput.fill('10');
     await repInput.dispatchEvent('change');
 
-    // Now save should work
-    await saveBtn.click();
-    await expect(page.locator('.historial-detail-card.editing')).not.toBeVisible();
+    await page.locator('.historial-save-btn').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open')).toHaveCount(0);
   });
 
-  test('editar entry → todo correcto → se cierra normalmente', async ({ page }) => {
-    await openFirstEntryAndEdit(page);
+  test('expandir entry → todo correcto → guardar se cierra normalmente', async ({ page }) => {
+    await openFirstEntryAndExpand(page);
 
-    // All reps should already be filled from fixture data
-    // Click save (✅)
-    const saveBtn = page.locator('.historial-edit-btn').first();
-    await saveBtn.click();
+    // Modificar un valor para que aparezca Guardar
+    const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    const original = await weightInput.inputValue();
+    await weightInput.fill(String(parseInt(original) + 5));
+    await weightInput.dispatchEvent('change');
 
-    // Edit mode should close
-    await expect(page.locator('.historial-detail-card.editing')).not.toBeVisible();
+    await page.locator('.historial-save-btn').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open')).toHaveCount(0);
   });
 
-  test('entry con reps.actual vacío → al editar se rellenan con expected y se puede guardar', async ({ page }) => {
-    // The fixture has an entry on 2024-01-05 with reps.actual = []
-    // It should appear last (sorted desc by date, so it's the last entry)
+  test('entry con reps.actual vacío → al expandir se rellenan con expected', async ({ page }) => {
+    // El fixture tiene un entry en 2024-01-05 con reps.actual = []
     const entries = page.locator('.historial-entry-btn');
-    const lastEntry = entries.last();
-    await lastEntry.click();
+    await entries.last().click();
 
-    // Click edit
-    const editBtn = page.locator('.historial-edit-btn').first();
-    await editBtn.click();
-    await expect(page.locator('.historial-detail-card.editing')).toBeVisible();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
 
-    // Rep inputs should be pre-filled with expected value (10), not empty
     const repInput = page.locator('#h-rep-0-0');
     await expect(repInput).toHaveValue('10');
-
-    // Input directo de rep funciona (los botones +/- de serie se eliminaron en el rediseño)
-    await repInput.fill('11');
-    await repInput.dispatchEvent('change');
-    await expect(repInput).toHaveValue('11');
-
-    // Save should work
-    await page.locator('.historial-detail-card.editing .historial-edit-btn').click();
-    await expect(page.locator('.historial-detail-card.editing')).not.toBeVisible();
   });
 
-  test('editar entry → toast de warning al intentar guardar con errores', async ({ page }) => {
-    await openFirstEntryAndEdit(page);
+  test('entry con reps.actual vacío → colapsar sin guardar → reexpandir → sigue rellenando con expected', async ({ page }) => {
+    const entries = page.locator('.historial-entry-btn');
+    await entries.last().click();
 
-    // Clear a rep
+    const cardHeader = page.locator('.historial-detail-card .card-header').first();
+    await cardHeader.click();
+    await expect(page.locator('#h-rep-0-0')).toHaveValue('10');
+
+    // Colapsar sin guardar
+    await cardHeader.click();
+    await page.waitForTimeout(400);
+
+    // Reexpandir: debe volver a rellenar con expected
+    await cardHeader.click();
+    await expect(page.locator('#h-rep-0-0')).toHaveValue('10');
+  });
+
+  test('expandir entry → toast de warning al intentar guardar con errores', async ({ page }) => {
+    await openFirstEntryAndExpand(page);
+
     const repInput = page.locator('#h-rep-0-0');
     await repInput.fill('');
     await repInput.dispatchEvent('change');
 
-    // Try to save
-    const saveBtn = page.locator('.historial-edit-btn').first();
-    await saveBtn.click();
+    await page.locator('.historial-save-btn').first().click();
 
-    // Toast should show warning
     await expect(page.locator('.toast')).toContainText('Corrige los campos');
+  });
+
+  test('guardar persiste cambio en localStorage', async ({ page }) => {
+    await openFirstEntryAndExpand(page);
+
+    const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    await weightInput.fill('77');
+    await weightInput.dispatchEvent('change');
+
+    await page.locator('.historial-save-btn').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open')).toHaveCount(0);
+
+    // El primer entry mostrado es 2024-01-10 — buscar por fecha, no por índice
+    const stored = await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('gym_companion_db'));
+      return db.history.find(h => h.date === '2024-01-10').logs[0].weight;
+    });
+    expect(stored).toBe(77);
+  });
+
+  test('colapsar sin guardar NO persiste cambio en localStorage', async ({ page }) => {
+    await openFirstEntryAndExpand(page);
+
+    const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    const originalValue = await weightInput.inputValue();
+    await weightInput.fill('999');
+    await weightInput.dispatchEvent('change');
+
+    const cardHeader = page.locator('.historial-detail-card .card-header').first();
+    await cardHeader.click();
+    await page.waitForTimeout(400);
+
+    // El primer entry mostrado es 2024-01-10 — buscar por fecha, no por índice
+    const stored = await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('gym_companion_db'));
+      return db.history.find(h => h.date === '2024-01-10').logs[0].weight;
+    });
+    expect(String(stored)).toBe(originalValue);
   });
 });

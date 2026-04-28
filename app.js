@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.23';
+const APP_VERSION = '1.0.24';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
@@ -1030,7 +1030,10 @@ function deleteHistoryEntry(date) {
 }
 
 // ── View: Historial ──
-let editingHistorialExercise = null;
+const historialOpenCards = new Set();
+const historialDirtyCards = new Set();
+const historialSnapshots = new Map();
+let historialDetailDate = null;
 
 function renderHistorial() {
   const content = document.getElementById('historial-content');
@@ -1042,7 +1045,18 @@ function renderHistorial() {
     header.style.gap = '';
   }
 
-  editingHistorialExercise = null;
+  if (historialDetailDate) {
+    const staleEntry = DB.history.find(h => h.date === historialDetailDate);
+    if (staleEntry) {
+      historialSnapshots.forEach((snapshot, idx) => {
+        staleEntry.logs[idx] = JSON.parse(JSON.stringify(snapshot));
+      });
+    }
+  }
+  historialDetailDate = null;
+  historialOpenCards.clear();
+  historialDirtyCards.clear();
+  historialSnapshots.clear();
 
   const entries = sortHistory(DB.history);
 
@@ -1096,6 +1110,7 @@ function renderHistorial() {
 }
 
 function renderHistorialDetail(date) {
+  historialDetailDate = date;
   const entry = DB.history.find(h => h.date === date);
   if (!entry) return;
 
@@ -1113,35 +1128,33 @@ function renderHistorialDetail(date) {
 
   entry.logs.forEach((log, logIdx) => {
     const name = getExerciseName(log.exercise_id);
-    const isEditing = editingHistorialExercise && editingHistorialExercise.date === date && editingHistorialExercise.logIdx === logIdx;
+    const isOpen = historialOpenCards.has(logIdx);
+    const isDirty = historialDirtyCards.has(logIdx);
 
-    if (isEditing) {
-      html += `<div class="card historial-detail-card editing">
-      <div class="exercise-row exercise-row--editing">
-        <div class="exercise-row-controls">
-          <div class="exercise-name">${name}</div>
-          <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}">${icon('check', 14, 'icon-svg')}</button>
-        </div>`;
-      html += buildHistoryStripHtml(log.exercise_id, log, date);
-      html += '<div class="params-section">';
-      html += buildParamRowsHtml('h', logIdx, log, date);
-      html += '</div>';
-      html += '<div class="divider"></div>';
-      html += `<div class="series-section">
-        <div class="series-section-label">Reps por serie</div>`;
-      html += buildAllSeriesRowsHtml('h', logIdx, log, date);
-      html += `</div></div></div>`;
-    } else {
-      html += `<div class="card compact-card historial-detail-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">${name}</div>
-          <div class="card-subtitle">${formatLogSummary(log)}</div>
-        </div>
-        <button class="btn-icon btn-icon-sm historial-edit-btn" data-logidx="${logIdx}">${icon('pencil', 14, 'icon-svg')}</button>
+    html += `<div class="card historial-detail-card" id="hcard-${logIdx}">
+    <div class="card-header" data-idx="${logIdx}">
+      <div>
+        <div class="card-title">${name}</div>
+        <div class="card-subtitle">${formatLogSummary(log)}</div>
       </div>
-    </div>`;
+      <span class="card-chevron${isOpen ? ' open' : ''}" id="hchevron-${logIdx}">▼</span>
+    </div>
+    <div class="card-body${isOpen ? ' open' : ''}" id="hbody-${logIdx}">`;
+    html += buildHistoryStripHtml(log.exercise_id, log, date);
+    html += '<div class="params-section">';
+    html += buildParamRowsHtml('h', logIdx, log, date);
+    html += '</div>';
+    html += '<div class="divider"></div>';
+    html += `<div class="series-section">
+      <div class="series-section-label">Reps por serie</div>`;
+    html += buildAllSeriesRowsHtml('h', logIdx, log, date);
+    html += '</div>';
+    if (isDirty) {
+      html += `<div class="card-footer">
+        <button class="btn-primary historial-save-btn" data-logidx="${logIdx}">Guardar</button>
+      </div>`;
     }
+    html += '</div></div>';
   });
 
   if (isIncomplete) {
@@ -1168,6 +1181,65 @@ function renderHistorialDetail(date) {
     };
   }
 
+  content.querySelectorAll('.card-header').forEach(cardHeader => {
+    cardHeader.onclick = () => {
+      const idx = parseInt(cardHeader.dataset.idx);
+      const body = document.getElementById(`hbody-${idx}`);
+      const chevron = document.getElementById(`hchevron-${idx}`);
+      const wasOpen = body.classList.contains('open');
+
+      if (wasOpen) {
+        body.classList.remove('open');
+        chevron.classList.remove('open');
+        historialOpenCards.delete(idx);
+        if (historialDirtyCards.has(idx)) {
+          const snapshot = historialSnapshots.get(idx);
+          if (snapshot) entry.logs[idx] = JSON.parse(JSON.stringify(snapshot));
+          historialDirtyCards.delete(idx);
+          historialSnapshots.delete(idx);
+          setTimeout(() => renderHistorialDetail(date), 350);
+        }
+      } else {
+        if (!historialSnapshots.has(idx)) {
+          historialSnapshots.set(idx, JSON.parse(JSON.stringify(entry.logs[idx])));
+        }
+        const log = entry.logs[idx];
+        log.reps.actual = Array.from({ length: log.series }, (_, i) =>
+          log.reps.actual[i] != null ? log.reps.actual[i] : log.reps.expected
+        );
+        // Actualizar inputs del DOM que se renderizaron con reps.actual vacío
+        for (let s = 0; s < log.series; s++) {
+          const input = document.getElementById(`h-rep-${idx}-${s}`);
+          if (input) {
+            const v = log.reps.actual[s];
+            input.value = (v !== null && v !== undefined) ? v : '';
+          }
+        }
+        body.classList.add('open');
+        chevron.classList.add('open');
+        historialOpenCards.add(idx);
+      }
+    };
+  });
+
+  content.querySelectorAll('.historial-save-btn').forEach(btn => {
+    btn.onclick = () => {
+      const logIdx = parseInt(btn.dataset.logidx);
+      const log = entry.logs[logIdx];
+      const errors = validateLog(log);
+      if (errors.length > 0) {
+        applyValidationErrors(logIdx, log, 'h');
+        toast('Corrige los campos marcados antes de guardar', 'warn');
+        return;
+      }
+      historialSnapshots.delete(logIdx);
+      historialDirtyCards.delete(logIdx);
+      historialOpenCards.delete(logIdx);
+      persistDB();
+      renderHistorialDetail(date);
+    };
+  });
+
   setupLogActionDelegation(content, {
     getLog: (el, idx) => {
       const d = el.dataset.date;
@@ -1177,34 +1249,11 @@ function renderHistorialDetail(date) {
     },
     onSuccess: (el, _log, idx) => {
       const d = el.dataset.date;
-      persistDB();
+      historialDirtyCards.add(idx);
       renderHistorialDetail(d);
       const en = DB.history.find(h => h.date === d);
       if (en) applyValidationErrors(idx, en.logs[idx], 'h');
     }
-  });
-
-  content.querySelectorAll('.historial-edit-btn').forEach(btn => {
-    btn.onclick = () => {
-      const logIdx = parseInt(btn.dataset.logidx);
-      if (editingHistorialExercise && editingHistorialExercise.date === date && editingHistorialExercise.logIdx === logIdx) {
-        const log = entry.logs[logIdx];
-        const errors = validateLog(log);
-        if (errors.length > 0) {
-          applyValidationErrors(logIdx, log, 'h');
-          toast('Corrige los campos marcados antes de guardar', 'warn');
-          return;
-        }
-        editingHistorialExercise = null;
-      } else {
-        const log = entry.logs[logIdx];
-        log.reps.actual = Array.from({ length: log.series }, (_, i) =>
-          log.reps.actual[i] != null ? log.reps.actual[i] : log.reps.expected
-        );
-        editingHistorialExercise = { date, logIdx };
-      }
-      renderHistorialDetail(date);
-    };
   });
 }
 

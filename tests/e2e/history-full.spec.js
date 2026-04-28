@@ -18,7 +18,6 @@ test.describe('Historial completo', () => {
     await expect(firstEntry).toBeVisible();
     await firstEntry.click();
 
-    // Should show exercise detail cards
     await expect(page.locator('.historial-detail-card').first()).toBeVisible();
   });
 
@@ -26,56 +25,127 @@ test.describe('Historial completo', () => {
     await page.locator('.historial-entry-btn').first().click();
 
     const content = page.locator('#historial-content');
-    // Should contain weight info
     await expect(content).toContainText('kg');
-    // Should contain series x reps format
     await expect(content).toContainText(/\d+×\d+/);
   });
 
-  test('click en editar muestra controles de edicion', async ({ page }) => {
+  test('tap en card expande y muestra controles de edicion', async ({ page }) => {
     await page.locator('.historial-entry-btn').first().click();
 
-    // Click edit button
-    const editBtn = page.locator('.historial-edit-btn').first();
-    await expect(editBtn).toBeVisible();
-    await editBtn.click();
+    const cardHeader = page.locator('.historial-detail-card .card-header').first();
+    await cardHeader.click();
 
-    // Should show editing controls (param-row with inputs)
-    await expect(page.locator('.historial-detail-card.editing')).toBeVisible();
-    await expect(page.locator('.historial-detail-card.editing .param-input').first()).toBeVisible();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+    await expect(page.locator('.historial-detail-card .param-input').first()).toBeVisible();
   });
 
-  test('editar peso en historial y verificar cambio', async ({ page }) => {
+  test('segundo tap en card colapsa el body', async ({ page }) => {
     await page.locator('.historial-entry-btn').first().click();
-    await page.locator('.historial-edit-btn').first().click();
 
-    // Find the weight input and change it
-    const weightInput = page.locator('.historial-detail-card.editing .param-input').first();
+    const cardHeader = page.locator('.historial-detail-card .card-header').first();
+    await cardHeader.click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    await cardHeader.click();
+    await expect(page.locator('.historial-detail-card .card-body.open')).toHaveCount(0);
+  });
+
+  test('boton Guardar no aparece antes de modificar nada', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+
+    const cardHeader = page.locator('.historial-detail-card .card-header').first();
+    await cardHeader.click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    await expect(page.locator('.historial-save-btn')).toHaveCount(0);
+  });
+
+  test('boton Guardar aparece al modificar un valor', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    const weightInput = page.locator('.card-body.open .param-input').first();
     await weightInput.fill('75');
     await weightInput.dispatchEvent('change');
 
-    // Click the checkmark to save/close edit mode
-    await page.locator('.historial-detail-card.editing .historial-edit-btn').click();
+    await expect(page.locator('.historial-save-btn').first()).toBeVisible();
+  });
 
-    // Should show updated weight
+  test('guardar actualiza subtitulo y colapsa la card', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    await weightInput.fill('75');
+    await weightInput.dispatchEvent('change');
+
+    await page.locator('.historial-save-btn').first().click();
+
+    await expect(page.locator('.historial-detail-card .card-body.open')).toHaveCount(0);
     await expect(page.locator('#historial-content')).toContainText('75');
+  });
+
+  test('colapsar sin guardar descarta cambios y muestra valor original al reexpandir', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+
+    const cardHeader = page.locator('.historial-detail-card .card-header').first();
+    await cardHeader.click();
+
+    const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    const originalValue = await weightInput.inputValue();
+    await weightInput.fill('999');
+    await weightInput.dispatchEvent('change');
+
+    await expect(page.locator('.historial-save-btn').first()).toBeVisible();
+
+    // Colapsar sin guardar
+    await cardHeader.click();
+    await expect(page.locator('.historial-detail-card .card-body.open')).toHaveCount(0);
+
+    // Esperar la animacion y re-render
+    await page.waitForTimeout(400);
+
+    // Reexpandir
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    const restoredInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    await expect(restoredInput).toHaveValue(originalValue);
+  });
+
+  test('navegar atras sin guardar descarta cambios', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+    await page.locator('.historial-detail-card .card-header').first().click();
+
+    const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    const originalValue = await weightInput.inputValue();
+    await weightInput.fill('999');
+    await weightInput.dispatchEvent('change');
+
+    await page.locator('#historial-back-btn').click();
+    await expect(page.locator('.historial-entry-btn').first()).toBeVisible();
+
+    // Reabrir mismo dia
+    await page.locator('.historial-entry-btn').first().click();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    const restoredInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    await expect(restoredInput).toHaveValue(originalValue);
   });
 
   test('eliminar entry confirmar desaparece de la lista', async ({ page }) => {
     const entries = page.locator('.historial-entry-btn');
     const initialCount = await entries.count();
 
-    // Click delete on first entry
     await page.locator('.historial-delete-btn').first().click();
-
-    // Modal should appear
     await expect(page.locator('#modal-overlay')).not.toHaveAttribute('hidden');
     await expect(page.locator('#modal-title')).toContainText('Borrar');
 
-    // Click "Borrar" button
     await page.locator('#modal-actions .btn-danger').click();
 
-    // Should have one fewer entry
     const newCount = await page.locator('.historial-entry-btn').count();
     expect(newCount).toBe(initialCount - 1);
   });
@@ -87,10 +157,8 @@ test.describe('Historial completo', () => {
     await page.locator('.historial-delete-btn').first().click();
     await expect(page.locator('#modal-overlay')).not.toHaveAttribute('hidden');
 
-    // Click "Cancelar"
     await page.locator('#modal-actions .btn-secondary').click();
 
-    // Count should remain the same
     const newCount = await page.locator('.historial-entry-btn').count();
     expect(newCount).toBe(initialCount);
   });
@@ -101,7 +169,6 @@ test.describe('Historial completo', () => {
 
     await page.locator('#historial-back-btn').click();
 
-    // Should see list again
     await expect(page.locator('.historial-entry-btn').first()).toBeVisible();
   });
 });
