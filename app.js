@@ -1466,26 +1466,22 @@ function setupSettings() {
   };
 
   document.getElementById('test-github-btn').onclick = async () => {
-    const statusEl = document.getElementById('github-status');
-    statusEl.hidden = false;
-    statusEl.textContent = 'Probando conexión...';
-    statusEl.className = 'status-msg';
-
     const patInput = document.getElementById('set-pat').value.trim();
     const cfg = getGithubConfig();
     if (!cfg || !patInput) {
-      setStatus(statusEl, 'Guarda la configuración primero', 'warn');
+      toast('Guarda la configuración primero', 'warn');
       return;
     }
 
+    toast('Probando conexión...', null, 8000);
     // Sólo verificar que la API responde — NO modificar githubSha ni DB
     const { ok, status } = await fetchGithubDb(cfg, patInput);
     if (ok) {
-      setStatus(statusEl, 'Conexión exitosa', 'ok');
+      toast('Conexión exitosa', 'ok');
     } else if (status > 0) {
-      setStatus(statusEl, `Error ${status} — verifica repo, PAT y rama`, 'error');
+      toast(`Error ${status} — verifica repo, PAT y rama`, 'error');
     } else {
-      setStatus(statusEl, 'No se pudo conectar', 'error');
+      toast('No se pudo conectar', 'error');
     }
   };
 
@@ -1497,17 +1493,14 @@ function setupSettings() {
         { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
         {
           label: 'Sobreescribir local', className: 'btn-primary btn-sm', action: async () => {
-            const statusEl = document.getElementById('sync-status');
-            statusEl.hidden = false;
-            statusEl.textContent = 'Descargando desde GitHub...';
-            statusEl.className = 'status-msg';
+            toast('Descargando desde GitHub...', null, 8000);
             const remote = await loadDBFromGitHub();
             if (!remote || !remote.exercises || !remote.history) {
-              setStatus(statusEl, 'No se pudo descargar o formato inválido', 'error');
+              toast('No se pudo descargar o formato inválido', 'error');
               return false;
             }
             applyRemoteDB(remote);
-            setStatus(statusEl, 'Datos sincronizados desde GitHub', 'ok');
+            toast('Datos sincronizados desde GitHub', 'ok');
           }
         }
       ]

@@ -132,7 +132,7 @@ test.describe('GitHub sync (mock)', () => {
     await page.click('#sync-github-btn');
     await page.click('text=Sobreescribir local');
 
-    await expect(page.locator('#sync-status')).toContainText('No se pudo');
+    await expect(page.locator('#toast')).toContainText('No se pudo');
   });
 
   test('sin conexión (fetch falla) → datos locales se mantienen', async ({ page }) => {
@@ -151,7 +151,7 @@ test.describe('GitHub sync (mock)', () => {
     await page.click('#sync-github-btn');
     await page.click('text=Sobreescribir local');
 
-    await expect(page.locator('#sync-status')).toContainText(/Error|No se pudo/);
+    await expect(page.locator('#toast')).toContainText(/Error|No se pudo/);
 
     const afterDB = await page.evaluate(() => localStorage.getItem('gym_companion_db'));
     expect(afterDB).toBe(initialDB);

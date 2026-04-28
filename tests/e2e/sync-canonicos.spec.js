@@ -202,7 +202,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
     await expect(page.locator('#modal-overlay')).toBeVisible();
     await page.click('text=Sobreescribir local');
 
-    await expect(page.locator('#sync-status')).toContainText('sincronizados');
+    await expect(page.locator('#toast')).toContainText('sincronizados');
 
     const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
     // Ejercicio nuevo del remote está presente

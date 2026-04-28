@@ -103,7 +103,7 @@ test.describe('Ajustes — GitHub y PAT en claro', () => {
     await page.fill('#set-pat', 'ghp_testpat');
     await page.click('#test-github-btn');
 
-    await expect(page.locator('#github-status')).toBeVisible();
+    await expect(page.locator('#toast')).toBeVisible();
 
     // La DB NO debe haber cambiado (test solo verifica conexión)
     const dbAfter = await page.evaluate(() => localStorage.getItem('gym_companion_db'));

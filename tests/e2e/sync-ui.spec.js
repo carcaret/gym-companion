@@ -134,7 +134,7 @@ test.describe('Sync — UI y ajustes', () => {
     await page.click('[data-view="ajustes"]');
     await page.fill('#set-pat', 'ghp_test');
     await page.click('#test-github-btn');
-    await expect(page.locator('#github-status')).toBeVisible();
+    await expect(page.locator('#toast')).toBeVisible();
 
     const dbAfter = await page.evaluate(() => localStorage.getItem('gym_companion_db'));
     expect(dbAfter).toBe(dbBefore);
