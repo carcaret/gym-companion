@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { filterHistory, sortHistory, findLog } from '../../src/workout.js';
+import { sortHistory, findLog } from '../../src/workout.js';
 
 // ── Helpers ──
 
@@ -24,41 +24,6 @@ function makeHistory() {
     makeEntry({ date: '2026-03-28', type: 'DIA3', logs: [makeLog({ id: 'peso_muerto', weight: 100, actual: [5, 5, 5] })] }),
   ];
 }
-
-// ════════════════════════════════════════════════
-// filterHistory
-// ════════════════════════════════════════════════
-
-describe('filterHistory', () => {
-  test('filtro TODOS devuelve todos los entries', () => {
-    const h = makeHistory();
-    expect(filterHistory(h, 'TODOS')).toHaveLength(3);
-  });
-
-  test('filtro DIA1 devuelve solo entries tipo DIA1', () => {
-    const h = makeHistory();
-    const result = filterHistory(h, 'DIA1');
-    expect(result).toHaveLength(1);
-    expect(result[0].type).toBe('DIA1');
-  });
-
-  test('filtro con tipo inexistente devuelve array vacío', () => {
-    const h = makeHistory();
-    expect(filterHistory(h, 'SABADO')).toHaveLength(0);
-  });
-
-  test('history vacío devuelve array vacío', () => {
-    expect(filterHistory([], 'TODOS')).toHaveLength(0);
-    expect(filterHistory([], 'DIA1')).toHaveLength(0);
-  });
-
-  test('no muta el array original', () => {
-    const h = makeHistory();
-    const result = filterHistory(h, 'TODOS');
-    result.push(makeEntry({ date: '2099-01-01' }));
-    expect(h).toHaveLength(3);
-  });
-});
 
 // ════════════════════════════════════════════════
 // sortHistory

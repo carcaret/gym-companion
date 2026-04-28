@@ -163,11 +163,6 @@ export function detectRecords(log, prevHistory) {
 
 // ── History helpers (find-by-date + delegate) ──
 
-export function filterHistory(history, filter) {
-  if (filter === 'TODOS') return [...history];
-  return history.filter(e => e.type === filter);
-}
-
 export function sortHistory(history) {
   return [...history].sort((a, b) => b.date.localeCompare(a.date));
 }

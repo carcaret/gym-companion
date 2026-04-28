@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { DAY_LABELS, ROUTINE_KEYS } from '../../src/constants.js';
-import { filterHistory, sortHistory } from '../../src/workout.js';
+import { sortHistory } from '../../src/workout.js';
 
 describe('Renombrado de rutinas: sin referencias a días de la semana', () => {
 
@@ -38,47 +38,6 @@ describe('Renombrado de rutinas: sin referencias a días de la semana', () => {
 
     test('tiene 3 elementos', () => {
       expect(ROUTINE_KEYS).toHaveLength(3);
-    });
-  });
-
-  describe('filterHistory funciona con nuevas claves', () => {
-    const history = [
-      { date: '2026-03-25', type: 'DIA1', completed: true, logs: [] },
-      { date: '2026-03-26', type: 'DIA2', completed: true, logs: [] },
-      { date: '2026-03-28', type: 'DIA3', completed: true, logs: [] },
-    ];
-
-    test('filtro TODOS devuelve todas', () => {
-      expect(filterHistory(history, 'TODOS')).toHaveLength(3);
-    });
-
-    test('filtro DIA1 devuelve solo DIA1', () => {
-      const result = filterHistory(history, 'DIA1');
-      expect(result).toHaveLength(1);
-      expect(result[0].type).toBe('DIA1');
-    });
-
-    test('filtro DIA2 devuelve solo DIA2', () => {
-      const result = filterHistory(history, 'DIA2');
-      expect(result).toHaveLength(1);
-      expect(result[0].type).toBe('DIA2');
-    });
-
-    test('filtro DIA3 devuelve solo DIA3', () => {
-      const result = filterHistory(history, 'DIA3');
-      expect(result).toHaveLength(1);
-      expect(result[0].type).toBe('DIA3');
-    });
-
-    test('filtro con clave antigua devuelve vacío', () => {
-      expect(filterHistory(history, 'LUNES')).toHaveLength(0);
-      expect(filterHistory(history, 'MIERCOLES')).toHaveLength(0);
-      expect(filterHistory(history, 'VIERNES')).toHaveLength(0);
-    });
-
-    test('history vacío devuelve vacío para cualquier filtro', () => {
-      expect(filterHistory([], 'DIA1')).toHaveLength(0);
-      expect(filterHistory([], 'TODOS')).toHaveLength(0);
     });
   });
 

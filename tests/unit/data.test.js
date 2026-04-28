@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, getHistoricalRecords, ensureHistorySorted, getRecentSessionsForExercise, getWeeklyBucketsForExercise } from '../../src/data.js';
+import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, ensureHistorySorted, getWeeklyBucketsForExercise } from '../../src/data.js';
 
 const DB_FIXTURE = {
   exercises: {
@@ -80,60 +80,6 @@ describe('getLastValuesForExercise', () => {
   });
 });
 
-describe('getHistoricalRecords', () => {
-  test('calcula max volumen y e1RM correctamente', () => {
-    const records = getHistoricalRecords(DB_FIXTURE, 'press_banca');
-    expect(records.maxVolume).toBeGreaterThan(0);
-    expect(records.maxE1RM).toBeGreaterThan(0);
-  });
-
-  test('devuelve 0 si no hay historial del ejercicio', () => {
-    const records = getHistoricalRecords(DB_FIXTURE, 'no_existe');
-    expect(records.maxVolume).toBe(0);
-    expect(records.maxE1RM).toBe(0);
-  });
-
-  test('múltiples entries del mismo ejercicio → toma el max de todos', () => {
-    const records = getHistoricalRecords(DB_FIXTURE, 'press_banca');
-    // Entry 2024-01-15: weight=65, series=4, actual=[10,10,10,8] → vol=65*4*9.5=2470
-    //   e1RM por serie: max(65*(1+10/30), 65*(1+8/30)) = 65*(1+10/30) ≈ 86.67
-    // Entry 2024-01-08: weight=60, series=3, actual=[10,10,8]
-    //   e1RM por serie: max(60*(1+10/30), 60*(1+8/30)) = 60*(1+10/30) = 80
-    // maxE1RM = 65*(1+10/30) ≈ 86.67
-    expect(records.maxVolume).toBeCloseTo(65 * 4 * 9.5, 0);
-    expect(records.maxE1RM).toBeCloseTo(65 * (1 + 10 / 30), 1);
-  });
-
-  test('ejercicio con peso=0 → maxE1RM es 0, maxVolume se calcula con bodyweight', () => {
-    const db = {
-      ...DB_FIXTURE,
-      history: [
-        {
-          date: '2024-02-01', type: 'DIA1', completed: true,
-          logs: [{ exercise_id: 'dominadas', name: 'Dominadas', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 0 }],
-        },
-      ],
-    };
-    const records = getHistoricalRecords(db, 'dominadas');
-    expect(records.maxE1RM).toBe(0);
-    expect(records.maxVolume).toBe(3 * 10); // bodyweight: series * avgReps
-  });
-
-  test('entry no completed → sí lo considera en records', () => {
-    const db = {
-      ...DB_FIXTURE,
-      history: [
-        {
-          date: '2024-02-01', type: 'DIA1', completed: false,
-          logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 10, actual: [10, 10, 10, 10, 10] }, weight: 80 }],
-        },
-      ],
-    };
-    const records = getHistoricalRecords(db, 'press_banca');
-    // vol = 80*5*10 = 4000
-    expect(records.maxVolume).toBe(4000);
-  });
-});
 
 describe('getLastValuesForExercise (casos adicionales)', () => {
   test('múltiples entries del mismo dayType → toma el último cronológicamente', () => {
@@ -598,61 +544,6 @@ describe('ensureHistorySorted', () => {
   });
 });
 
-describe('getRecentSessionsForExercise', () => {
-  const DB = {
-    history: [
-      { date: '2024-01-01', type: 'DIA1', completed: true,  logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [10,10,10] }, weight: 50 }] },
-      { date: '2024-01-08', type: 'DIA1', completed: true,  logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [10,10,10] }, weight: 55 }] },
-      { date: '2024-01-15', type: 'DIA1', completed: true,  logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [10,10,10] }, weight: 60 }] },
-      { date: '2024-01-22', type: 'DIA1', completed: true,  logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [10,10,10] }, weight: 65 }] },
-      { date: '2024-01-29', type: 'DIA1', completed: false, logs: [{ exercise_id: 'press_banca', series: 3, reps: { expected: 10, actual: [null,null,null] }, weight: 70 }] },
-    ],
-  };
-
-  test('devuelve las N sesiones completadas más recientes, ordenadas asc', () => {
-    const result = getRecentSessionsForExercise(DB, 'press_banca', 3);
-    expect(result).toHaveLength(3);
-    expect(result[0].date).toBe('2024-01-08');
-    expect(result[1].date).toBe('2024-01-15');
-    expect(result[2].date).toBe('2024-01-22');
-  });
-
-  test('no incluye sesiones no completadas', () => {
-    const result = getRecentSessionsForExercise(DB, 'press_banca', 4);
-    expect(result.every(s => s.log)).toBe(true);
-    expect(result.find(s => s.date === '2024-01-29')).toBeUndefined();
-  });
-
-  test('excluye la fecha indicada en excludeDate', () => {
-    const result = getRecentSessionsForExercise(DB, 'press_banca', 4, '2024-01-22');
-    expect(result.find(s => s.date === '2024-01-22')).toBeUndefined();
-    expect(result).toHaveLength(3);
-  });
-
-  test('historial vacío devuelve array vacío', () => {
-    expect(getRecentSessionsForExercise({ history: [] }, 'press_banca')).toEqual([]);
-  });
-
-  test('db null devuelve array vacío', () => {
-    expect(getRecentSessionsForExercise(null, 'press_banca')).toEqual([]);
-  });
-
-  test('ejercicio sin sesiones devuelve array vacío', () => {
-    expect(getRecentSessionsForExercise(DB, 'curl_biceps')).toEqual([]);
-  });
-
-  test('menos sesiones que el límite devuelve las disponibles', () => {
-    const result = getRecentSessionsForExercise(DB, 'press_banca', 10);
-    expect(result).toHaveLength(4);
-  });
-
-  test('cada elemento tiene shape { date, log }', () => {
-    const result = getRecentSessionsForExercise(DB, 'press_banca', 1);
-    expect(result[0]).toHaveProperty('date');
-    expect(result[0]).toHaveProperty('log');
-    expect(result[0].log).toHaveProperty('weight');
-  });
-});
 
 describe('getWeeklyBucketsForExercise', () => {
   // Semanas (Lun-Dom) alrededor del ancla 2026-04-24 (viernes):
