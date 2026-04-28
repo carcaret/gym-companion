@@ -86,29 +86,25 @@ test.describe('Historial — entrenos incompletos', () => {
     expect(style).toContain('rgba(86,156,214,0.35)');
   });
 
-  test('card incompleta: nombre del día tiene color accent-light', async ({ page }) => {
+  test('card incompleta: tiene icono de pausa en .day-info-top', async ({ page }) => {
     const card = await getIncompleteCard(page);
     expect(card).not.toBeNull();
-    const dayName = card.locator('.day-name');
-    const style = await dayName.getAttribute('style');
-    expect(style).toContain('accent-light');
+    const pauseIcon = card.locator('.day-info-top .pause-icon');
+    await expect(pauseIcon).toHaveCount(1);
   });
 
-  test('card incompleta: icono de pausa está presente', async ({ page }) => {
+  test('card incompleta: icono de pausa contiene SVG', async ({ page }) => {
     const card = await getIncompleteCard(page);
     expect(card).not.toBeNull();
-    // El icono de pausa se renderiza como SVG dentro de .day-name
-    const dayName = card.locator('.day-name');
-    const hasSvg = await dayName.locator('svg').count();
+    const hasSvg = await card.locator('.day-info-top .pause-icon svg').count();
     expect(hasSvg).toBeGreaterThan(0);
   });
 
   test('card incompleta: icono de pausa tiene color accent', async ({ page }) => {
     const card = await getIncompleteCard(page);
     expect(card).not.toBeNull();
-    const dayName = card.locator('.day-name');
-    const pauseSpan = dayName.locator('span').first();
-    const style = await pauseSpan.getAttribute('style');
+    const pauseIcon = card.locator('.day-info-top .pause-icon');
+    const style = await pauseIcon.getAttribute('style');
     expect(style).toContain('var(--accent)');
   });
 
@@ -119,21 +115,18 @@ test.describe('Historial — entrenos incompletos', () => {
     expect(style).not.toContain('rgba(86,156,214,0.07)');
   });
 
-  test('card completa: nombre del día NO tiene color accent-light', async ({ page }) => {
+  test('card completa: NO tiene icono de pausa en .day-info-top', async ({ page }) => {
     const card = await getCompleteCard(page);
     expect(card).not.toBeNull();
-    const dayName = card.locator('.day-name');
-    const style = await dayName.getAttribute('style') ?? '';
-    expect(style).not.toContain('accent-light');
+    const pauseIcon = await card.locator('.day-info-top .pause-icon').count();
+    expect(pauseIcon).toBe(0);
   });
 
-  test('card completa: NO tiene icono de pausa', async ({ page }) => {
+  test('card completa: .day-info-top no contiene SVG de pausa', async ({ page }) => {
     const card = await getCompleteCard(page);
     expect(card).not.toBeNull();
-    const dayName = card.locator('.day-name');
-    // No hay span hijo con color accent dentro del nombre
-    const pauseSpans = await dayName.locator('span[style*="accent"]').count();
-    expect(pauseSpans).toBe(0);
+    const svgCount = await card.locator('.day-info-top svg').count();
+    expect(svgCount).toBe(0);
   });
 
   // ════════════════════════════════════════════════

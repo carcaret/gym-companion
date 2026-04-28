@@ -2,14 +2,14 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.22';
+const APP_VERSION = '1.0.23';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
-import { todayStr, formatDate, formatDateShort } from './src/dates.js';
+import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getWeeklyBucketsForExercise as _getWeeklyBucketsForExercise } from './src/data.js';
 import { computeVolume, computeE1RM } from './src/metrics.js';
-import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, filterHistory, sortHistory, findLog } from './src/workout.js';
+import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, sortHistory, findLog } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
 
@@ -571,7 +571,7 @@ function renderDaySelector(container) {
   for (const type of ROUTINE_KEYS) {
     const exercises = (DB.routines[type] || []).map(id => getExerciseName(id));
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
-    html += `<div class="card day-btn" data-day="${type}">
+    html += `<div class="card day-btn ${type}" data-day="${type}">
     <div class="card-header">
       <div>
         <div class="card-title">${DAY_LABELS[type]}</div>
@@ -1045,27 +1045,35 @@ function renderHistorial() {
   editingHistorialExercise = null;
 
   const entries = sortHistory(DB.history);
-  const filtered = filterHistory(entries, 'TODOS');
 
-  if (filtered.length === 0) {
+  if (entries.length === 0) {
     content.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon('clipboard', 48)}</div><p>No hay sesiones registradas</p></div>`;
     return;
   }
 
   let html = '<div class="historial-list">';
-  filtered.forEach(entry => {
+  entries.forEach(entry => {
     const isIncomplete = entry.completed === false;
     const exercises = entry.logs.map(l => getExerciseName(l.exercise_id));
-    const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
+    const preview = exercises.slice(0, 3).join(' · ') + (exercises.length > 3 ? ` +${exercises.length - 3}` : '');
     const cardStyle = isIncomplete ? 'background:rgba(86,156,214,0.07);border:1px solid rgba(86,156,214,0.35);' : '';
-    const nameStyle = isIncomplete ? 'color:var(--accent-light);' : '';
-    const pauseStyle = isIncomplete ? 'color:var(--accent);' : '';
-    html += `<div class="card historial-entry-btn" data-date="${entry.date}" style="${cardStyle}">
-    <span class="day-info">
-      <span class="day-name" style="${nameStyle}">${DAY_LABELS[entry.type] || entry.type}${isIncomplete ? ` <span style="${pauseStyle}">${icon('pause', 14, 'icon-svg')}</span>` : ''} <span class="day-date">${formatDate(entry.date)}</span></span>
+    const { num, mon } = dateBlock(entry.date);
+    const rel = relativeDate(entry.date);
+    const pauseIcon = isIncomplete ? ` <span class="pause-icon" style="color:var(--accent)">${icon('pause', 12, 'icon-svg')}</span>` : '';
+    html += `<div class="card historial-entry-btn ${entry.type}" data-date="${entry.date}" style="${cardStyle}">
+    <div class="day-date-block">
+      <span class="day-date-num">${num}</span>
+      <span class="day-date-mon">${mon}</span>
+    </div>
+    <div class="day-date-sep"></div>
+    <div class="day-info">
+      <div class="day-info-top">
+        <span class="type-badge ${entry.type}">${DAY_LABELS[entry.type] || entry.type}</span>
+        <span class="day-rel">${rel}</span>${pauseIcon}
+      </div>
       <span class="day-exercises">${entry.logs.length} ejercicios · ${preview}</span>
-    </span>
-    <button class="btn-icon historial-delete-btn" data-date="${entry.date}">${icon('trash', 16, 'icon-svg')}</button>
+    </div>
+    <button class="btn-icon btn-icon-sm historial-delete-btn" data-date="${entry.date}">${icon('trash', 16, 'icon-svg')}</button>
   </div>`;
   });
   html += '</div>';

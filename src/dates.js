@@ -25,3 +25,21 @@ export function getWeekStartStr(dateStr) {
   d.setUTCDate(d.getUTCDate() + diff);
   return d.toISOString().split('T')[0];
 }
+
+export function relativeDate(dateStr) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(dateStr + 'T00:00:00');
+  const diffDays = Math.round((today - d) / 86400000);
+  if (diffDays === 0) return 'Hoy';
+  if (diffDays === 1) return 'Ayer';
+  if (diffDays < 7) return `Hace ${diffDays} días`;
+  if (diffDays < 14) return 'Hace 1 semana';
+  return `Hace ${Math.floor(diffDays / 7)} semanas`;
+}
+
+export function dateBlock(dateStr) {
+  const months = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const d = new Date(dateStr + 'T00:00:00');
+  return { num: d.getDate(), mon: months[d.getMonth()] };
+}

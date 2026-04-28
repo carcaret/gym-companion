@@ -24,6 +24,10 @@
   --orange: #ce9178;
   --gold: #dcdcaa;
 
+  --color-dia1: #7aaee0;
+  --color-dia2: #7fcab1;
+  --color-dia3: #cabe7a;
+
   --text-primary: #d4d4d4;
   --text-secondary: rgba(212, 212, 212, 0.6);
   --text-muted: rgba(212, 212, 212, 0.35);
@@ -500,14 +504,22 @@ body {
   cursor: pointer;
   padding: 20px;
   margin-bottom: 0;
+  position: relative;
+  overflow: hidden;
 }
 .day-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
-
-.historial-entry-btn .day-name {
-  display: block;
-  font-size: 16px;
-  font-weight: 600;
+.day-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
 }
+.day-btn.DIA1::before { background: var(--color-dia1); }
+.day-btn.DIA2::before { background: var(--color-dia2); }
+.day-btn.DIA3::before { background: var(--color-dia3); }
+.day-btn.DIA1 .card-title { color: var(--color-dia1); }
+.day-btn.DIA2 .card-title { color: var(--color-dia2); }
+.day-btn.DIA3 .card-title { color: var(--color-dia3); }
 
 /* ── Workout Active ── */
 .workout-status {
@@ -562,13 +574,75 @@ body {
   gap: 14px;
   cursor: pointer;
   margin-bottom: 0;
+  position: relative;
+  overflow: hidden;
 }
+.historial-entry-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.historial-entry-btn.DIA1::before { background: var(--color-dia1); }
+.historial-entry-btn.DIA2::before { background: var(--color-dia2); }
+.historial-entry-btn.DIA3::before { background: var(--color-dia3); }
+
 .historial-entry-btn .day-info { flex: 1; min-width: 0; overflow: hidden; }
 .historial-entry-btn .day-exercises {
+  font-size: 12px;
+  color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   white-space: normal;
+}
+
+.day-date-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+.day-date-num {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.day-date-mon {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 2px;
+}
+.day-date-sep {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.day-info-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.day-rel {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.type-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 5px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .historial-delete-btn {
@@ -593,9 +667,9 @@ body {
   box-shadow: 0 0 12px var(--accent-glow);
 }
 
-.type-badge.DIA1 { background: rgba(86, 156, 214, 0.15); color: var(--accent-light); }
-.type-badge.DIA2 { background: rgba(78, 201, 176, 0.12); color: var(--cyan); }
-.type-badge.DIA3 { background: rgba(220, 220, 170, 0.12); color: var(--gold); }
+.type-badge.DIA1 { background: rgba(122, 174, 224, 0.15); color: var(--color-dia1); }
+.type-badge.DIA2 { background: rgba(127, 202, 177, 0.12); color: var(--color-dia2); }
+.type-badge.DIA3 { background: rgba(202, 190, 122, 0.12); color: var(--color-dia3); }
 
 /* ── Charts ── */
 .graficas-controls {

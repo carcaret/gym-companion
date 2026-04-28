@@ -161,11 +161,11 @@ test.describe('Graficas completo', () => {
       return chart.data.datasets.map(ds => ds.label);
     });
 
-    // Labels should be generic (Volumen, e1RM) — not contain the exercise name
+    // Labels should be generic (e1RM, Peso) — not contain the exercise name
     for (const label of labels) {
       expect(label).not.toContain(exerciseName);
     }
-    expect(labels.some(l => l === 'Volumen')).toBe(true);
+    expect(labels.some(l => l === 'e1RM')).toBe(true);
   });
 
   test('tooltip usa colores del dark theme', async ({ page }) => {
