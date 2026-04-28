@@ -389,7 +389,7 @@ body {
 .card-chevron {
   transition: transform 0.3s var(--ease);
   color: var(--text-muted);
-  font-size: 14px;
+  flex-shrink: 0;
 }
 .card-chevron.open { transform: rotate(180deg); }
 
