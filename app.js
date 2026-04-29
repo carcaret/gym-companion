@@ -2,14 +2,14 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.27';
+const APP_VERSION = '1.0.28';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getWeeklyBucketsForExercise as _getWeeklyBucketsForExercise } from './src/data.js';
 import { computeVolume, computeE1RM } from './src/metrics.js';
-import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, sortHistory, findLog } from './src/workout.js';
+import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, sortHistory, findLog, swapLogExercise } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
 
@@ -786,6 +786,7 @@ function renderActiveWorkout(container, entry) {
     html += '</div></div>';
 
     html += `<div class="card-footer">
+      <button class="swap-btn" data-action="swapExercise" data-logidx="${logIdx}">Cambiar por otro</button>
       <button class="remove-btn" data-action="removeExercise" data-daytype="${entry.type}" data-exerciseid="${log.exercise_id}">Quitar de rutina</button>
     </div>`;
 
@@ -860,6 +861,10 @@ function renderActiveWorkout(container, entry) {
     extraActions: (el, action) => {
       if (action === 'removeExercise') {
         removeExerciseFromRoutine(el.dataset.daytype, el.dataset.exerciseid);
+      } else if (action === 'swapExercise') {
+        const idx = parseInt(el.dataset.logidx);
+        const en = getTodayEntry();
+        if (en && !en.completed) showSwapExerciseModal(idx, en);
       }
     }
   });
@@ -959,10 +964,41 @@ function addExerciseToRoutineAndActiveWorkout(id, dayType) {
   }
 }
 
-function showAddExerciseModal(dayType) {
-  const currentIds = DB.routines[dayType] || [];
+function swapExerciseInActiveWorkout(logIdx, newExerciseId) {
+  const entry = getTodayEntry();
+  if (!entry) return;
+  const last = getBestRecentValuesForExercise(newExerciseId, entry.type);
+  const name = getExerciseName(newExerciseId);
+  const result = swapLogExercise(entry, logIdx, newExerciseId, last, name);
+  if (!result.ok) {
+    if (result.reason === 'duplicate') toast('Ese ejercicio ya está en el entreno', 'warn');
+    return;
+  }
+  persistDB();
+  rerenderWorkout();
+  toast(`Cambiado a ${name}`, 'ok');
+}
+
+function showSwapExerciseModal(logIdx, entry) {
+  const presentIds = entry.logs.map(l => l.exercise_id);
+  if (presentIds.length >= Object.keys(DB.exercises).length) {
+    toast('No hay más ejercicios disponibles', 'warn');
+    return;
+  }
+  showExercisePickerModal({
+    title: 'Cambiar ejercicio',
+    excludeIds: presentIds,
+    onSelect: (id) => {
+      hideModal();
+      swapExerciseInActiveWorkout(logIdx, id);
+    },
+    onCreateNew: null
+  });
+}
+
+function showExercisePickerModal({ title, excludeIds, onSelect, onCreateNew }) {
   const allExercises = Object.values(DB.exercises).sort((a, b) => a.name.localeCompare(b.name, 'es'));
-  const available = allExercises.filter(e => !currentIds.includes(e.id));
+  const available = allExercises.filter(e => !excludeIds.includes(e.id));
 
   let bodyHtml = `<div class="input-group"><input type="text" class="exercise-search" id="exercise-search-input" placeholder="Buscar ejercicio..."></div>
   <div class="exercise-list" id="exercise-modal-list">`;
@@ -970,9 +1006,11 @@ function showAddExerciseModal(dayType) {
     bodyHtml += `<div class="exercise-list-item" data-id="${e.id}"><span>${e.name}</span><span class="add-icon">+</span></div>`;
   });
   bodyHtml += '</div>';
-  bodyHtml += `<div class="mt-md"><button class="btn-secondary btn-sm" id="create-exercise-btn">Crear nuevo ejercicio</button></div>`;
+  if (onCreateNew) {
+    bodyHtml += `<div class="mt-md"><button class="btn-secondary btn-sm" id="create-exercise-btn">Crear nuevo ejercicio</button></div>`;
+  }
 
-  showModal(`Añadir a ${DAY_LABELS[dayType]}`, bodyHtml, [
+  showModal(title, bodyHtml, [
     { label: 'Cerrar', className: 'btn-secondary btn-sm', action: () => { } }
   ]);
 
@@ -989,24 +1027,34 @@ function showAddExerciseModal(dayType) {
     }
 
     document.querySelectorAll('#exercise-modal-list .exercise-list-item').forEach(el => {
-      el.onclick = () => {
-        const id = el.dataset.id;
-        addExerciseToRoutineAndActiveWorkout(id, dayType);
-        persistDB();
-        hideModal();
-        renderHoy();
-        toast(`${getExerciseName(id)} añadido`, 'ok');
-      };
+      el.onclick = () => onSelect(el.dataset.id);
     });
 
     const createBtn = document.getElementById('create-exercise-btn');
-    if (createBtn) {
-      createBtn.onclick = () => {
-        hideModal();
-        showCreateExerciseModal(dayType);
-      };
-    }
+    if (createBtn) createBtn.onclick = onCreateNew;
   }, 50);
+}
+
+function showAddExerciseModal(dayType) {
+  const entry = getTodayEntry();
+  const presentInActiveLogs = (entry?.logs ?? []).map(l => l.exercise_id);
+  const excludeIds = [...(DB.routines[dayType] || []), ...presentInActiveLogs];
+
+  showExercisePickerModal({
+    title: `Añadir a ${DAY_LABELS[dayType]}`,
+    excludeIds,
+    onSelect: (id) => {
+      addExerciseToRoutineAndActiveWorkout(id, dayType);
+      persistDB();
+      hideModal();
+      renderHoy();
+      toast(`${getExerciseName(id)} añadido`, 'ok');
+    },
+    onCreateNew: () => {
+      hideModal();
+      showCreateExerciseModal(dayType);
+    }
+  });
 }
 
 function showCreateExerciseModal(dayType) {

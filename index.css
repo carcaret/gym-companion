@@ -1321,6 +1321,16 @@ body {
   padding: 4px 6px;
 }
 .remove-btn:hover { color: var(--red); }
+.swap-btn {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  margin-right: auto;
+}
+.swap-btn:hover { color: var(--accent); }
 
 /* ── Media query for larger screens ── */
 @media (min-width: 600px) {

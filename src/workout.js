@@ -161,6 +161,29 @@ export function detectRecords(log, prevHistory) {
   };
 }
 
+/**
+ * Swap the exercise at logIdx in an active (non-completed) entry.
+ * Returns { ok: true, log } or { ok: false, reason }.
+ * Reasons: 'not_found' | 'not_active' | 'same' | 'duplicate'
+ * Preserves the original template exercise id in log.swappedFrom (auditoría).
+ * If swapped back to the original, swappedFrom is removed.
+ */
+export function swapLogExercise(entry, logIdx, newExerciseId, last, newName) {
+  if (logIdx < 0 || logIdx >= entry.logs.length) return { ok: false, reason: 'not_found' };
+  if (entry.completed) return { ok: false, reason: 'not_active' };
+  const currentLog = entry.logs[logIdx];
+  if (currentLog.exercise_id === newExerciseId) return { ok: false, reason: 'same' };
+  if (entry.logs.some((l, i) => i !== logIdx && l.exercise_id === newExerciseId))
+    return { ok: false, reason: 'duplicate' };
+
+  const originalId = currentLog.swappedFrom ?? currentLog.exercise_id;
+  const newLog = buildLog(newExerciseId, newName, last);
+  if (newExerciseId !== originalId) newLog.swappedFrom = originalId;
+
+  entry.logs[logIdx] = newLog;
+  return { ok: true, log: newLog };
+}
+
 // ── History helpers (find-by-date + delegate) ──
 
 export function sortHistory(history) {

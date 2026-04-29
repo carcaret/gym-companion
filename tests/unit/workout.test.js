@@ -9,7 +9,8 @@ import {
   setRep,
   detectRecords,
   validateLog,
-  validateEntry
+  validateEntry,
+  swapLogExercise
 } from '../../src/workout.js';
 
 // ── Helpers ──
@@ -849,5 +850,125 @@ describe('adjustRep — casos borde', () => {
     const log = makeLog({ series: 3, expected: 8, actual: [10] });
     adjustRep(log, 2, -1);
     expect(log.reps.actual[2]).toBe(7);
+  });
+});
+
+// ════════════════════════════════════════════════
+// swapLogExercise
+// ════════════════════════════════════════════════
+
+describe('swapLogExercise', () => {
+  const lastB = { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
+
+  function makeSwapEntry({ completed = false, logs } = {}) {
+    return {
+      date: '2026-04-29',
+      type: 'DIA1',
+      completed,
+      logs: logs ?? [
+        makeLog({ id: 'press_banca', name: 'Press banca' }),
+        makeLog({ id: 'curl_biceps', name: 'Curl bíceps' })
+      ]
+    };
+  }
+
+  test('1 — swap normal A→B: exercise_id=B, swappedFrom=A', () => {
+    const entry = makeSwapEntry();
+    const result = swapLogExercise(entry, 0, 'sentadilla', lastB, 'Sentadilla');
+    expect(result.ok).toBe(true);
+    expect(entry.logs[0].exercise_id).toBe('sentadilla');
+    expect(entry.logs[0].swappedFrom).toBe('press_banca');
+  });
+
+  test('2 — doble swap A→B→C: swappedFrom queda en A (no en B)', () => {
+    const entry = makeSwapEntry();
+    // First swap: press_banca → sentadilla
+    swapLogExercise(entry, 0, 'sentadilla', lastB, 'Sentadilla');
+    // Second swap: sentadilla → dominadas
+    const result = swapLogExercise(entry, 0, 'dominadas', lastB, 'Dominadas');
+    expect(result.ok).toBe(true);
+    expect(entry.logs[0].exercise_id).toBe('dominadas');
+    expect(entry.logs[0].swappedFrom).toBe('press_banca');
+  });
+
+  test('3 — swap de vuelta al original A→B→A: sin swappedFrom', () => {
+    const entry = makeSwapEntry();
+    swapLogExercise(entry, 0, 'sentadilla', lastB, 'Sentadilla');
+    const result = swapLogExercise(entry, 0, 'press_banca', lastB, 'Press banca');
+    expect(result.ok).toBe(true);
+    expect(entry.logs[0].exercise_id).toBe('press_banca');
+    expect(entry.logs[0].swappedFrom).toBeUndefined();
+  });
+
+  test('4 — ejercicio ya presente en otro log → duplicate, entry intacto', () => {
+    const entry = makeSwapEntry();
+    const before = JSON.stringify(entry);
+    const result = swapLogExercise(entry, 0, 'curl_biceps', lastB, 'Curl bíceps');
+    expect(result).toEqual({ ok: false, reason: 'duplicate' });
+    expect(JSON.stringify(entry)).toBe(before);
+  });
+
+  test('5 — mismo exercise_id → same, entry intacto', () => {
+    const entry = makeSwapEntry();
+    const before = JSON.stringify(entry);
+    const result = swapLogExercise(entry, 0, 'press_banca', lastB, 'Press banca');
+    expect(result).toEqual({ ok: false, reason: 'same' });
+    expect(JSON.stringify(entry)).toBe(before);
+  });
+
+  test('6 — entry completed → not_active, entry intacto', () => {
+    const entry = makeSwapEntry({ completed: true });
+    const before = JSON.stringify(entry);
+    const result = swapLogExercise(entry, 0, 'sentadilla', lastB, 'Sentadilla');
+    expect(result).toEqual({ ok: false, reason: 'not_active' });
+    expect(JSON.stringify(entry)).toBe(before);
+  });
+
+  test('7 — logIdx fuera de rango → not_found', () => {
+    const entry = makeSwapEntry();
+    expect(swapLogExercise(entry, -1, 'sentadilla', lastB, 'Sentadilla'))
+      .toEqual({ ok: false, reason: 'not_found' });
+    expect(swapLogExercise(entry, 99, 'sentadilla', lastB, 'Sentadilla'))
+      .toEqual({ ok: false, reason: 'not_found' });
+  });
+
+  test('8 — nuevo log usa series/repsExpected/weight de last', () => {
+    const entry = makeSwapEntry();
+    const last = { series: 4, repsExpected: 8, weight: 60, repsActual: [8, 7, 8, 8] };
+    swapLogExercise(entry, 0, 'sentadilla', last, 'Sentadilla');
+    const log = entry.logs[0];
+    expect(log.series).toBe(4);
+    expect(log.reps.expected).toBe(8);
+    expect(log.weight).toBe(60);
+  });
+
+  test('9 — preserva logs vecinos (incluso con swappedFrom propio)', () => {
+    const entry = {
+      date: '2026-04-29',
+      type: 'DIA1',
+      completed: false,
+      logs: [
+        makeLog({ id: 'a' }),
+        makeLog({ id: 'b' }),
+        makeLog({ id: 'c' }),
+        makeLog({ id: 'd' })
+      ]
+    };
+    entry.logs[0].swappedFrom = 'z';
+    const snapshot0 = JSON.stringify(entry.logs[0]);
+    const snapshot2 = JSON.stringify(entry.logs[2]);
+    const snapshot3 = JSON.stringify(entry.logs[3]);
+
+    swapLogExercise(entry, 1, 'sentadilla', lastB, 'Sentadilla');
+
+    expect(JSON.stringify(entry.logs[0])).toBe(snapshot0);
+    expect(JSON.stringify(entry.logs[2])).toBe(snapshot2);
+    expect(JSON.stringify(entry.logs[3])).toBe(snapshot3);
+  });
+
+  test('10 — nombre del log actualizado al nuevo ejercicio', () => {
+    const entry = makeSwapEntry();
+    swapLogExercise(entry, 0, 'sentadilla', lastB, 'Sentadilla barbell');
+    expect(entry.logs[0].name).toBe('Sentadilla barbell');
   });
 });
