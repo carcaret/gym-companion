@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.25';
+const APP_VERSION = '1.0.26';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
@@ -458,7 +458,21 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
   </div>`;
 }
 
-function buildParamRowsHtml(prefix, logIdx, log, date = null) {
+function buildParamRowsHtml(prefix, logIdx, log, date = null, readOnly = false) {
+  if (readOnly) {
+    return `<div class="param-row">
+    <label>Peso (kg)</label>
+    <span class="param-value">${log.weight}</span>
+  </div>
+  <div class="param-row">
+    <label>Series</label>
+    <span class="param-value">${log.series}</span>
+  </div>
+  <div class="param-row">
+    <label>Reps obj.</label>
+    <span class="param-value">${log.reps.expected}</span>
+  </div>`;
+  }
   const d = date ? ` data-date="${date}"` : '';
   return `<div class="param-row">
     <label>Peso (kg)</label>
@@ -486,7 +500,19 @@ function buildParamRowsHtml(prefix, logIdx, log, date = null) {
   </div>`;
 }
 
-function buildAllSeriesRowsHtml(prefix, logIdx, log, date = null) {
+function buildAllSeriesRowsHtml(prefix, logIdx, log, date = null, readOnly = false) {
+  if (readOnly) {
+    let cellsHtml = '';
+    for (let s = 0; s < log.series; s++) {
+      const val = log.reps.actual[s];
+      const stateClass = val != null ? (val >= log.reps.expected ? ' done' : ' filled') : '';
+      cellsHtml += `<div class="series-cell">
+        <div class="series-cell-label">S${s + 1}</div>
+        <div class="series-cell-static${stateClass}">${val != null ? val : '—'}</div>
+      </div>`;
+    }
+    return `<div class="series-row-inline">${cellsHtml}</div>`;
+  }
   const d = date ? ` data-date="${date}"` : '';
   let cellsHtml = '';
   for (let s = 0; s < log.series; s++) {
@@ -596,17 +622,31 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   const exerciseIds = DB.routines[dayType] || [];
   let html = '';
 
-  exerciseIds.forEach(id => {
+  exerciseIds.forEach((id, idx) => {
     const last = getBestRecentValuesForExercise(id, dayType);
     const name = getExerciseName(id);
-    html += `<div class="card compact-card">
-    <div class="card-header">
+    const log = { exercise_id: id, weight: last.weight, series: last.series, reps: { expected: last.repsExpected, actual: last.repsActual } };
+
+    html += `<div class="card compact-card" id="rcard-${idx}">
+    <div class="card-header" data-idx="${idx}">
       <div>
         <div class="card-title">${name}</div>
-        <div class="card-subtitle">${formatLogSummary({ weight: last.weight, series: last.series, reps: { expected: last.repsExpected, actual: last.repsActual } })}</div>
+        <div class="card-subtitle">${formatLogSummary(log)}</div>
       </div>
+      <svg class="card-chevron" id="rchevron-${idx}" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
-  </div>`;
+    <div class="card-body" id="rbody-${idx}">`;
+
+    html += buildHistoryStripHtml(id, log, todayStr());
+    html += '<div class="params-section">';
+    html += buildParamRowsHtml('r', idx, log, null, true);
+    html += '</div>';
+    html += '<div class="divider"></div>';
+    html += `<div class="series-section">
+      <div class="series-section-label">Reps por serie</div>`;
+    html += buildAllSeriesRowsHtml('r', idx, log, null, true);
+    html += '</div>';
+    html += '</div></div>';
   });
 
   if (showStartBtn) {
@@ -620,6 +660,16 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   }
 
   container.innerHTML = html;
+
+  container.querySelectorAll('.card-header[data-idx]').forEach(header => {
+    header.onclick = () => {
+      const idx = header.dataset.idx;
+      const body = document.getElementById(`rbody-${idx}`);
+      const chevron = document.getElementById(`rchevron-${idx}`);
+      body.classList.toggle('open');
+      chevron.classList.toggle('open');
+    };
+  });
 
   const startBtn = document.getElementById('start-workout-btn');
   if (startBtn) startBtn.onclick = () => startWorkout(dayType);

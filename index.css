@@ -484,6 +484,45 @@ body {
 
 .param-input { width: 72px; font-size: 15px; padding: 8px 6px; }
 
+.param-value {
+  width: 72px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 6px;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  display: inline-block;
+}
+
+.series-cell-static {
+  width: 100%;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.series-cell-static.filled {
+  background: rgba(86, 156, 214, 0.15);
+  border-color: rgba(86, 156, 214, 0.5);
+  color: #93c5ea;
+}
+.series-cell-static.done {
+  background: rgba(93, 202, 165, 0.15);
+  border-color: rgba(93, 202, 165, 0.5);
+  color: #5dcaa5;
+}
+
 /* ── Day Selector (non-training day) ── */
 .day-selector {
   display: flex;
