@@ -3,3 +3,5 @@
 node_modules/
 .claude/settings.local.json
 test-results/
+.aiplans/**.*
+!.aiplans/.gitkeep
