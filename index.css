@@ -347,7 +347,6 @@ body {
 /* ── Drag & drop reorder ── */
 .drag-handle {
   cursor: grab;
-  font-size: 1.1rem;
   color: var(--text-muted);
   padding: 0 10px 0 0;
   flex-shrink: 0;

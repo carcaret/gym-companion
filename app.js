@@ -37,6 +37,8 @@ const SVG_PATHS = {
   pause:     `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`,
   trash:     `<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>`,
   pencil:    `<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>`,
+  grip:      `<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/>`,
+  chevron:   `<polyline points="6 9 12 15 18 9"/>`,
 };
 
 const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -49,6 +51,11 @@ function icon(name, size = 16, extraClass = '') {
   const sw = (name === 'check' || name === 'cross') ? '2.5' : '2';
   const cls = extraClass ? ` class="${extraClass}"` : '';
   return `<svg${cls} xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${SVG_PATHS[name]}</svg>`;
+}
+
+function chevronIcon(id, isOpen = false) {
+  const cls = `card-chevron${isOpen ? ' open' : ''}`;
+  return `<svg class="${cls}" id="${id}" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${SVG_PATHS.chevron}</svg>`;
 }
 
 // ── Utility ──
@@ -627,7 +634,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
         <div class="card-title">${name}</div>
         <div class="card-subtitle">${formatLogSummary(log)}</div>
       </div>
-      <svg class="card-chevron" id="rchevron-${idx}" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      ${chevronIcon(`rchevron-${idx}`)}
     </div>
     <div class="card-body" id="rbody-${idx}">`;
 
@@ -751,7 +758,7 @@ function renderActiveWorkout(container, entry) {
 
     html += `<div class="card" id="exercise-card-${logIdx}">
     <div class="card-header" data-idx="${logIdx}">
-      <span class="drag-handle" title="Reordenar">&#9776;</span>
+      <span class="drag-handle" title="Reordenar">${icon('grip', 18)}</span>
       <div>
         <div class="card-title" id="w-title-${logIdx}">
           ${name}
@@ -760,7 +767,7 @@ function renderActiveWorkout(container, entry) {
         </div>
         <div class="card-subtitle" id="w-subtitle-${logIdx}">${formatLogSummary(log)}</div>
       </div>
-      <svg class="card-chevron" id="chevron-${logIdx}" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      ${chevronIcon(`chevron-${logIdx}`)}
     </div>
     <div class="card-body" id="body-${logIdx}">`;
 
@@ -1177,7 +1184,7 @@ function renderHistorialDetail(date) {
         <div class="card-title">${name}</div>
         <div class="card-subtitle">${formatLogSummary(log)}</div>
       </div>
-      <svg class="card-chevron${isOpen ? ' open' : ''}" id="hchevron-${logIdx}" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      ${chevronIcon(`hchevron-${logIdx}`, isOpen)}
     </div>
     <div class="card-body${isOpen ? ' open' : ''}" id="hbody-${logIdx}">`;
     html += buildHistoryStripHtml(log.exercise_id, log, date);
