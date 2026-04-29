@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.26';
+const APP_VERSION = '1.0.27';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
@@ -797,7 +797,7 @@ function renderActiveWorkout(container, entry) {
   document.getElementById('hoy-badge').hidden = !hasRecord;
 
   html += `<div class="workout-actions">
-  <button class="btn-secondary" id="add-exercise-mid-btn">+ Ejercicio</button>
+  <button class="btn-accent-subtle" id="add-exercise-mid-btn">+ Ejercicio</button>
   <button class="btn-primary" id="finish-workout-btn">Finalizar entreno</button>
 </div>`;
 
