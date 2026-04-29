@@ -1431,9 +1431,16 @@ function renderChart() {
 }
 
 function makeChart(ctx, datasets, chartType, { yTitle }) {
-  const axisTicks = { color: '#888', font: { size: 10 } };
-  const axisGrid = { color: 'rgba(255,255,255,0.04)' };
-  const titleStyle = { color: '#888', font: { size: 11 } };
+  const cs = getComputedStyle(document.documentElement);
+  const tickColor    = cs.getPropertyValue('--text-secondary').trim();
+  const legendColor  = cs.getPropertyValue('--text-primary').trim();
+  const tooltipBg    = cs.getPropertyValue('--bg-card-solid').trim();
+  const tooltipText  = cs.getPropertyValue('--text-primary').trim();
+  const tooltipBorder = cs.getPropertyValue('--border-strong').trim();
+
+  const axisTicks = { color: tickColor, font: { size: 10 } };
+  const axisGrid  = { color: 'rgba(255,255,255,0.04)' };
+  const titleStyle = { color: tickColor, font: { size: 11 } };
 
   const scales = {
     x: {
@@ -1458,12 +1465,12 @@ function makeChart(ctx, datasets, chartType, { yTitle }) {
       maintainAspectRatio: false,
       interaction: { intersect: false, mode: 'index' },
       plugins: {
-        legend: { display: true, labels: { color: '#edf0f7', font: { size: 11, family: 'Inter' }, boxWidth: 12 } },
+        legend: { display: true, labels: { color: legendColor, font: { size: 11, family: 'Inter' }, boxWidth: 12 } },
         tooltip: {
-          backgroundColor: '#1c1c1e',
-          titleColor: '#d4d4d4',
-          bodyColor: '#d4d4d4',
-          borderColor: 'rgba(255,255,255,0.22)', // --border-strong
+          backgroundColor: tooltipBg,
+          titleColor: tooltipText,
+          bodyColor: tooltipText,
+          borderColor: tooltipBorder,
           borderWidth: 1,
           cornerRadius: 8,
           padding: 10
