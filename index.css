@@ -46,7 +46,7 @@
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Bordes */
-  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-strong: rgba(255,255,255,0.22);
 
   /* Variantes de paleta para foreground sobre tinte */
   --accent-soft: #93c5ea;
