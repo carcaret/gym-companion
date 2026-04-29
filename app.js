@@ -69,12 +69,6 @@ function toast(msg, type = null, duration = 2500) {
   t._timer = setTimeout(() => t.classList.remove('visible'), duration);
 }
 
-function setStatus(el, msg, type = null) {
-  el.hidden = false;
-  el.innerHTML = buildStatusHtml(msg, type);
-  el.className = 'status-msg' + (type === 'ok' ? ' success' : type === 'warn' ? ' warning' : type === 'error' ? ' error' : '');
-}
-
 // ── Sync status indicator ──────────────────────────────────────────────────────
 const SYNC_SVGS = {
   ok:      () => icon('cloud', 16),
@@ -1469,7 +1463,7 @@ function makeChart(ctx, datasets, chartType, { yTitle }) {
           backgroundColor: '#1c1c1e',
           titleColor: '#d4d4d4',
           bodyColor: '#d4d4d4',
-          borderColor: 'rgba(255,255,255,0.22)',
+          borderColor: 'rgba(255,255,255,0.22)', // --border-strong
           borderWidth: 1,
           cornerRadius: 8,
           padding: 10
