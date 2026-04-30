@@ -2,235 +2,293 @@
   "exercises": {
     "abductores": {
       "id": "abductores",
-      "name": "Abductores"
+      "name": "Abductores",
+      "grupo": "piernas"
     },
     "adductores": {
       "id": "adductores",
-      "name": "Adductores"
+      "name": "Adductores",
+      "grupo": "piernas"
     },
     "apertura_con_cable": {
       "id": "apertura_con_cable",
-      "name": "Apertura con Cable"
+      "name": "Apertura con Cable",
+      "grupo": "pecho"
     },
     "apertura_maquina": {
       "id": "apertura_maquina",
-      "name": "Apertura en Máquina"
+      "name": "Apertura en Máquina",
+      "grupo": "pecho"
     },
     "aperturas_mancuernas": {
       "id": "aperturas_mancuernas",
-      "name": "Aperturas con Mancuernas"
+      "name": "Aperturas con Mancuernas",
+      "grupo": "pecho"
     },
     "cable_row": {
       "id": "cable_row",
-      "name": "Cable Row"
+      "name": "Cable Row",
+      "grupo": "espalda"
     },
     "crunches": {
       "id": "crunches",
-      "name": "Crunches"
+      "name": "Crunches",
+      "grupo": "core"
     },
     "curl_de_biceps_con_barra": {
       "id": "curl_de_biceps_con_barra",
-      "name": "Curl de Bíceps con Barra"
+      "name": "Curl de Bíceps con Barra",
+      "grupo": "brazos"
     },
     "curl_de_biceps_mancuerna": {
       "id": "curl_de_biceps_mancuerna",
-      "name": "Curl de Bíceps con Mancuerna"
+      "name": "Curl de Bíceps con Mancuerna",
+      "grupo": "brazos"
     },
     "curl_femoral_sentado": {
       "id": "curl_femoral_sentado",
-      "name": "Curl Femoral Sentado"
+      "name": "Curl Femoral Sentado",
+      "grupo": "piernas"
     },
     "elevacion_rodillas": {
       "id": "elevacion_rodillas",
-      "name": "Elevación de Rodillas"
+      "name": "Elevación de Rodillas",
+      "grupo": "core"
     },
     "elevaciones_gemelos": {
       "id": "elevaciones_gemelos",
-      "name": "Elevaciones de Gemelos"
+      "name": "Elevaciones de Gemelos",
+      "grupo": "piernas"
     },
     "elevaciones_laterales_con_cable": {
       "id": "elevaciones_laterales_con_cable",
-      "name": "Elevaciones Laterales con Cable"
+      "name": "Elevaciones Laterales con Cable",
+      "grupo": "hombros"
     },
     "elevaciones_laterales_con_mancuernas": {
       "id": "elevaciones_laterales_con_mancuernas",
-      "name": "Elevaciones Laterales con Mancuernas"
+      "name": "Elevaciones Laterales con Mancuernas",
+      "grupo": "hombros"
     },
     "encogimiento_trapecio_mancuernas": {
       "id": "encogimiento_trapecio_mancuernas",
-      "name": "Encogimiento de Trapecios con Mancuernas"
+      "name": "Encogimiento de Trapecios con Mancuernas",
+      "grupo": "espalda"
     },
     "extension_de_cuadriceps": {
       "id": "extension_de_cuadriceps",
-      "name": "Extensión de Cuádriceps"
+      "name": "Extensión de Cuádriceps",
+      "grupo": "piernas"
     },
     "extensiones_de_espalda": {
       "id": "extensiones_de_espalda",
-      "name": "Extensiones de Espalda"
+      "name": "Extensiones de Espalda",
+      "grupo": "core"
     },
     "face_pull": {
       "id": "face_pull",
-      "name": "Face Pull"
+      "name": "Face Pull",
+      "grupo": "hombros"
     },
     "hack_squat": {
       "id": "hack_squat",
-      "name": "Hack Squat"
+      "name": "Hack Squat",
+      "grupo": "piernas"
     },
     "hammer_row_neutral": {
       "id": "hammer_row_neutral",
-      "name": "Hammer Row Neutral"
+      "name": "Hammer Row Neutral",
+      "grupo": "espalda"
     },
     "hammer_row_prono": {
       "id": "hammer_row_prono",
-      "name": "Hammer Row Prono"
+      "name": "Hammer Row Prono",
+      "grupo": "espalda"
     },
     "hip_thrust": {
       "id": "hip_thrust",
-      "name": "Hip Thrust"
+      "name": "Hip Thrust",
+      "grupo": "piernas"
     },
     "jalon_al_pecho": {
       "id": "jalon_al_pecho",
-      "name": "Jalón al Pecho"
+      "name": "Jalón al Pecho",
+      "grupo": "espalda"
     },
     "landmine_press": {
       "id": "landmine_press",
-      "name": "Landmine Press"
+      "name": "Landmine Press",
+      "grupo": "hombros"
     },
     "lat_prayers": {
       "id": "lat_prayers",
-      "name": "Lat Prayers"
+      "name": "Lat Prayers",
+      "grupo": "espalda"
     },
     "overhead_extension_triceps": {
       "id": "overhead_extension_triceps",
-      "name": "Overhead Extension Tríceps"
+      "name": "Overhead Extension Tríceps",
+      "grupo": "brazos"
     },
     "peso_muerto_barra": {
       "id": "peso_muerto_barra",
-      "name": "Peso Muerto con Barra"
+      "name": "Peso Muerto con Barra",
+      "grupo": "espalda"
     },
     "peso_muerto_rumano": {
       "id": "peso_muerto_rumano",
-      "name": "Peso Muerto Rumano"
+      "name": "Peso Muerto Rumano",
+      "grupo": "piernas"
     },
     "plancha": {
       "id": "plancha",
-      "name": "Plancha"
+      "name": "Plancha",
+      "grupo": "core"
     },
     "prensa_de_piernas": {
       "id": "prensa_de_piernas",
-      "name": "Prensa de Piernas"
+      "name": "Prensa de Piernas",
+      "grupo": "piernas"
     },
     "press_banca_barra": {
       "id": "press_banca_barra",
-      "name": "Press de Banca con Barra"
+      "name": "Press de Banca con Barra",
+      "grupo": "pecho"
     },
     "press_banca_mancuernas": {
       "id": "press_banca_mancuernas",
-      "name": "Press de Banca con Mancuernas"
+      "name": "Press de Banca con Mancuernas",
+      "grupo": "pecho"
     },
     "press_de_hombros_mancuernas_sentado": {
       "id": "press_de_hombros_mancuernas_sentado",
-      "name": "Press de Hombros con Mancuernas Sentado"
+      "name": "Press de Hombros con Mancuernas Sentado",
+      "grupo": "hombros"
     },
     "press_de_hombros_maquina": {
       "id": "press_de_hombros_maquina",
-      "name": "Press de Hombros en Máquina"
+      "name": "Press de Hombros en Máquina",
+      "grupo": "hombros"
     },
     "press_inclinado_mancuernas": {
       "id": "press_inclinado_mancuernas",
-      "name": "Press Inclinado con Mancuernas"
+      "name": "Press Inclinado con Mancuernas",
+      "grupo": "pecho"
     },
     "press_inclinado_maquina": {
       "id": "press_inclinado_maquina",
-      "name": "Press Inclinado en Máquina"
+      "name": "Press Inclinado en Máquina",
+      "grupo": "pecho"
     },
     "press_inclinado_palanca": {
       "id": "press_inclinado_palanca",
-      "name": "Press Inclinado en Palanca"
+      "name": "Press Inclinado en Palanca",
+      "grupo": "pecho"
     },
     "press_militar_barra": {
       "id": "press_militar_barra",
-      "name": "Press Militar con Barra"
+      "name": "Press Militar con Barra",
+      "grupo": "hombros"
     },
     "pullover_polea": {
       "id": "pullover_polea",
-      "name": "Pullover en Polea"
+      "name": "Pullover en Polea",
+      "grupo": "espalda"
     },
     "remo_con_barra": {
       "id": "remo_con_barra",
-      "name": "Remo con Barra"
+      "name": "Remo con Barra",
+      "grupo": "espalda"
     },
     "remo_con_mancuerna": {
       "id": "remo_con_mancuerna",
-      "name": "Remo con Mancuerna"
+      "name": "Remo con Mancuerna",
+      "grupo": "espalda"
     },
     "remo_con_mancuerna_con_apoyo_en_el_pecho": {
       "id": "remo_con_mancuerna_con_apoyo_en_el_pecho",
-      "name": "Remo con Mancuerna con Apoyo en el Pecho"
+      "name": "Remo con Mancuerna con Apoyo en el Pecho",
+      "grupo": "espalda"
     },
     "remo_con_polea": {
       "id": "remo_con_polea",
-      "name": "Remo con Polea"
+      "name": "Remo con Polea",
+      "grupo": "espalda"
     },
     "remo_en_maquina": {
       "id": "remo_en_maquina",
-      "name": "Remo en Máquina"
+      "name": "Remo en Máquina",
+      "grupo": "espalda"
     },
     "reverse_delt_fly": {
       "id": "reverse_delt_fly",
-      "name": "Reverse Delt Fly"
+      "name": "Reverse Delt Fly",
+      "grupo": "hombros"
     },
     "reverse_delt_maquina": {
       "id": "reverse_delt_maquina",
-      "name": "Reverse Delt en Máquina"
+      "name": "Reverse Delt en Máquina",
+      "grupo": "hombros"
     },
     "russian_twists": {
       "id": "russian_twists",
-      "name": "Russian Twists"
+      "name": "Russian Twists",
+      "grupo": "core"
     },
     "sentadilla_barra": {
       "id": "sentadilla_barra",
-      "name": "Sentadilla con Barra"
+      "name": "Sentadilla con Barra",
+      "grupo": "piernas"
     },
     "sentadilla_bulgara": {
       "id": "sentadilla_bulgara",
-      "name": "Sentadilla Búlgara"
+      "name": "Sentadilla Búlgara",
+      "grupo": "piernas"
     },
     "sentadilla_frontal": {
       "id": "sentadilla_frontal",
-      "name": "Sentadilla Frontal"
+      "name": "Sentadilla Frontal",
+      "grupo": "piernas"
     },
     "skullcrusher_con_barra": {
       "id": "skullcrusher_con_barra",
-      "name": "Skullcrusher con Barra"
+      "name": "Skullcrusher con Barra",
+      "grupo": "brazos"
     },
     "t_bar_row": {
       "id": "t_bar_row",
-      "name": "T-Bar Row"
+      "name": "T-Bar Row",
+      "grupo": "espalda"
     },
     "triceps_polea": {
       "id": "triceps_polea",
-      "name": "Tríceps en Polea"
+      "name": "Tríceps en Polea",
+      "grupo": "brazos"
     },
     "zancadas_con_mancuernas": {
       "id": "zancadas_con_mancuernas",
-      "name": "Zancadas con Mancuernas"
+      "name": "Zancadas con Mancuernas",
+      "grupo": "piernas"
     },
     "encogimiento_trapecio_barra": {
       "id": "encogimiento_trapecio_barra",
-      "name": "Encogimiento de Trapecios con Barra"
+      "name": "Encogimiento de Trapecios con Barra",
+      "grupo": "espalda"
     },
     "reverse_delt_con_mancuernas": {
       "id": "reverse_delt_con_mancuernas",
-      "name": "Reverse Delt con Mancuernas"
+      "name": "Reverse Delt con Mancuernas",
+      "grupo": "hombros"
     },
     "hammer_curl_mancuernas": {
       "id": "hammer_curl_mancuernas",
-      "name": "Hammer curl mancuernas"
+      "name": "Hammer curl mancuernas",
+      "grupo": "brazos"
     },
     "press_maquina": {
       "id": "press_maquina",
-      "name": "Press máquina"
+      "name": "Press máquina",
+      "grupo": "pecho"
     }
   },
   "routines": {
