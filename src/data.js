@@ -1,6 +1,29 @@
 import { computeVolume } from './metrics.js';
 import { getWeekStartStr, addDaysStr } from './dates.js';
 
+// Ordena ejercicios disponibles para el picker de swap en 4 tiers:
+//   0 → mismo grupo + en rutina de otro día
+//   1 → mismo grupo + sin rutina
+//   2 → otro grupo + en rutina de otro día
+//   3 → resto
+// Dentro de cada tier, orden alfabético en español.
+export function sortExercisesForSwap(exercises, currentExerciseId, allExercises, routines, currentDayType) {
+  const targetGroup = allExercises[currentExerciseId]?.grupo;
+  const otherDayTypes = Object.keys(routines).filter(d => d !== currentDayType);
+  const otherRoutineIds = new Set(otherDayTypes.flatMap(d => routines[d] ?? []));
+  const anyRoutineIds = new Set(Object.values(routines).flat());
+
+  const tier = ({ id, grupo }) => {
+    const sameGroup = Boolean(targetGroup) && grupo === targetGroup;
+    if (sameGroup && otherRoutineIds.has(id)) return 0;
+    if (sameGroup && !anyRoutineIds.has(id)) return 1;
+    if (otherRoutineIds.has(id)) return 2;
+    return 3;
+  };
+
+  return [...exercises].sort((a, b) => tier(a) - tier(b) || a.name.localeCompare(b.name, 'es'));
+}
+
 export function ensureHistorySorted(db) {
   if (db && db.history) {
     db.history.sort((a, b) => a.date.localeCompare(b.date));

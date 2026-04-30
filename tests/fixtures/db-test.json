@@ -1,8 +1,8 @@
 {
   "exercises": {
-    "press_banca": { "id": "press_banca", "name": "Press Banca" },
-    "curl_biceps": { "id": "curl_biceps", "name": "Curl Bíceps" },
-    "sentadilla": { "id": "sentadilla", "name": "Sentadilla" }
+    "press_banca": { "id": "press_banca", "name": "Press Banca", "grupo": "pecho" },
+    "curl_biceps": { "id": "curl_biceps", "name": "Curl Bíceps", "grupo": "biceps" },
+    "sentadilla": { "id": "sentadilla", "name": "Sentadilla", "grupo": "piernas" }
   },
   "routines": {
     "DIA1": ["press_banca", "curl_biceps"],

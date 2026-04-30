@@ -7,7 +7,7 @@ const APP_VERSION = '1.0.28';
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getWeeklyBucketsForExercise as _getWeeklyBucketsForExercise } from './src/data.js';
+import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getWeeklyBucketsForExercise as _getWeeklyBucketsForExercise, sortExercisesForSwap } from './src/data.js';
 import { computeVolume, computeE1RM } from './src/metrics.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, sortHistory, findLog, swapLogExercise } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
@@ -980,29 +980,32 @@ function swapExerciseInActiveWorkout(logIdx, newExerciseId) {
 }
 
 function showSwapExerciseModal(logIdx, entry) {
+  const currentExerciseId = entry.logs[logIdx].exercise_id;
   const presentIds = entry.logs.map(l => l.exercise_id);
+
   if (presentIds.length >= Object.keys(DB.exercises).length) {
     toast('No hay más ejercicios disponibles', 'warn');
     return;
   }
+
   showExercisePickerModal({
     title: 'Cambiar ejercicio',
     excludeIds: presentIds,
-    onSelect: (id) => {
-      hideModal();
-      swapExerciseInActiveWorkout(logIdx, id);
-    },
+    sortExercises: (exercises) => sortExercisesForSwap(exercises, currentExerciseId, DB.exercises, DB.routines, entry.type),
+    onSelect: (id) => { hideModal(); swapExerciseInActiveWorkout(logIdx, id); },
     onCreateNew: null
   });
 }
 
-function showExercisePickerModal({ title, excludeIds, onSelect, onCreateNew }) {
-  const allExercises = Object.values(DB.exercises).sort((a, b) => a.name.localeCompare(b.name, 'es'));
-  const available = allExercises.filter(e => !excludeIds.includes(e.id));
+function showExercisePickerModal({ title, excludeIds, sortExercises = null, onSelect, onCreateNew }) {
+  const available = Object.values(DB.exercises).filter(e => !excludeIds.includes(e.id));
+  const exercises = sortExercises
+    ? sortExercises(available)
+    : available.sort((a, b) => a.name.localeCompare(b.name, 'es'));
 
   let bodyHtml = `<div class="input-group"><input type="text" class="exercise-search" id="exercise-search-input" placeholder="Buscar ejercicio..."></div>
   <div class="exercise-list" id="exercise-modal-list">`;
-  available.forEach(e => {
+  exercises.forEach(e => {
     bodyHtml += `<div class="exercise-list-item" data-id="${e.id}"><span>${e.name}</span><span class="add-icon">+</span></div>`;
   });
   bodyHtml += '</div>';

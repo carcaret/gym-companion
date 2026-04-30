@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, ensureHistorySorted, getWeeklyBucketsForExercise } from '../../src/data.js';
+import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, ensureHistorySorted, getWeeklyBucketsForExercise, sortExercisesForSwap } from '../../src/data.js';
 
 const DB_FIXTURE = {
   exercises: {
@@ -709,5 +709,197 @@ describe('getWeeklyBucketsForExercise', () => {
     };
     const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
     expect(buckets[3].session.date).toBe('2026-04-26');
+  });
+});
+
+// ════════════════════════════════════════════════
+// sortExercisesForSwap
+// ════════════════════════════════════════════════
+
+// Fixture base para todos los tests de sorting:
+//
+//   Ejercicios y grupos:
+//     press_banca    pecho      — en DIA1 (rutina activa al hacer swap)
+//     apertura       pecho      — en DIA2 (otro día) → tier 0
+//     press_inclinado pecho     — sin rutina          → tier 1
+//     sentadilla     piernas    — en DIA2 (otro día)  → tier 2
+//     plancha        core       — sin rutina          → tier 3
+//     curl_biceps    biceps     — en DIA1 (rutina activa, excluido antes de llamar)
+//
+//   Rutinas:
+//     DIA1: [press_banca, curl_biceps]
+//     DIA2: [sentadilla, apertura]
+//     DIA3: []
+
+const SWAP_EXERCISES = {
+  press_banca:     { id: 'press_banca',     name: 'Press Banca',      grupo: 'pecho'   },
+  apertura:        { id: 'apertura',        name: 'Apertura',         grupo: 'pecho'   },
+  press_inclinado: { id: 'press_inclinado', name: 'Press Inclinado',  grupo: 'pecho'   },
+  sentadilla:      { id: 'sentadilla',      name: 'Sentadilla',       grupo: 'piernas' },
+  plancha:         { id: 'plancha',         name: 'Plancha',          grupo: 'core'    },
+  curl_biceps:     { id: 'curl_biceps',     name: 'Curl Bíceps',      grupo: 'biceps'  },
+};
+
+const SWAP_ROUTINES = {
+  DIA1: ['press_banca', 'curl_biceps'],
+  DIA2: ['sentadilla', 'apertura'],
+  DIA3: [],
+};
+
+// Simula los ejercicios disponibles tras excluir los de la rutina activa y los del entry
+// (press_banca y curl_biceps excluidos cuando se hace swap en DIA1)
+const AVAILABLE_FOR_DIA1_SWAP = [
+  SWAP_EXERCISES.apertura,
+  SWAP_EXERCISES.press_inclinado,
+  SWAP_EXERCISES.sentadilla,
+  SWAP_EXERCISES.plancha,
+];
+
+describe('sortExercisesForSwap — orden de tiers', () => {
+  test('tier 0 primero: mismo grupo (pecho) + en rutina de otro día (DIA2)', () => {
+    const sorted = sortExercisesForSwap(AVAILABLE_FOR_DIA1_SWAP, 'press_banca', SWAP_EXERCISES, SWAP_ROUTINES, 'DIA1');
+    expect(sorted[0].id).toBe('apertura'); // pecho + DIA2
+  });
+
+  test('tier 1 segundo: mismo grupo (pecho) + sin rutina', () => {
+    const sorted = sortExercisesForSwap(AVAILABLE_FOR_DIA1_SWAP, 'press_banca', SWAP_EXERCISES, SWAP_ROUTINES, 'DIA1');
+    expect(sorted[1].id).toBe('press_inclinado'); // pecho + sin rutina
+  });
+
+  test('tier 2 tercero: distinto grupo + en rutina de otro día', () => {
+    const sorted = sortExercisesForSwap(AVAILABLE_FOR_DIA1_SWAP, 'press_banca', SWAP_EXERCISES, SWAP_ROUTINES, 'DIA1');
+    expect(sorted[2].id).toBe('sentadilla'); // piernas + DIA2
+  });
+
+  test('tier 3 último: distinto grupo + sin rutina', () => {
+    const sorted = sortExercisesForSwap(AVAILABLE_FOR_DIA1_SWAP, 'press_banca', SWAP_EXERCISES, SWAP_ROUTINES, 'DIA1');
+    expect(sorted[3].id).toBe('plancha'); // core + sin rutina
+  });
+
+  test('orden completo correcto: [apertura, press_inclinado, sentadilla, plancha]', () => {
+    const sorted = sortExercisesForSwap(AVAILABLE_FOR_DIA1_SWAP, 'press_banca', SWAP_EXERCISES, SWAP_ROUTINES, 'DIA1');
+    expect(sorted.map(e => e.id)).toEqual(['apertura', 'press_inclinado', 'sentadilla', 'plancha']);
+  });
+});
+
+describe('sortExercisesForSwap — orden alfabético dentro de cada tier', () => {
+  test('tier 0 con varios ejercicios del mismo grupo: orden alfabético entre ellos', () => {
+    const exercises = {
+      ...SWAP_EXERCISES,
+      apert_cable: { id: 'apert_cable', name: 'Apertura con Cable', grupo: 'pecho' },
+      apert_mancuerna: { id: 'apert_mancuerna', name: 'Apertura Mancuerna', grupo: 'pecho' },
+    };
+    const routines = { DIA1: ['press_banca'], DIA2: ['apert_cable', 'apert_mancuerna'] };
+    const available = [exercises.apert_mancuerna, exercises.apert_cable];
+    const sorted = sortExercisesForSwap(available, 'press_banca', exercises, routines, 'DIA1');
+    expect(sorted.map(e => e.id)).toEqual(['apert_cable', 'apert_mancuerna']);
+  });
+
+  test('tier 3 con varios ejercicios sin rutina: orden alfabético entre ellos', () => {
+    const exercises = {
+      zancada: { id: 'zancada', name: 'Zancada', grupo: 'core' },
+      abs:     { id: 'abs',     name: 'Abdominales', grupo: 'core' },
+    };
+    const routines = { DIA1: [], DIA2: [] };
+    const available = [exercises.zancada, exercises.abs];
+    const sorted = sortExercisesForSwap(available, 'press_banca', exercises, routines, 'DIA1');
+    expect(sorted.map(e => e.id)).toEqual(['abs', 'zancada']);
+  });
+});
+
+describe('sortExercisesForSwap — casos de ejercicio origen sin grupo', () => {
+  test('si currentExerciseId no tiene grupo, no se asigna tier 0 ni 1 (solo tier 2/3)', () => {
+    const exercises = {
+      sin_grupo: { id: 'sin_grupo', name: 'Sin Grupo' },
+      apertura:  { id: 'apertura',  name: 'Apertura', grupo: 'pecho' },
+      plancha:   { id: 'plancha',   name: 'Plancha',  grupo: 'core'  },
+    };
+    const routines = { DIA1: ['sin_grupo'], DIA2: ['apertura'] };
+    const available = [exercises.apertura, exercises.plancha];
+    const sorted = sortExercisesForSwap(available, 'sin_grupo', exercises, routines, 'DIA1');
+    // apertura está en DIA2 → tier 2; plancha sin rutina → tier 3
+    expect(sorted.map(e => e.id)).toEqual(['apertura', 'plancha']);
+  });
+
+  test('si ejercicio disponible no tiene grupo, no sube a tier 0/1 aunque coincida con undefined', () => {
+    const exercises = {
+      origen:    { id: 'origen',    name: 'Origen' },
+      sin_grupo: { id: 'sin_grupo', name: 'Sin Grupo' }, // grupo: undefined
+    };
+    const routines = { DIA1: ['origen'], DIA2: [] };
+    const available = [exercises.sin_grupo];
+    const sorted = sortExercisesForSwap(available, 'origen', exercises, routines, 'DIA1');
+    // origen no tiene grupo → sameGroup siempre false → sin_grupo queda en tier 3
+    expect(sorted[0].id).toBe('sin_grupo');
+  });
+});
+
+describe('sortExercisesForSwap — cambio de dayType activo', () => {
+  test('swap desde DIA2: ejercicios de DIA1 van al tier correcto (no al 0 si DIA2 es el activo)', () => {
+    // swap en DIA2 (sentadilla, piernas). apertura (pecho) está en DIA2 → excluida.
+    // press_banca (pecho) en DIA1 → tier 2 (otro día, distinto grupo)
+    const exercises = {
+      sentadilla:  { id: 'sentadilla',  name: 'Sentadilla',  grupo: 'piernas' },
+      press_banca: { id: 'press_banca', name: 'Press Banca', grupo: 'pecho'   },
+      prensa:      { id: 'prensa',      name: 'Prensa',      grupo: 'piernas' },
+    };
+    const routines = { DIA1: ['press_banca'], DIA2: ['sentadilla'] };
+    // swap de sentadilla (piernas) en DIA2; prensa es piernas sin rutina → tier 1
+    const available = [exercises.press_banca, exercises.prensa];
+    const sorted = sortExercisesForSwap(available, 'sentadilla', exercises, routines, 'DIA2');
+    // prensa: piernas + sin rutina → tier 1
+    // press_banca: pecho + DIA1 → tier 2
+    expect(sorted.map(e => e.id)).toEqual(['prensa', 'press_banca']);
+  });
+});
+
+describe('sortExercisesForSwap — inmutabilidad del array de entrada', () => {
+  test('no muta el array original de ejercicios disponibles', () => {
+    const available = [...AVAILABLE_FOR_DIA1_SWAP];
+    const originalOrder = available.map(e => e.id);
+    sortExercisesForSwap(available, 'press_banca', SWAP_EXERCISES, SWAP_ROUTINES, 'DIA1');
+    expect(available.map(e => e.id)).toEqual(originalOrder);
+  });
+});
+
+describe('sortExercisesForSwap — edge cases', () => {
+  test('array vacío devuelve array vacío sin errores', () => {
+    const sorted = sortExercisesForSwap([], 'press_banca', SWAP_EXERCISES, SWAP_ROUTINES, 'DIA1');
+    expect(sorted).toEqual([]);
+  });
+
+  test('un único ejercicio se devuelve tal cual', () => {
+    const sorted = sortExercisesForSwap([SWAP_EXERCISES.plancha], 'press_banca', SWAP_EXERCISES, SWAP_ROUTINES, 'DIA1');
+    expect(sorted).toHaveLength(1);
+    expect(sorted[0].id).toBe('plancha');
+  });
+
+  test('currentExerciseId no existe en allExercises: no lanza error y degrada a tier 2/3', () => {
+    const available = [SWAP_EXERCISES.sentadilla, SWAP_EXERCISES.plancha];
+    expect(() => sortExercisesForSwap(available, 'no_existe', SWAP_EXERCISES, SWAP_ROUTINES, 'DIA1')).not.toThrow();
+  });
+
+  test('routines con DIA vacío: ejercicios sin rutina siguen en tier 1 o 3 según grupo', () => {
+    const exercises = {
+      origen:  { id: 'origen',  name: 'Origen',  grupo: 'pecho' },
+      aliado:  { id: 'aliado',  name: 'Aliado',  grupo: 'pecho' },
+    };
+    const routines = { DIA1: ['origen'], DIA2: [] };
+    const available = [exercises.aliado];
+    const sorted = sortExercisesForSwap(available, 'origen', exercises, routines, 'DIA1');
+    // aliado: mismo grupo (pecho), no en ninguna rutina → tier 1
+    expect(sorted[0].id).toBe('aliado');
+  });
+
+  test('ejercicio en varias rutinas (incluida otra): va a tier 0 si además comparte grupo', () => {
+    const exercises = {
+      origen:    { id: 'origen',    name: 'Origen',    grupo: 'pecho' },
+      multidia:  { id: 'multidia',  name: 'Multi Día', grupo: 'pecho' },
+    };
+    const routines = { DIA1: ['origen'], DIA2: ['multidia'], DIA3: ['multidia'] };
+    const available = [exercises.multidia];
+    const sorted = sortExercisesForSwap(available, 'origen', exercises, routines, 'DIA1');
+    // multidia: pecho + en DIA2 (otro día) → tier 0
+    expect(sorted[0].id).toBe('multidia');
   });
 });
