@@ -269,8 +269,9 @@ body {
 }
 .sync-spin { animation: spin 1.5s linear infinite; }
 .sync-indicator:active { background: var(--bg-hover); }
-.sync-indicator[data-state="ok"]      { color: var(--green); }
-.sync-indicator[data-state="pending"] { color: #dcdcaa; }
+.sync-indicator[data-state="ok"]       { color: var(--green); }
+.sync-indicator[data-state="pending"]  { color: #dcdcaa; }
+.sync-indicator[data-state="disabled"] { color: var(--text-muted); }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }

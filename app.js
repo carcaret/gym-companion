@@ -34,6 +34,7 @@ const SVG_PATHS = {
   trophy:    `<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>`,
   clipboard: `<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>`,
   cloud:     `<path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>`,
+  'cloud-off': `<path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/><line x1="3" y1="3" x2="21" y2="21"/>`,
   pause:     `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`,
   trash:     `<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>`,
   pencil:    `<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>`,
@@ -78,17 +79,16 @@ function toast(msg, type = null, duration = 2500) {
 
 // ── Sync status indicator ──────────────────────────────────────────────────────
 const SYNC_SVGS = {
-  ok:      () => icon('cloud', 16),
-  pending: () => icon('clock', 16, 'sync-spin'),
+  ok:       () => icon('cloud', 16),
+  pending:  () => icon('clock', 16, 'sync-spin'),
+  disabled: () => icon('cloud-off', 16),
 };
 
 function setSyncState(state) {
   syncState = state;
-  const btn = document.getElementById('sync-status-btn');
-  const iconEl = document.getElementById('sync-status-icon');
-  if (!btn || !iconEl) return;
-  btn.dataset.state = state;
-  iconEl.innerHTML = (SYNC_SVGS[state] || SYNC_SVGS.ok)();
+  const svg = (SYNC_SVGS[state] || SYNC_SVGS.ok)();
+  document.querySelectorAll('.sync-status-btn').forEach(btn => { btn.dataset.state = state; });
+  document.querySelectorAll('.sync-status-icon').forEach(el => { el.innerHTML = svg; });
 }
 
 function showConflictModal() {
@@ -131,16 +131,16 @@ function setupBarTooltips() {
 }
 
 function setupSyncIndicator() {
-  const btn = document.getElementById('sync-status-btn');
-  if (btn) btn.onclick = () => {
+  const handler = () => {
     if (syncState === 'pending') {
       if (conflict) { showConflictModal(); }
       else toast('Hay cambios pendientes de subir a GitHub', null);
     } else {
-      toast(getGithubConfig() ? 'Sincronizado con GitHub' : 'GitHub no configurado', getGithubConfig() ? 'ok' : null);
+      toast(isSyncConfigured() ? 'Sincronizado con GitHub' : 'GitHub no configurado', isSyncConfigured() ? 'ok' : null);
     }
   };
-  setSyncState('ok');
+  document.querySelectorAll('.sync-status-btn').forEach(btn => { btn.onclick = handler; });
+  setSyncState(getGithubConfig() ? 'ok' : 'disabled');
 }
 
 // ── Modal ──
@@ -1679,7 +1679,7 @@ async function init() {
     setSyncState('pending');
     saveDBToGitHub();
   } else {
-    setSyncState('ok');
+    setSyncState(isSyncConfigured() ? 'ok' : 'disabled');
     // Sin cambios pendientes: comprobar GitHub en background por si hubo edits externos
     if (isSyncConfigured()) {
       pullFromGitHubIfClean();
