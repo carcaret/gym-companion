@@ -96,6 +96,26 @@ export function getBestRecentValuesForExercise(db, exerciseId, dayType, today) {
   return getLastValuesForExercise(db, exerciseId, dayType);
 }
 
+export function getRecentSessionsForExercise(db, exerciseId, anchorDate, maxSessions = 6, weeksWindow = 6, excludeDate = null) {
+  if (!db?.history) return [];
+
+  const anchorWeekStart = getWeekStartStr(anchorDate);
+  const windowStart = addDaysStr(anchorWeekStart, -7 * (weeksWindow - 1));
+
+  const sessions = [];
+  for (const entry of db.history) {
+    if (!entry.completed) continue;
+    if (excludeDate && entry.date === excludeDate) continue;
+    if (entry.date < windowStart || entry.date > anchorDate) continue;
+    const log = entry.logs.find(l => l.exercise_id === exerciseId);
+    if (!log) continue;
+    sessions.push({ date: entry.date, log });
+  }
+
+  sessions.sort((a, b) => a.date.localeCompare(b.date));
+  return sessions.slice(-maxSessions);
+}
+
 export function getWeeklyBucketsForExercise(db, exerciseId, anchorDate, weeks = 4, excludeDate = null) {
   const anchorWeekStart = getWeekStartStr(anchorDate);
   const buckets = [];

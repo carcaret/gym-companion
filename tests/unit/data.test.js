@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, ensureHistorySorted, getWeeklyBucketsForExercise, sortExercisesForSwap } from '../../src/data.js';
+import { getExerciseName, getTodayEntry, getLastValuesForExercise, getBestRecentValuesForExercise, ensureHistorySorted, getWeeklyBucketsForExercise, getRecentSessionsForExercise, sortExercisesForSwap } from '../../src/data.js';
 
 const DB_FIXTURE = {
   exercises: {
@@ -709,6 +709,199 @@ describe('getWeeklyBucketsForExercise', () => {
     };
     const buckets = getWeeklyBucketsForExercise(db, 'press_banca', ANCHOR);
     expect(buckets[3].session.date).toBe('2026-04-26');
+  });
+});
+
+// ════════════════════════════════════════════════
+// getRecentSessionsForExercise
+// ════════════════════════════════════════════════
+
+describe('getRecentSessionsForExercise', () => {
+  // Anchor: 2026-05-01 (viernes). Semana actual empieza 2026-04-27.
+  // Con weeksWindow=6: windowStart = addDays(2026-04-27, -35) = 2026-03-23
+  const ANCHOR = '2026-05-01';
+
+  const mkEntry = (date, weight, series, actual, completed = true) => ({
+    date,
+    type: 'DIA1',
+    completed,
+    logs: [{ exercise_id: 'press_banca', series, reps: { expected: 10, actual }, weight }],
+  });
+
+  test('happy path: devuelve sesiones recientes dentro de la ventana, ordenadas cronológicamente', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-14', 60, 3, [10, 10, 10]),
+        mkEntry('2026-04-21', 65, 3, [10, 10, 10]),
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR);
+    expect(sessions.map(s => s.date)).toEqual(['2026-04-14', '2026-04-21', '2026-04-28']);
+  });
+
+  test('sesiones fuera de la ventana de 6 semanas se excluyen', () => {
+    const db = {
+      history: [
+        mkEntry('2025-10-01', 80, 3, [10, 10, 10]), // >6 semanas antes
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]), // dentro
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR);
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0].date).toBe('2026-04-28');
+  });
+
+  test('sesiones posteriores al anchor se excluyen', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]),
+        mkEntry('2026-05-02', 75, 3, [10, 10, 10]), // después del anchor
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR);
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0].date).toBe('2026-04-28');
+  });
+
+  test('maxSessions limita a las N más recientes', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-06', 50, 3, [10, 10, 10]),
+        mkEntry('2026-04-13', 55, 3, [10, 10, 10]),
+        mkEntry('2026-04-20', 60, 3, [10, 10, 10]),
+        mkEntry('2026-04-27', 65, 3, [10, 10, 10]),
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]),
+        mkEntry('2026-04-29', 72, 3, [10, 10, 10]),
+        mkEntry('2026-04-30', 75, 3, [10, 10, 10]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR, 6);
+    expect(sessions).toHaveLength(6);
+    expect(sessions[0].date).toBe('2026-04-13'); // las 6 más recientes empiezan aquí
+    expect(sessions[5].date).toBe('2026-04-30');
+  });
+
+  test('si hay menos sesiones que maxSessions, devuelve todas', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR, 6);
+    expect(sessions).toHaveLength(1);
+  });
+
+  test('excludeDate excluye esa fecha', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]),
+        mkEntry(ANCHOR, 75, 3, [10, 10, 10]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR, 6, 6, ANCHOR);
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0].date).toBe('2026-04-28');
+  });
+
+  test('entries no completadas se ignoran', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-28', 70, 3, [null, null, null], false),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR);
+    expect(sessions).toHaveLength(0);
+  });
+
+  test('ejercicio no presente en las entries devuelve []', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'otro_ejercicio', ANCHOR);
+    expect(sessions).toHaveLength(0);
+  });
+
+  test('db null devuelve []', () => {
+    expect(getRecentSessionsForExercise(null, 'press_banca', ANCHOR)).toEqual([]);
+  });
+
+  test('history vacía devuelve []', () => {
+    expect(getRecentSessionsForExercise({ history: [] }, 'press_banca', ANCHOR)).toEqual([]);
+  });
+
+  test('historia desordenada → resultado ordenado cronológicamente', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]),
+        mkEntry('2026-04-14', 55, 3, [10, 10, 10]),
+        mkEntry('2026-04-21', 60, 3, [10, 10, 10]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR);
+    expect(sessions.map(s => s.date)).toEqual(['2026-04-14', '2026-04-21', '2026-04-28']);
+  });
+
+  test('no muta db.history', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]),
+        mkEntry('2026-04-21', 60, 3, [10, 10, 10]),
+      ],
+    };
+    const originalOrder = db.history.map(h => h.date);
+    getRecentSessionsForExercise(db, 'press_banca', ANCHOR);
+    expect(db.history.map(h => h.date)).toEqual(originalOrder);
+  });
+
+  test('sesión justo en el primer día de la ventana se incluye', () => {
+    // windowStart = addDays('2026-04-27', -35) = '2026-03-23'
+    const db = {
+      history: [
+        mkEntry('2026-03-23', 55, 3, [10, 10, 10]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR);
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0].date).toBe('2026-03-23');
+  });
+
+  test('sesión un día antes del inicio de ventana se excluye', () => {
+    const db = {
+      history: [
+        mkEntry('2026-03-22', 55, 3, [10, 10, 10]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR);
+    expect(sessions).toHaveLength(0);
+  });
+
+  test('dos sesiones en la misma semana: ambas aparecen como barras separadas', () => {
+    // Lunes 28/04 y miércoles 30/04 — misma semana, diferente día
+    const db = {
+      history: [
+        mkEntry('2026-04-28', 70, 3, [10, 10, 10]),
+        mkEntry('2026-04-30', 72, 3, [10, 10, 10]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR, 6, 6, ANCHOR);
+    expect(sessions).toHaveLength(2);
+    expect(sessions.map(s => s.date)).toEqual(['2026-04-28', '2026-04-30']);
+  });
+
+  test('log correcto asociado a cada sesión', () => {
+    const db = {
+      history: [
+        mkEntry('2026-04-21', 60, 3, [10, 10, 10]),
+        mkEntry('2026-04-28', 70, 4, [12, 12, 12, 12]),
+      ],
+    };
+    const sessions = getRecentSessionsForExercise(db, 'press_banca', ANCHOR);
+    expect(sessions[0].log.weight).toBe(60);
+    expect(sessions[1].log.weight).toBe(70);
+    expect(sessions[1].log.series).toBe(4);
   });
 });
 

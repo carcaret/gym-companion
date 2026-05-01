@@ -7,7 +7,7 @@ const APP_VERSION = '1.0.28';
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getWeeklyBucketsForExercise as _getWeeklyBucketsForExercise, sortExercisesForSwap } from './src/data.js';
+import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getLastValuesForExercise as _getLastValuesForExercise, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getRecentSessionsForExercise as _getRecentSessionsForExercise, sortExercisesForSwap } from './src/data.js';
 import { computeVolume, computeE1RM } from './src/metrics.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, sortHistory, findLog, swapLogExercise } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
@@ -373,19 +373,16 @@ function getPrimaryMetric(log) {
 }
 
 function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
-  const buckets = getWeeklyBucketsForExercise(exerciseId, anchorDate);
+  const pastSessions = getRecentSessionsForExercise(exerciseId, anchorDate);
   const currentMetric = getPrimaryMetric(currentLog);
   const hasCurrent = currentMetric > 0;
 
-  if (hasCurrent) {
-    const lastBucket = buckets[buckets.length - 1];
-    lastBucket.session = { date: anchorDate, log: currentLog, isCurrent: true };
-  }
+  const allSessions = pastSessions.map(s => ({ ...s, isCurrent: false }));
+  if (hasCurrent) allSessions.push({ date: anchorDate, log: currentLog, isCurrent: true });
 
-  const sessionsCount = buckets.filter(b => b.session).length;
-  if (sessionsCount === 0) return '';
+  if (allSessions.length === 0) return '';
 
-  const sessionMetrics = buckets.filter(b => b.session).map(b => getPrimaryMetric(b.session.log));
+  const sessionMetrics = allSessions.map(s => getPrimaryMetric(s.log));
   const maxMetric = Math.max(...sessionMetrics);
   const minMetric = Math.min(...sessionMetrics);
 
@@ -399,9 +396,9 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
 
   let deltaHtml = '';
   if (hasCurrent) {
-    const prevBucket = [...buckets].slice(0, -1).reverse().find(b => b.session);
-    if (prevBucket) {
-      const prevMetric = getPrimaryMetric(prevBucket.session.log);
+    const prev = [...allSessions].slice(0, -1).reverse().find(s => !s.isCurrent);
+    if (prev) {
+      const prevMetric = getPrimaryMetric(prev.log);
       if (prevMetric > 0) {
         const pct = Math.round(((currentMetric - prevMetric) / prevMetric) * 100);
         const cls = pct >= 0 ? 'vol-delta' : 'vol-delta down';
@@ -415,32 +412,26 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
   const currentColor = hasCurrent ? barColor(currentMetric) : barColor(maxMetric);
   const prevColor = barColor(minMetric);
 
-  const barsHtml = buckets.map((bucket, i) => {
-    const hasSession = bucket.session !== null;
-    const isCurrent = hasSession && bucket.session.isCurrent;
+  const MAX_COLS = 6;
+  const displaySessions = allSessions.slice(-MAX_COLS);
+  const emptyCols = MAX_COLS - displaySessions.length;
 
-    const metric = hasSession ? getPrimaryMetric(bucket.session.log) : 0;
-    const height = hasSession && maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 0;
+  const emptyColsHtml = Array.from({ length: emptyCols }, () =>
+    `<div class="history-bar-col empty">
+      <div class="bar-wrap"><div class="bar empty" style="height:0%"></div></div>
+      <div class="bar-date"></div>
+    </div>`
+  ).join('');
 
-    let barClass, barStyle;
-    if (!hasSession) {
-      barClass = 'empty';
-      barStyle = `height:${height}%`;
-    } else {
-      barClass = isCurrent ? 'current' : 'prev';
-      barStyle = `height:${height}%; background:${barColor(metric)}`;
-    }
-
-    const label = hasSession ? formatDateShort(isCurrent ? anchorDate : bucket.session.date) : formatDateShort(bucket.weekStart);
-
-    let tooltipAttr = '';
-    if (hasSession) {
-      const tooltip = buildBarTooltip(bucket.session.log);
-      if (tooltip) tooltipAttr = ` data-tooltip="${tooltip}" tabindex="0" aria-label="${tooltip}"`;
-    }
-
-    const colClass = hasSession ? 'history-bar-col' : 'history-bar-col empty';
-    return `<div class="${colClass}">
+  const barsHtml = emptyColsHtml + displaySessions.map(session => {
+    const metric = getPrimaryMetric(session.log);
+    const height = maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 6;
+    const barClass = session.isCurrent ? 'current' : 'prev';
+    const barStyle = `height:${height}%; background:${barColor(metric)}`;
+    const label = formatDateShort(session.date);
+    const tooltip = buildBarTooltip(session.log);
+    const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}" tabindex="0" aria-label="${tooltip}"` : '';
+    return `<div class="history-bar-col">
       <div class="bar-wrap"${tooltipAttr}><div class="bar ${barClass}" style="${barStyle}"></div></div>
       <div class="bar-date">${label}</div>
     </div>`;
@@ -572,7 +563,7 @@ const getExerciseName = (id) => _getExerciseName(DB, id);
 const getTodayEntry = () => _getTodayEntry(DB, todayStr());
 const getLastValuesForExercise = (exerciseId, dayType) => _getLastValuesForExercise(DB, exerciseId, dayType);
 const getBestRecentValuesForExercise = (exerciseId, dayType) => _getBestRecentValuesForExercise(DB, exerciseId, dayType, todayStr());
-const getWeeklyBucketsForExercise = (exerciseId, anchorDate) => _getWeeklyBucketsForExercise(DB, exerciseId, anchorDate, 6, anchorDate);
+const getRecentSessionsForExercise = (exerciseId, anchorDate) => _getRecentSessionsForExercise(DB, exerciseId, anchorDate, 6, 6, anchorDate);
 
 // ── View: Rutinas ──
 function renderHoy() {
