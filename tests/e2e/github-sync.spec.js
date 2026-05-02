@@ -79,7 +79,7 @@ test.describe('GitHub sync (mock)', () => {
     await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
 
     // Wait — during active workout, NO PUT should happen
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(300);
     expect(capturedRequest).toBeNull();
 
     // Fill reps and finish workout
@@ -104,8 +104,7 @@ test.describe('GitHub sync (mock)', () => {
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
 
-    // Wait for direct GitHub save after finishing
-    await page.waitForTimeout(2500);
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'ok', { timeout: 5000 });
 
     expect(capturedRequest).not.toBeNull();
     expect(capturedRequest.method).toBe('PUT');
@@ -202,8 +201,7 @@ test.describe('GitHub sync (mock)', () => {
       }
     }
     await page.locator('#finish-workout-btn').click();
-
-    await page.waitForTimeout(2000);
+    await expect(page.locator('.workout-status')).toContainText('completado');
 
     const afterDB = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));

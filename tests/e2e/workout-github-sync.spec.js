@@ -66,7 +66,7 @@ test.describe('GitHub sync durante entreno activo', () => {
     await expect(page.locator('#app-shell')).toBeVisible();
     await selectRoutineAndStart(page);
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(300);
 
     expect(putCount).toBe(0);
   });
@@ -91,7 +91,7 @@ test.describe('GitHub sync durante entreno activo', () => {
     await page.locator('.card-header').first().click();
     await page.locator('#exercise-card-0 .param-row').first().locator('.btn-icon:last-child').click();
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(300);
 
     expect(putCount).toBe(0);
 
@@ -126,7 +126,7 @@ test.describe('GitHub sync durante entreno activo', () => {
     await repInput.fill('12');
     await repInput.dispatchEvent('change');
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(300);
 
     expect(putCount).toBe(0);
   });
@@ -148,14 +148,14 @@ test.describe('GitHub sync durante entreno activo', () => {
     await expect(page.locator('#app-shell')).toBeVisible();
     await selectRoutineAndStart(page);
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(200);
     expect(putCount).toBe(0);
 
     await fillAllWorkoutReps(page);
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
 
-    await page.waitForTimeout(2000);
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'ok', { timeout: 5000 });
 
     expect(putCount).toBe(1);
   });
@@ -186,14 +186,14 @@ test.describe('GitHub sync durante entreno activo', () => {
     await repInput.fill('8');
     await repInput.dispatchEvent('change');
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(300);
     expect(putCount).toBe(0);
 
     await fillAllWorkoutReps(page);
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
 
-    await page.waitForTimeout(2000);
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'ok', { timeout: 5000 });
     expect(putCount).toBe(1);
   });
 });

@@ -621,7 +621,10 @@ body {
   margin-bottom: 16px;
 }
 .workout-actions .btn-primary,
-.workout-actions .btn-secondary { flex: 1; margin-bottom: 0; }
+.workout-actions .btn-secondary,
+.workout-actions .btn-accent-subtle { flex: 1; margin-bottom: 0; }
+#add-exercise-mid-btn { flex: 2; }
+#start-workout-btn { flex: 2; }
 
 /* ── Historial List (tarjetas estilo day-btn) ── */
 .historial-list {

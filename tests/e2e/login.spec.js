@@ -37,13 +37,12 @@ test.describe('Arranque directo (sin login)', () => {
   test('el indicador de sync es visible en el header', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-    await expect(page.locator('#sync-status-btn')).toBeVisible();
+    await expect(page.locator('.sync-status-btn').first()).toBeVisible();
   });
 
-  test('sin GitHub configurado → indicador en estado ok (sin GitHub = neutral)', async ({ page }) => {
+  test('sin GitHub configurado → indicador en estado disabled', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
-    expect(state).toBe('ok');
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'disabled');
   });
 });

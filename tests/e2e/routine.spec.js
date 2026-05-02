@@ -19,25 +19,27 @@ test.describe('Gestion de rutina', () => {
     await expect(page.locator('#start-workout-btn')).toBeVisible();
   }
 
-  test('añadir ejercicio existente a rutina se guarda en DB', async ({ page }) => {
-    await goToRoutine(page);
+  async function goToActiveWorkout(page, dayLabel = 'Día 1') {
+    await goToRoutine(page, dayLabel);
+    await page.locator('#start-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
+  }
 
-    // Get initial routine size from DB
+  test('añadir ejercicio existente a rutina se guarda en DB', async ({ page }) => {
+    await goToActiveWorkout(page);
+
     const initialSize = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
       return db.routines.DIA1.length;
     });
 
-    // Click add exercise
-    await page.locator('#add-exercise-btn').click();
+    await page.locator('#add-exercise-mid-btn').click();
     await expect(page.locator('#modal-overlay')).not.toHaveAttribute('hidden');
 
-    // Click first available exercise
     const firstItem = page.locator('.exercise-list-item').first();
     await expect(firstItem).toBeVisible();
     await firstItem.click();
 
-    // Verify the routine now has one more exercise in DB
     const newSize = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
       return db.routines.DIA1.length;
@@ -46,26 +48,20 @@ test.describe('Gestion de rutina', () => {
   });
 
   test('crear ejercicio nuevo se guarda en DB y rutina', async ({ page }) => {
-    await goToRoutine(page);
+    await goToActiveWorkout(page);
 
     const initialSize = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
       return db.routines.DIA1.length;
     });
 
-    await page.locator('#add-exercise-btn').click();
+    await page.locator('#add-exercise-mid-btn').click();
     await expect(page.locator('#modal-overlay')).not.toHaveAttribute('hidden');
 
-    // Click "Crear nuevo ejercicio"
     await page.locator('#create-exercise-btn').click();
-
-    // Fill in new exercise name
     await page.fill('#new-exercise-name', 'Press Arnold');
-
-    // Click "Crear y añadir" button
     await page.locator('#modal-actions .btn-primary').click();
 
-    // Verify exercise created in DB and added to routine
     const result = await page.evaluate(() => {
       const db = JSON.parse(localStorage.getItem('gym_companion_db'));
       return {
@@ -78,49 +74,40 @@ test.describe('Gestion de rutina', () => {
   });
 
   test('crear ejercicio con nombre duplicado muestra warning y modal sigue abierto', async ({ page }) => {
-    await goToRoutine(page);
+    await goToActiveWorkout(page);
 
-    await page.locator('#add-exercise-btn').click();
+    await page.locator('#add-exercise-mid-btn').click();
     await page.locator('#create-exercise-btn').click();
 
-    // Use name of existing exercise
     await page.fill('#new-exercise-name', 'Press Banca');
     await page.locator('#modal-actions .btn-primary').click();
 
-    // Should show toast with warning
     await expect(page.locator('#toast')).toContainText('Ya existe');
-
-    // Modal should still be open (not closed)
     await expect(page.locator('#modal-overlay')).not.toHaveAttribute('hidden');
-
-    // Input should still have the text the user typed
     await expect(page.locator('#new-exercise-name')).toHaveValue('Press Banca');
   });
 
   test('crear ejercicio nuevo cierra el modal tras éxito', async ({ page }) => {
-    await goToRoutine(page);
+    await goToActiveWorkout(page);
 
-    await page.locator('#add-exercise-btn').click();
+    await page.locator('#add-exercise-mid-btn').click();
     await page.locator('#create-exercise-btn').click();
 
     await page.fill('#new-exercise-name', 'Ejercicio Único XYZ');
     await page.locator('#modal-actions .btn-primary').click();
 
-    // Modal should be closed after success
     await expect(page.locator('#modal-overlay')).toHaveAttribute('hidden', '');
   });
 
   test('buscar ejercicio en modal filtra correctamente', async ({ page }) => {
-    await goToRoutine(page);
-    await page.locator('#add-exercise-btn').click();
+    await goToActiveWorkout(page);
+    await page.locator('#add-exercise-mid-btn').click();
 
     const searchInput = page.locator('#exercise-search-input');
     await expect(searchInput).toBeVisible();
 
-    // Type a search that should match "Sentadilla" (available for DIA1)
     await searchInput.fill('sentad');
 
-    // Only matching exercises should be visible
     const visibleItems = page.locator('.exercise-list-item:visible');
     const count = await visibleItems.count();
     expect(count).toBeGreaterThanOrEqual(1);

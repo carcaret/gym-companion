@@ -33,22 +33,21 @@ test.describe('Botones de navegación en vistas (Volver + Ejercicio)', () => {
   // Vista Rutina (routine preview)
   // ════════════════════════════════════════════════
 
-  test('routine preview: botones Volver y Ejercicio están en view-nav-actions', async ({ page }) => {
+  test('routine preview: botones Volver e Iniciar están en workout-actions', async ({ page }) => {
     await goToRoutinePreview(page);
-    const container = page.locator('.view-nav-actions');
+    const container = page.locator('.workout-actions');
     await expect(container).toBeVisible();
     await expect(container.locator('#back-to-selector-btn')).toBeVisible();
-    await expect(container.locator('#add-exercise-btn')).toBeVisible();
+    await expect(container.locator('#start-workout-btn')).toBeVisible();
   });
 
   test('routine preview: botón Volver es el primero (izquierda)', async ({ page }) => {
     await goToRoutinePreview(page);
-    const container = page.locator('.view-nav-actions');
+    const container = page.locator('.workout-actions');
     const buttons = container.locator('button');
     await expect(buttons).toHaveCount(2);
-    // First button should be the back button
     await expect(buttons.nth(0)).toHaveAttribute('id', 'back-to-selector-btn');
-    await expect(buttons.nth(1)).toHaveAttribute('id', 'add-exercise-btn');
+    await expect(buttons.nth(1)).toHaveAttribute('id', 'start-workout-btn');
   });
 
   test('routine preview: botón Volver tiene texto "← Volver" y estilo btn-secondary', async ({ page }) => {
@@ -58,11 +57,9 @@ test.describe('Botones de navegación en vistas (Volver + Ejercicio)', () => {
     await expect(backBtn).toHaveClass(/btn-secondary/);
   });
 
-  test('routine preview: botón Ejercicio tiene texto "+ Ejercicio" y estilo btn-accent-subtle', async ({ page }) => {
+  test('routine preview: no existe botón + Ejercicio', async ({ page }) => {
     await goToRoutinePreview(page);
-    const addBtn = page.locator('#add-exercise-btn');
-    await expect(addBtn).toContainText('+ Ejercicio');
-    await expect(addBtn).toHaveClass(/btn-accent-subtle/);
+    await expect(page.locator('#add-exercise-btn')).toHaveCount(0);
   });
 
   test('routine preview: botón Volver vuelve al selector de rutinas', async ({ page }) => {
@@ -73,22 +70,18 @@ test.describe('Botones de navegación en vistas (Volver + Ejercicio)', () => {
     await expect(page.locator('#start-workout-btn')).not.toBeVisible();
   });
 
-  test('routine preview: botón + Ejercicio abre modal', async ({ page }) => {
-    await goToRoutinePreview(page);
-    await page.locator('#add-exercise-btn').click();
-    await expect(page.locator('#modal-overlay')).not.toHaveAttribute('hidden');
-  });
-
-  test('routine preview: ambos botones ocupan mitad del ancho (flex: 1)', async ({ page }) => {
+  test('routine preview: botón Volver ocupa 1/3 del ancho, Iniciar 2/3', async ({ page }) => {
     await goToRoutinePreview(page);
     const backBtn = page.locator('#back-to-selector-btn');
-    const addBtn = page.locator('#add-exercise-btn');
+    const startBtn = page.locator('#start-workout-btn');
     const backBox = await backBtn.boundingBox();
-    const addBox = await addBtn.boundingBox();
-    // Both buttons should have similar width (flex: 1 each)
-    expect(Math.abs(backBox.width - addBox.width)).toBeLessThan(5);
-    // Back button should be on the left
-    expect(backBox.x).toBeLessThan(addBox.x);
+    const startBox = await startBtn.boundingBox();
+    // Iniciar debe ser ~2x el ancho de Volver (flex 2 vs flex 1)
+    const ratio = startBox.width / backBox.width;
+    expect(ratio).toBeGreaterThan(1.5);
+    expect(ratio).toBeLessThan(2.5);
+    // Volver debe estar a la izquierda
+    expect(backBox.x).toBeLessThan(startBox.x);
   });
 
   // ════════════════════════════════════════════════

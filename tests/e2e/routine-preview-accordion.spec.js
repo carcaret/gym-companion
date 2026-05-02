@@ -33,8 +33,8 @@ test.describe('Rutina preview — cards expandibles (solo lectura)', () => {
 
   test('hay una card por ejercicio de la rutina', async ({ page }) => {
     await goToRoutinePreview(page);
-    // DIA1 tiene 2 ejercicios
-    await expect(page.locator('[id^="rcard-"]')).toHaveCount(2);
+    // DIA1 tiene 3 ejercicios en el fixture de test
+    await expect(page.locator('[id^="rcard-"]')).toHaveCount(3);
   });
 
   test('las cards muestran nombre y subtitle antes de expandir', async ({ page }) => {
@@ -198,14 +198,10 @@ test.describe('Rutina preview — cards expandibles (solo lectura)', () => {
   });
 
   test('series sin valor no tienen clase done ni filled', async ({ page }) => {
-    // Añadimos ejercicio sin historial a través del UI
-    await goToRoutinePreview(page);
-    await page.locator('#add-exercise-btn').click();
-    await page.locator('#create-exercise-btn').click();
-    await page.fill('#new-exercise-name', 'Ejercicio Color Test ABC');
-    await page.locator('#modal-actions .btn-primary').click();
+    // El fixture incluye 'ejercicio_sin_historial' en DIA1 sin ninguna entrada en history
     await goToRoutinePreview(page);
 
+    // El último card es ejercicio_sin_historial (índice 2)
     const lastIdx = await page.locator('[id^="rcard-"]').count() - 1;
     await page.locator(`#rcard-${lastIdx} .card-header`).click();
 
@@ -219,20 +215,10 @@ test.describe('Rutina preview — cards expandibles (solo lectura)', () => {
   });
 
   test('ejercicio sin historial de reps muestra — en las series', async ({ page }) => {
-    // Añadimos un ejercicio nuevo a DIA1 a través del UI (actualiza DB en memoria, sin reload).
-    // Un ejercicio recién creado no tiene historial → series-cell-static deben mostrar '—'.
+    // El fixture incluye 'ejercicio_sin_historial' en DIA1 sin ninguna entrada en history
+    // → series-cell-static deben mostrar '—'
     await goToRoutinePreview(page);
 
-    await page.locator('#add-exercise-btn').click();
-    await expect(page.locator('#modal-overlay')).not.toHaveAttribute('hidden');
-    await page.locator('#create-exercise-btn').click();
-    await page.fill('#new-exercise-name', 'Ejercicio Sin Historia XYZ');
-    await page.locator('#modal-actions .btn-primary').click();
-
-    // Tras añadir, renderHoy() vuelve al selector de días; hay que re-entrar a DIA1
-    await goToRoutinePreview(page);
-
-    // El último card es el ejercicio recién creado (sin historial)
     const lastIdx = await page.locator('[id^="rcard-"]').count() - 1;
     await page.locator(`#rcard-${lastIdx} .card-header`).click();
 
@@ -307,20 +293,6 @@ test.describe('Rutina preview — cards expandibles (solo lectura)', () => {
 
     await page.locator('#start-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
-  });
-
-  test('añadir ejercicio funciona desde la vista preview con cards expandidas', async ({ page }) => {
-    await goToRoutinePreview(page);
-    await page.locator('#rcard-0 .card-header').click();
-
-    const initialCount = await page.locator('[id^="rcard-"]').count();
-
-    await page.locator('#add-exercise-btn').click();
-    await expect(page.locator('#modal-overlay')).not.toHaveAttribute('hidden');
-
-    // Cerrar modal y verificar que la preview sigue igual
-    await page.keyboard.press('Escape');
-    await expect(page.locator('[id^="rcard-"]')).toHaveCount(initialCount);
   });
 
   // ── Rutina distinta (DIA2) ────────────────────────────────────────────────────

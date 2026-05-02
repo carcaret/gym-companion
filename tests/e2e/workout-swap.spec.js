@@ -146,8 +146,8 @@ test.describe('swap puntual de ejercicio en entreno activo', () => {
     await page.locator('[data-action="removeExercise"][data-exerciseid="sentadilla"]').click();
     await page.locator('#modal-actions .btn-danger').click();
 
-    // Only 1 card left (curl_biceps)
-    await expect(page.locator('#workout-cards-list .card')).toHaveCount(1);
+    // 2 cards left (curl_biceps + ejercicio_sin_historial)
+    await expect(page.locator('#workout-cards-list .card')).toHaveCount(2);
     await expect(page.locator('#w-title-0')).toContainText('Curl Bíceps');
 
     // DIA1 routine still has press_banca

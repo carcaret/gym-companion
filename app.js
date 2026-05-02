@@ -643,11 +643,8 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
 
   if (showStartBtn) {
     html += `<div class="workout-actions">
-    <button class="btn-primary" id="start-workout-btn">Iniciar entreno</button>
-  </div>`;
-    html += `<div class="view-nav-actions">
     <button class="btn-secondary" id="back-to-selector-btn">← Volver</button>
-    <button class="btn-accent-subtle" id="add-exercise-btn">+ Ejercicio</button>
+    <button class="btn-primary" id="start-workout-btn">Iniciar entreno</button>
   </div>`;
   }
 
@@ -789,8 +786,8 @@ function renderActiveWorkout(container, entry) {
   document.getElementById('hoy-badge').hidden = !hasRecord;
 
   html += `<div class="workout-actions">
-  <button class="btn-accent-subtle" id="add-exercise-mid-btn">+ Ejercicio</button>
   <button class="btn-primary" id="finish-workout-btn">Finalizar entreno</button>
+  <button class="btn-accent-subtle" id="add-exercise-mid-btn">+ Ejercicio</button>
 </div>`;
 
   let openIdx = null;

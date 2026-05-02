@@ -2,10 +2,11 @@
   "exercises": {
     "press_banca": { "id": "press_banca", "name": "Press Banca", "grupo": "pecho" },
     "curl_biceps": { "id": "curl_biceps", "name": "Curl Bíceps", "grupo": "biceps" },
-    "sentadilla": { "id": "sentadilla", "name": "Sentadilla", "grupo": "piernas" }
+    "sentadilla": { "id": "sentadilla", "name": "Sentadilla", "grupo": "piernas" },
+    "ejercicio_sin_historial": { "id": "ejercicio_sin_historial", "name": "Ejercicio Sin Historial", "grupo": "otro" }
   },
   "routines": {
-    "DIA1": ["press_banca", "curl_biceps"],
+    "DIA1": ["press_banca", "curl_biceps", "ejercicio_sin_historial"],
     "DIA2": ["sentadilla"],
     "DIA3": ["press_banca", "sentadilla"]
   },

@@ -29,8 +29,8 @@ test.describe('Workout flow completo', () => {
 
   test('iniciar entreno y verificar que muestra cards de ejercicios', async ({ page }) => {
     await selectRoutineAndStart(page);
-    // Should show exercise cards for the DIA1 routine (press_banca, curl_biceps)
-    await expect(page.locator('.card')).toHaveCount(2);
+    // DIA1 tiene 3 ejercicios en el fixture de test
+    await expect(page.locator('.card')).toHaveCount(3);
   });
 
   test('ajustar peso (+2.5) se refleja en el input', async ({ page }) => {

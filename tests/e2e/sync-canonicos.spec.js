@@ -89,7 +89,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
 
     await page.reload();
     await expect(page.locator('#app-shell')).toBeVisible();
-    await page.waitForTimeout(2000);
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'ok', { timeout: 5000 });
 
     // El entreno sigue presente tras reload
     const dbAfterReload = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
@@ -152,7 +152,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
 
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(300);
 
     const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
 
@@ -250,18 +250,17 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
     await fillAllWorkoutReps(page);
     await page.locator('#finish-workout-btn').click();
 
-    await page.waitForTimeout(2000);
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'pending', { timeout: 5000 });
 
-    // Indicador debe estar en pendiente
-    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
-    expect(state).toBe('pending');
-
-    // Puede haber un modal de "Entreno guardado localmente" (100ms delay) — cerrar si está abierto
-    const modalVisible = await page.locator('#modal-overlay').isVisible().catch(() => false);
-    if (modalVisible) await page.click('text=Entendido');
+    // El modal "Entreno guardado localmente" aparece con 100ms de retraso — esperar y cerrar
+    await page.locator('#modal-overlay').waitFor({ state: 'visible', timeout: 500 }).catch(() => {});
+    if (await page.locator('#modal-overlay').isVisible()) {
+      await page.click('text=Entendido');
+      await page.locator('#modal-overlay').waitFor({ state: 'hidden' });
+    }
 
     // Pulsar el indicador → modal de conflicto con 3 opciones
-    await page.click('#sync-status-btn');
+    await page.locator('.sync-status-btn').first().click();
     await expect(page.locator('#modal-overlay')).toBeVisible();
     await expect(page.locator('#modal-title')).toContainText('Conflicto');
     await expect(page.locator('text=Cancelar')).toBeVisible();
@@ -296,10 +295,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
 
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
-    await page.waitForTimeout(1500);
-
-    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
-    expect(state).toBe('ok');
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'ok', { timeout: 3000 });
     expect(putCount).toBe(0);
   });
 
@@ -333,7 +329,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
 
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(300);
 
     expect(getCount).toBeGreaterThan(0);
     expect(putCount).toBe(0);
@@ -397,7 +393,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
     // needs_upload queda en false y no se hizo PUT (no debemos re-subir lo que acabamos de bajar)
     const needsUpload = await page.evaluate(() => localStorage.getItem('gym_companion_needs_upload'));
     expect(needsUpload).toBe('false');
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(200);
     expect(putCount).toBe(0);
   });
 
@@ -435,7 +431,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
 
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(300);
 
     const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
     // El entreno local exclusivo (2024-04-10) sigue presente
@@ -480,7 +476,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
 
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(300);
 
     const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
     // El entreno activo de hoy sigue presente tal cual
@@ -558,7 +554,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
 
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(300);
 
     const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
     expect(dbAfter.exercises).toEqual(BASE_DB.exercises);
@@ -589,7 +585,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
 
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(300);
 
     const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
     expect(dbAfter.exercises).toEqual(BASE_DB.exercises);

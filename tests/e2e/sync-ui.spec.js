@@ -43,11 +43,10 @@ test.describe('Sync — UI y ajustes', () => {
 
   // ── Indicador de sync ────────────────────────────────────────────────────
 
-  test('sin GitHub → indicador en estado ok (neutral)', async ({ page }) => {
+  test('sin GitHub → indicador en estado disabled', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
-    expect(state).toBe('ok');
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'disabled');
   });
 
   test('sync ok → indicador muestra estado ok', async ({ page }) => {
@@ -81,16 +80,13 @@ test.describe('Sync — UI y ajustes', () => {
     await fillAllWorkoutReps(page);
     await page.locator('#finish-workout-btn').click();
 
-    await page.waitForTimeout(2000);
-
-    const state = await page.locator('#sync-status-btn').getAttribute('data-state');
-    expect(state).toBe('ok');
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'ok', { timeout: 5000 });
   });
 
   test('clic en indicador muestra toast con estado', async ({ page }) => {
     await injectTestDB(page);
     await page.goto('/');
-    await page.click('#sync-status-btn');
+    await page.locator('.sync-status-btn').first().click();
     await expect(page.locator('#toast')).toBeVisible();
   });
 
