@@ -457,8 +457,8 @@ body {
   text-align: center;
   padding: 8px 4px;
   background: var(--bg-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-xs);
@@ -721,7 +721,18 @@ body {
 
 /* ── Charts ── */
 .graficas-controls {
-  padding: 0 var(--pad) 8px;
+  margin: 0 var(--pad) 12px;
+  padding: 16px;
+  background: var(--surface-bg);
+  border: var(--surface-border);
+  border-radius: var(--surface-radius);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  box-shadow: var(--glass-specular), var(--glass-shadow);
+}
+
+.graficas-controls .input-group:last-child {
+  margin-bottom: 0;
 }
 
 .date-range {
@@ -1316,8 +1327,8 @@ body {
   border-radius: var(--radius-tag);
   border: 1px solid var(--border);
   background: var(--bg-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
   font-size: 13px;
