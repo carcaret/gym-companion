@@ -721,6 +721,8 @@ body {
 
 /* ── Charts ── */
 .graficas-controls {
+  position: relative;
+  z-index: 1;
   margin: 0 var(--pad) 12px;
   padding: 16px;
   background: var(--surface-bg);
