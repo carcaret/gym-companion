@@ -1345,9 +1345,9 @@ function renderHistorialDetail(date) {
 // ── View: Gráficas ──
 function initCharts() {
   const now = new Date();
-  const oneYearAgo = new Date(now);
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-  document.getElementById('chart-from').value = oneYearAgo.toISOString().split('T')[0];
+  const sixMonthsAgo = new Date(now);
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  document.getElementById('chart-from').value = sixMonthsAgo.toISOString().split('T')[0];
   document.getElementById('chart-to').value = todayStr();
   updateChartExercises();
 }
