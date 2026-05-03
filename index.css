@@ -1199,14 +1199,11 @@ body {
 /* ── History strip (franja de histórico en card de ejercicio) ─────────────── */
 .history-strip {
   padding: 10px 14px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
 }
 .history-strip-label {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1271,14 +1268,12 @@ body {
 .history-bar-col.empty .bar-date { opacity: 0.5; }
 .bar-date {
   font-size: 9px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 .history-strip-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-top: 6px;
+  text-align: right;
 }
 .vol-delta {
   font-size: 11px;
@@ -1286,15 +1281,6 @@ body {
   color: var(--green-soft);
 }
 .vol-delta.down { color: var(--red-soft); }
-.legend { display: flex; gap: 10px; align-items: center; }
-.legend-item { display: flex; align-items: center; gap: 4px; }
-.legend-dot { width: 8px; height: 8px; border-radius: 2px; }
-.legend-dot-current { background: var(--accent); }
-.legend-dot-prev    { background: #2a5070; }
-.legend-txt {
-  font-size: 10px;
-  color: var(--text-muted);
-}
 
 /* ── Series en fila horizontal ────────────────────────────────────────────── */
 .series-section { padding: 10px 14px 12px; }

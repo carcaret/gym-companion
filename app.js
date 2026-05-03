@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.29';
+const APP_VERSION = '1.0.30';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
@@ -409,9 +409,6 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
     }
   }
 
-  const currentColor = hasCurrent ? barColor(currentMetric) : barColor(maxMetric);
-  const prevColor = barColor(minMetric);
-
   const MAX_COLS = 6;
   const displaySessions = allSessions.slice(-MAX_COLS);
   const emptyCols = MAX_COLS - displaySessions.length;
@@ -440,13 +437,7 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
   return `<div class="history-strip">
     <div class="history-strip-label">Últimas sesiones</div>
     <div class="history-bars">${barsHtml}</div>
-    <div class="history-strip-meta">
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:${currentColor}"></div><div class="legend-txt">hoy</div></div>
-        <div class="legend-item"><div class="legend-dot" style="background:${prevColor}"></div><div class="legend-txt">anterior</div></div>
-      </div>
-      ${deltaHtml}
-    </div>
+    ${deltaHtml ? `<div class="history-strip-meta">${deltaHtml}</div>` : ''}
   </div>`;
 }
 
