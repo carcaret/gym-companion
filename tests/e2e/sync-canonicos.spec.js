@@ -80,11 +80,19 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
     let putCount = 0;
     await page.unroute('**/api.github.com/**');
     await page.route('**/api.github.com/**', async (route) => {
-      if (route.request().method() === 'PUT') putCount++;
-      await route.fulfill({
-        status: 200, contentType: 'application/json',
-        body: JSON.stringify({ content: { sha: 'sha_new' } })
-      });
+      const req = route.request();
+      if (req.method() === 'PUT') {
+        putCount++;
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: { sha: 'sha_new' } })
+        });
+      } else {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_remote', encoding: 'base64' })
+        });
+      }
     });
 
     await page.reload();
@@ -202,7 +210,7 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
     await expect(page.locator('#modal-overlay')).toBeVisible();
     await page.click('text=Sobreescribir local');
 
-    await expect(page.locator('#toast')).toContainText('sincronizados');
+    await expect(page.locator('#toast')).toContainText('descargados');
 
     const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
     // Ejercicio nuevo del remote está presente
@@ -590,5 +598,74 @@ test.describe('Canónicos de resiliencia — opción B estricta', () => {
     const dbAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('gym_companion_db')));
     expect(dbAfter.exercises).toEqual(BASE_DB.exercises);
     expect(dbAfter.history.length).toBe(BASE_DB.history.length);
+  });
+
+  // ── Canónico M ───────────────────────────────────────────────────────────────
+  // Si saveDBToGitHub se invoca sin sha en memoria (p. ej. el pull de arranque
+  // falló o la sesión empezó con needsUpload=true sin pull previo), debe hacer
+  // un GET para poblarlo antes del PUT. Sin esto, el PUT iría sin sha y daría
+  // 422 espurio (que se trataría como falso conflicto).
+
+  test('Canónico M: needsUpload=true sin sha → GET pobla sha antes del PUT', async ({ page }) => {
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.dbJson);
+      localStorage.setItem('gym_companion_needs_upload', 'true');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { dbJson: JSON.stringify(BASE_DB) });
+
+    const requests = [];
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      const req = route.request();
+      requests.push({
+        method: req.method(),
+        body: req.method() === 'PUT' ? JSON.parse(req.postData()) : null
+      });
+      if (req.method() === 'GET') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_from_get', encoding: 'base64' })
+        });
+      } else {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: { sha: 'sha_after_put' } })
+        });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'ok', { timeout: 5000 });
+
+    const getIdx = requests.findIndex(r => r.method === 'GET');
+    const putIdx = requests.findIndex(r => r.method === 'PUT');
+    expect(getIdx).toBeGreaterThanOrEqual(0);
+    expect(putIdx).toBeGreaterThan(getIdx);
+    expect(requests[putIdx].body.sha).toBe('sha_from_get');
+  });
+
+  // ── Canónico N ───────────────────────────────────────────────────────────────
+  // Si saveDBToGitHub no tiene sha y el GET previo también falla (offline real),
+  // aborta sin hacer PUT y deja el indicador en "pending" para reintentar luego.
+
+  test('Canónico N: sin sha + GET falla → no hay PUT, queda en pending', async ({ page }) => {
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.dbJson);
+      localStorage.setItem('gym_companion_needs_upload', 'true');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { dbJson: JSON.stringify(BASE_DB) });
+
+    let putCount = 0;
+    await page.route('**/api.github.com/**', async (route) => {
+      if (route.request().method() === 'PUT') putCount++;
+      await route.abort('failed');
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'pending', { timeout: 5000 });
+    expect(putCount).toBe(0);
   });
 });

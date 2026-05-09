@@ -11,6 +11,10 @@ const TEST_DB = {
   ]
 };
 
+function encodeDBToBase64(db) {
+  return Buffer.from(JSON.stringify(db, null, 2), 'utf-8').toString('base64');
+}
+
 async function setupDBWithGitHub(page) {
   const dbJson = JSON.stringify(TEST_DB);
   const githubConfig = { repo: 'testuser/gym-data', branch: 'main', path: 'db.json' };
@@ -136,12 +140,21 @@ test.describe('GitHub sync durante entreno activo', () => {
 
     let putCount = 0;
     await page.route('https://api.github.com/**', async (route) => {
-      if (route.request().method() === 'PUT') putCount++;
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ content: { sha: 'sha_123' } })
-      });
+      const req = route.request();
+      if (req.method() === 'PUT') {
+        putCount++;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ content: { sha: 'sha_123' } })
+        });
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(TEST_DB), sha: 'sha_remote', encoding: 'base64' })
+        });
+      }
     });
 
     await page.goto('/');
@@ -165,12 +178,21 @@ test.describe('GitHub sync durante entreno activo', () => {
 
     let putCount = 0;
     await page.route('https://api.github.com/**', async (route) => {
-      if (route.request().method() === 'PUT') putCount++;
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ content: { sha: 'sha_123' } })
-      });
+      const req = route.request();
+      if (req.method() === 'PUT') {
+        putCount++;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ content: { sha: 'sha_123' } })
+        });
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(TEST_DB), sha: 'sha_remote', encoding: 'base64' })
+        });
+      }
     });
 
     await page.goto('/');

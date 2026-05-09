@@ -64,7 +64,11 @@ test.describe('GitHub sync (mock)', () => {
           body: JSON.stringify({ content: { sha: 'new_sha_123' } })
         });
       } else {
-        await route.fulfill({ status: 404 });
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(TEST_DB), sha: 'sha_remote_init', encoding: 'base64' })
+        });
       }
     });
 

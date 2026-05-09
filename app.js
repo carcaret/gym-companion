@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.30';
+const APP_VERSION = '1.0.31';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
@@ -206,6 +206,18 @@ async function saveDBToGitHub(options = {}) {
   const cfg = getGithubConfig();
   const pat = getPat();
   if (!cfg || !pat || !DB) return false;
+
+  // Sin sha el PUT devuelve 422, que se trataría como falso conflicto.
+  // Pasa cuando el pull de arranque falló (red mala). Lo poblamos aquí.
+  if (!githubSha) {
+    const { parsed } = await fetchGithubDb(cfg, pat);
+    if (!parsed) {
+      setSyncState('pending');
+      return false;
+    }
+    githubSha = parsed.sha;
+  }
+
   try {
     const body = buildGitHubPayload(DB, githubSha, {
       branch: cfg.branch,
@@ -1581,22 +1593,33 @@ function setupSettings() {
     }
   };
 
+  document.getElementById('force-sync-btn').onclick = async () => {
+    if (!isSyncConfigured()) { toast('GitHub no configurado', 'warn'); return; }
+    if (conflict) { showConflictModal(); return; }
+    toast('Subiendo a GitHub...', null, 8000);
+    setSyncState('pending');
+    const ok = await saveDBToGitHub();
+    if (ok) toast('Subido a GitHub', 'ok');
+    else if (conflict) showConflictModal();
+    else toast('No se pudo subir — sigue en pendiente', 'error');
+  };
+
   document.getElementById('sync-github-btn').onclick = () => {
     showModal(
-      'Sincronizar desde GitHub',
+      'Descargar de GitHub',
       '<p class="text-sm">Esto <strong>sobreescribirá tus datos locales</strong> con los de GitHub. Los cambios no subidos se perderán. ¿Continuar?</p>',
       [
         { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
         {
           label: 'Sobreescribir local', className: 'btn-primary btn-sm', action: async () => {
-            toast('Descargando desde GitHub...', null, 8000);
+            toast('Descargando de GitHub...', null, 8000);
             const remote = await loadDBFromGitHub();
             if (!remote || !remote.exercises || !remote.history) {
               toast('No se pudo descargar o formato inválido', 'error');
               return false;
             }
             applyRemoteDB(remote);
-            toast('Datos sincronizados desde GitHub', 'ok');
+            toast('Datos descargados de GitHub', 'ok');
           }
         }
       ]

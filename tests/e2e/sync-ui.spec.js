@@ -105,6 +105,106 @@ test.describe('Sync — UI y ajustes', () => {
     expect(stored).toBe('ghp_cleartext999');
   });
 
+  // ── Botón "Subir a GitHub" (force-sync) ──────────────────────────────────
+
+  test('Subir a GitHub dispara PUT y muestra toast de éxito', async ({ page }) => {
+    await page.addInitScript((data) => {
+      localStorage.setItem('gym_companion_db', data.dbJson);
+      localStorage.setItem('gym_companion_needs_upload', 'false');
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { dbJson: JSON.stringify(BASE_DB) });
+
+    let putCount = 0;
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      const req = route.request();
+      if (req.method() === 'PUT') {
+        putCount++;
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: { sha: 'sha_after' } })
+        });
+      } else {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_remote', encoding: 'base64' })
+        });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+    await page.click('[data-view="ajustes"]');
+    await page.click('#force-sync-btn');
+
+    await expect(page.locator('#toast')).toContainText('Subido a GitHub', { timeout: 5000 });
+    expect(putCount).toBe(1);
+  });
+
+  test('Subir a GitHub sin GitHub configurado → toast warn, no PUT', async ({ page }) => {
+    await injectTestDB(page);
+
+    let putCount = 0;
+    await page.route('**/api.github.com/**', async (route) => {
+      if (route.request().method() === 'PUT') putCount++;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    });
+
+    await page.goto('/');
+    await page.click('[data-view="ajustes"]');
+    await page.click('#force-sync-btn');
+
+    await expect(page.locator('#toast')).toContainText('no configurado');
+    expect(putCount).toBe(0);
+  });
+
+  test('Subir a GitHub con conflicto activo → abre modal de conflicto', async ({ page }) => {
+    await page.addInitScript((data) => {
+      if (!localStorage.getItem('gym_companion_db')) {
+        localStorage.setItem('gym_companion_db', data.dbJson);
+      }
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    }, { dbJson: JSON.stringify(BASE_DB) });
+
+    // Mock: GET válido para poblar sha; PUT 409 para forzar conflict=true
+    await page.route('**/api.github.com/repos/**/contents/**', async (route) => {
+      const req = route.request();
+      if (req.method() === 'PUT') {
+        await route.fulfill({ status: 409, contentType: 'application/json', body: '{"message":"Conflict"}' });
+      } else {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ content: encodeDBToBase64(BASE_DB), sha: 'sha_remote', encoding: 'base64' })
+        });
+      }
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+
+    // Disparar conflict=true completando un entreno
+    const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
+    if (await dayBtn.isVisible().catch(() => false)) await dayBtn.click();
+    await page.locator('#start-workout-btn').click();
+    await fillAllWorkoutReps(page);
+    await page.locator('#finish-workout-btn').click();
+    await expect(page.locator('.sync-status-btn').first()).toHaveAttribute('data-state', 'pending', { timeout: 5000 });
+
+    // Cerrar modal "Entreno guardado localmente" si aparece
+    await page.locator('#modal-overlay').waitFor({ state: 'visible', timeout: 500 }).catch(() => {});
+    if (await page.locator('#modal-overlay').isVisible()) {
+      await page.click('text=Entendido');
+      await page.locator('#modal-overlay').waitFor({ state: 'hidden' });
+    }
+
+    await page.click('[data-view="ajustes"]');
+    await page.click('#force-sync-btn');
+
+    await expect(page.locator('#modal-overlay')).toBeVisible();
+    await expect(page.locator('#modal-title')).toContainText('Conflicto');
+  });
+
   // ── "Probar conexión" no modifica DB ─────────────────────────────────────
 
   test('probar conexión NO sobrescribe la DB local', async ({ page }) => {
