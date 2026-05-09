@@ -736,7 +736,7 @@ function renderActiveWorkout(container, entry) {
     if (isVolRecord || isE1RMRecord) hasRecord = true;
 
     html += `<div class="card" id="exercise-card-${logIdx}">
-    <div class="card-header" data-idx="${logIdx}">
+    <div class="card-header" data-idx="${logIdx}" data-exerciseid="${log.exercise_id}">
       <span class="drag-handle" title="Reordenar">${icon('grip', 18)}</span>
       <div>
         <div class="card-title" id="w-title-${logIdx}">
@@ -783,7 +783,15 @@ function renderActiveWorkout(container, entry) {
 
   let openIdx = null;
   const prevOpen = container.querySelector('.card-body.open');
-  if (prevOpen) openIdx = prevOpen.id.replace('body-', '');
+  if (prevOpen) {
+    const prevBodyIdx = prevOpen.id.replace('body-', '');
+    const prevHeader = container.querySelector(`.card-header[data-idx="${prevBodyIdx}"]`);
+    const prevExerciseId = prevHeader?.dataset.exerciseid;
+    if (prevExerciseId) {
+      const newIdx = entry.logs.findIndex(l => l.exercise_id === prevExerciseId);
+      if (newIdx >= 0) openIdx = String(newIdx);
+    }
+  }
 
   container.innerHTML = html;
 
