@@ -20072,6 +20072,100 @@
           "weight": 100
         }
       ]
+    },
+    {
+      "date": "2026-05-11",
+      "type": "DIA1",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "prensa_de_piernas",
+          "name": "Prensa de Piernas",
+          "series": 4,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9,
+              9,
+              9
+            ]
+          },
+          "weight": 220
+        },
+        {
+          "exercise_id": "press_maquina",
+          "name": "Press máquina",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              9
+            ]
+          },
+          "weight": 63
+        },
+        {
+          "exercise_id": "hammer_row_prono",
+          "name": "Hammer Row Prono",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 27.5
+        },
+        {
+          "exercise_id": "curl_femoral_sentado",
+          "name": "Curl Femoral Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 8,
+            "actual": [
+              9,
+              9,
+              8
+            ]
+          },
+          "weight": 97
+        },
+        {
+          "exercise_id": "elevaciones_laterales_con_mancuernas",
+          "name": "Elevaciones Laterales con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 8,
+            "actual": [
+              8,
+              8,
+              8
+            ]
+          },
+          "weight": 12
+        },
+        {
+          "exercise_id": "hammer_curl_mancuernas",
+          "name": "Hammer curl mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 12
+        }
+      ]
     }
   ]
 }
