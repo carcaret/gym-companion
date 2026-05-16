@@ -798,10 +798,11 @@ function renderActiveWorkout(container, entry) {
     const prevBodyIdx = prevOpen.id.replace('body-', '');
     const prevHeader = container.querySelector(`.card-header[data-idx="${prevBodyIdx}"]`);
     const prevExerciseId = prevHeader?.dataset.exerciseid;
-    if (prevExerciseId) {
-      const newIdx = entry.logs.findIndex(l => l.exercise_id === prevExerciseId);
-      if (newIdx >= 0) openIdx = String(newIdx);
-    }
+    // Match por exercise_id sobrevive a drag-reorder (mismo ejercicio, otro índice).
+    // Si no aparece, el slot suele venir de un swap (mismo índice, otro ejercicio) → mantenemos el índice.
+    const byExercise = prevExerciseId ? entry.logs.findIndex(l => l.exercise_id === prevExerciseId) : -1;
+    if (byExercise >= 0) openIdx = String(byExercise);
+    else if (Number(prevBodyIdx) < entry.logs.length) openIdx = prevBodyIdx;
   }
 
   container.innerHTML = html;
