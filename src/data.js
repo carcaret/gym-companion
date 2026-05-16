@@ -45,20 +45,39 @@ export function isWorkoutActive(db, today) {
   return entry ? entry.completed === false : false;
 }
 
-export function getMostRecentValuesForExercise(db, exerciseId, today) {
+export function getBestRecentValuesForExercise(db, exerciseId, today, windowSize = 6) {
   if (!db?.history) return { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
   const sorted = [...db.history].sort((a, b) => a.date.localeCompare(b.date));
-  for (let i = sorted.length - 1; i >= 0; i--) {
+
+  const occurrences = [];
+  for (let i = sorted.length - 1; i >= 0 && occurrences.length < windowSize; i--) {
     if (today && sorted[i].date === today) continue;
     const log = sorted[i].logs?.find(l => l.exercise_id === exerciseId);
-    if (log) return {
-      series: log.series,
-      repsExpected: log.reps.expected,
-      weight: log.weight,
-      repsActual: log.reps.actual || []
-    };
+    if (log) occurrences.push(log);
   }
-  return { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
+
+  if (occurrences.length === 0) return { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
+
+  let best = occurrences[0];
+  let bestWeight = best.weight;
+  let bestVolume = computeVolume(best);
+  for (let i = 1; i < occurrences.length; i++) {
+    const log = occurrences[i];
+    const w = log.weight;
+    const v = computeVolume(log);
+    if (w > bestWeight || (w === bestWeight && v > bestVolume)) {
+      best = log;
+      bestWeight = w;
+      bestVolume = v;
+    }
+  }
+
+  return {
+    series: best.series,
+    repsExpected: best.reps.expected,
+    weight: best.weight,
+    repsActual: best.reps.actual || []
+  };
 }
 
 export function getRecentSessionsForExercise(db, exerciseId, anchorDate, maxSessions = 6, weeksWindow = 6, excludeDate = null) {

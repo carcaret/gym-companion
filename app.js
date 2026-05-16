@@ -2,12 +2,12 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '1.0.32';
+const APP_VERSION = '1.0.33';
 
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getMostRecentValuesForExercise as _getMostRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getRecentSessionsForExercise as _getRecentSessionsForExercise, sortExercisesForSwap } from './src/data.js';
+import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getRecentSessionsForExercise as _getRecentSessionsForExercise, sortExercisesForSwap } from './src/data.js';
 import { computeVolume, computeE1RM } from './src/metrics.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, sortHistory, findLog, swapLogExercise } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
@@ -564,7 +564,7 @@ function applyValidationErrors(logIdx, log, prefix = 'w') {
 // ── Data Helpers (wrappers que pasan DB global) ──
 const getExerciseName = (id) => _getExerciseName(DB, id);
 const getTodayEntry = () => _getTodayEntry(DB, todayStr());
-const getMostRecentValuesForExercise = (exerciseId) => _getMostRecentValuesForExercise(DB, exerciseId, todayStr());
+const getBestRecentValuesForExercise = (exerciseId) => _getBestRecentValuesForExercise(DB, exerciseId, todayStr());
 const getRecentSessionsForExercise = (exerciseId, anchorDate) => _getRecentSessionsForExercise(DB, exerciseId, anchorDate, 6, 6, anchorDate);
 
 // ── View: Rutinas ──
@@ -617,7 +617,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   let html = '';
 
   exerciseIds.forEach((id, idx) => {
-    const last = getMostRecentValuesForExercise(id);
+    const last = getBestRecentValuesForExercise(id);
     const name = getExerciseName(id);
     const log = { exercise_id: id, weight: last.weight, series: last.series, reps: { expected: last.repsExpected, actual: last.repsActual } };
 
@@ -679,7 +679,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
 
 function startWorkout(dayType) {
   const routineIds = DB.routines[dayType] || [];
-  const entry = buildWorkoutEntry(todayStr(), dayType, routineIds, getMostRecentValuesForExercise, getExerciseName);
+  const entry = buildWorkoutEntry(todayStr(), dayType, routineIds, getBestRecentValuesForExercise, getExerciseName);
 
   DB.history = DB.history.filter(h => h.date !== todayStr());
   DB.history.push(entry);
@@ -957,7 +957,7 @@ function addExerciseToRoutineAndActiveWorkout(id, dayType) {
 
   const todayEntry = getTodayEntry();
   if (todayEntry && !todayEntry.completed && todayEntry.type === dayType) {
-    const last = getMostRecentValuesForExercise(id);
+    const last = getBestRecentValuesForExercise(id);
     todayEntry.logs.push(buildLog(id, getExerciseName(id), last));
   }
 }
@@ -965,7 +965,7 @@ function addExerciseToRoutineAndActiveWorkout(id, dayType) {
 function swapExerciseInActiveWorkout(logIdx, newExerciseId) {
   const entry = getTodayEntry();
   if (!entry) return;
-  const last = getMostRecentValuesForExercise(newExerciseId);
+  const last = getBestRecentValuesForExercise(newExerciseId);
   const name = getExerciseName(newExerciseId);
   const result = swapLogExercise(entry, logIdx, newExerciseId, last, name);
   if (!result.ok) {

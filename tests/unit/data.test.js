@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getExerciseName, getTodayEntry, getMostRecentValuesForExercise, ensureHistorySorted, getWeeklyBucketsForExercise, getRecentSessionsForExercise, sortExercisesForSwap } from '../../src/data.js';
+import { getExerciseName, getTodayEntry, getBestRecentValuesForExercise, ensureHistorySorted, getWeeklyBucketsForExercise, getRecentSessionsForExercise, sortExercisesForSwap } from '../../src/data.js';
 
 const DB_FIXTURE = {
   exercises: {
@@ -63,31 +63,52 @@ describe('getTodayEntry', () => {
   });
 });
 
-describe('getMostRecentValuesForExercise', () => {
-  test('devuelve los valores del último log del ejercicio en cualquier día', () => {
-    // DB_FIXTURE: press_banca aparece en 2024-01-08 (DIA1, w=60) y 2024-01-15 (DIA1, w=65)
-    const last = getMostRecentValuesForExercise(DB_FIXTURE, 'press_banca', '2024-02-01');
-    expect(last.weight).toBe(65);
-    expect(last.series).toBe(4);
-    expect(last.repsExpected).toBe(10);
-    expect(last.repsActual).toEqual([10, 10, 10, 8]);
+describe('getBestRecentValuesForExercise', () => {
+  const TODAY = '2024-05-01';
+
+  test('mayor peso gana aunque su volumen sea menor', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'prensa', name: 'Prensa', series: 4, reps: { expected: 12, actual: [12, 12, 12, 14] }, weight: 180 }] }, // vol 9000
+        { date: '2024-04-22', type: 'DIA1', completed: true, logs: [{ exercise_id: 'prensa', name: 'Prensa', series: 4, reps: { expected: 10, actual: [10, 10, 10, 10] }, weight: 200 }] }, // vol 8000
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'prensa', TODAY);
+    expect(best.weight).toBe(200);
+    expect(best.repsExpected).toBe(10);
+    expect(best.repsActual).toEqual([10, 10, 10, 10]);
   });
 
-  test('ejercicio inexistente → defaults', () => {
-    const last = getMostRecentValuesForExercise(DB_FIXTURE, 'no_existe', '2024-02-01');
-    expect(last).toEqual({ series: 3, repsExpected: 10, weight: 0, repsActual: [] });
+  test('a igualdad de peso, gana mayor volumen (reps reales)', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 12, actual: [12, 12, 12] }, weight: 50 }] }, // vol 1800
+        { date: '2024-04-22', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] }, // vol 1500
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.weight).toBe(50);
+    expect(best.repsActual).toEqual([12, 12, 12]);
   });
 
-  test('history vacío → defaults', () => {
-    const db = { exercises: {}, routines: {}, history: [] };
-    const last = getMostRecentValuesForExercise(db, 'press_banca', '2024-02-01');
-    expect(last).toEqual({ series: 3, repsExpected: 10, weight: 0, repsActual: [] });
+  test('mezcla mismo peso/series/reps → gana 12-12-12 frente a 12-12-10 frente a 12-10-10', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 12, actual: [12, 12, 12] }, weight: 50 }] },
+        { date: '2024-04-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 12, actual: [12, 12, 10] }, weight: 50 }] },
+        { date: '2024-04-15', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 12, actual: [12, 10, 10] }, weight: 50 }] },
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.repsActual).toEqual([12, 12, 12]);
   });
 
-  test('NO prioriza el mismo dayType: coge el log más reciente aunque sea de otro día', () => {
-    // Caso real que motivó el cambio: el usuario hizo apertura_con_cable en DIA2 con 18.1kg
-    // hace pocas semanas y en DIA3 con 15.9kg hace más tiempo. Al pedirla "para hoy" (cualquier
-    // tipo), debe devolver 18.1, no 15.9.
+  test('busca el ejercicio en cualquier dayType (caso real apertura)', () => {
+    // El usuario hizo apertura en DIA3 con 15.9kg (hace tiempo) y en DIA2 con 18.1kg (más reciente).
+    // Hoy (DIA3) hace swap a apertura → debe devolver 18.1 (mayor peso entre las recientes).
     const db = {
       exercises: {}, routines: {},
       history: [
@@ -95,39 +116,67 @@ describe('getMostRecentValuesForExercise', () => {
         { date: '2024-04-01', type: 'DIA2', completed: true, logs: [{ exercise_id: 'apertura', name: 'Apertura', series: 4, reps: { expected: 11, actual: [11, 11, 11, 11] }, weight: 18.1 }] },
       ],
     };
-    const last = getMostRecentValuesForExercise(db, 'apertura', '2024-05-01');
-    expect(last.weight).toBe(18.1);
-    expect(last.repsExpected).toBe(11);
+    const best = getBestRecentValuesForExercise(db, 'apertura', TODAY);
+    expect(best.weight).toBe(18.1);
+    expect(best.repsExpected).toBe(11);
   });
 
-  test('history desordenado → toma el más reciente por fecha, no por posición', () => {
+  test('ventana = últimas 6 ocurrencias del ejercicio (las anteriores no compiten)', () => {
+    // 7ª ocurrencia hacia atrás tiene peso muy alto, pero no debe entrar en la ventana.
     const db = {
       exercises: {}, routines: {},
       history: [
-        { date: '2024-03-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 8, actual: [8, 8, 8, 8, 8] }, weight: 85 }] },
-        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
-        { date: '2024-02-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 4, reps: { expected: 10, actual: [10, 10, 10, 10] }, weight: 70 }] },
+        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 200 }] },
+        { date: '2024-01-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-01-15', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-01-22', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-02-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-02-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-02-15', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
       ],
     };
-    const last = getMostRecentValuesForExercise(db, 'press_banca', '2024-05-01');
-    expect(last.weight).toBe(85);
-    expect(last.series).toBe(5);
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    // La de 200kg está fuera de las últimas 6 → no entra → gana 50
+    expect(best.weight).toBe(50);
   });
 
-  test('incluye entries con completed=false (sesión olvidada o en curso de otro día)', () => {
+  test('ventana cuenta solo ocurrencias del ejercicio, NO sesiones globales (caso ejercicio dormido)', () => {
+    // Press_banca lo hace 6 veces hace meses, luego 7 sesiones sin tocarlo → debe seguir devolviendo
+    // sus mejores valores de hace meses, no defaults.
     const db = {
       exercises: {}, routines: {},
       history: [
         { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
-        { date: '2024-02-01', type: 'DIA1', completed: false, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 5, reps: { expected: 8, actual: [8, 8, 8, 8, 8] }, weight: 80 }] },
+        { date: '2024-01-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 65 }] },
+        // 7 sesiones sin press_banca
+        ...Array.from({ length: 7 }, (_, i) => ({
+          date: `2024-02-${String(i + 1).padStart(2, '0')}`, type: 'DIA2', completed: true,
+          logs: [{ exercise_id: 'otro', name: 'Otro', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 10 }],
+        })),
       ],
     };
-    const last = getMostRecentValuesForExercise(db, 'press_banca', '2024-05-01');
-    expect(last.weight).toBe(80);
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.weight).toBe(65);
   });
 
-  test('excluye la entry cuya date === today (entreno en curso no se autoreferencia)', () => {
-    const TODAY = '2024-05-01';
+  test('sin historial → defaults', () => {
+    const db = { exercises: {}, routines: {}, history: [] };
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best).toEqual({ series: 3, repsExpected: 10, weight: 0, repsActual: [] });
+  });
+
+  test('ejercicio inexistente en historial → defaults', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'otro', name: 'Otro', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best).toEqual({ series: 3, repsExpected: 10, weight: 0, repsActual: [] });
+  });
+
+  test('excluye la entry cuya date === today', () => {
     const db = {
       exercises: {}, routines: {},
       history: [
@@ -135,19 +184,46 @@ describe('getMostRecentValuesForExercise', () => {
         { date: TODAY, type: 'DIA1', completed: false, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [null, null, null] }, weight: 999 }] },
       ],
     };
-    const last = getMostRecentValuesForExercise(db, 'press_banca', TODAY);
-    expect(last.weight).toBe(50);
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.weight).toBe(50);
   });
 
-  test('today sin argumento → no excluye ninguna entry', () => {
+  test('incluye entries pasadas con completed=false (usuario olvidó finalizar)', () => {
     const db = {
       exercises: {}, routines: {},
       history: [
         { date: '2024-04-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
+        { date: '2024-04-22', type: 'DIA1', completed: false, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 80 }] },
       ],
     };
-    const last = getMostRecentValuesForExercise(db, 'press_banca');
-    expect(last.weight).toBe(60);
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.weight).toBe(80);
+  });
+
+  test('empate total (peso, series, reps) → gana la más reciente', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
+        { date: '2024-04-15', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.weight).toBe(60);
+    expect(best.repsActual).toEqual([10, 10, 10]);
+  });
+
+  test('peso 0 (bodyweight) compite por volumen', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'dominadas', name: 'Dominadas', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 0 }] },
+        { date: '2024-04-15', type: 'DIA1', completed: true, logs: [{ exercise_id: 'dominadas', name: 'Dominadas', series: 4, reps: { expected: 10, actual: [10, 10, 10, 10] }, weight: 0 }] },
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'dominadas', TODAY);
+    // Mismo peso 0; gana mayor volumen (4 series > 3 series)
+    expect(best.series).toBe(4);
   });
 
   test('reps.actual con nulls → devuelve el array tal cual', () => {
@@ -157,8 +233,8 @@ describe('getMostRecentValuesForExercise', () => {
         { date: '2024-02-01', type: 'DIA1', completed: false, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, null, null] }, weight: 60 }] },
       ],
     };
-    const last = getMostRecentValuesForExercise(db, 'press_banca', '2024-05-01');
-    expect(last.repsActual).toEqual([10, null, null]);
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.repsActual).toEqual([10, null, null]);
   });
 
   test('log sin reps.actual → devuelve array vacío', () => {
@@ -168,23 +244,40 @@ describe('getMostRecentValuesForExercise', () => {
         { date: '2024-02-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10 }, weight: 50 }] },
       ],
     };
-    const last = getMostRecentValuesForExercise(db, 'press_banca', '2024-05-01');
-    expect(last.weight).toBe(50);
-    expect(last.repsActual).toEqual([]);
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.weight).toBe(50);
+    expect(best.repsActual).toEqual([]);
   });
 
-  test('no muta db.history (el orden original se preserva)', () => {
+  test('history desordenado → coge las 6 más recientes por fecha, no por posición', () => {
     const db = {
       exercises: {}, routines: {},
       history: [
-        { date: '2024-03-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 80 }] },
-        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
-        { date: '2024-02-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 70 }] },
+        { date: '2024-04-22', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 100 }] },
+        { date: '2024-04-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-04-15', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-04-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-03-25', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-03-18', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
       ],
     };
     const originalOrder = db.history.map(h => h.date);
-    getMostRecentValuesForExercise(db, 'press_banca', '2024-05-01');
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    // 2024-01-01 queda fuera de las 6 más recientes → no se considera su peso 100
+    expect(best.weight).toBe(50);
     expect(db.history.map(h => h.date)).toEqual(originalOrder);
+  });
+
+  test('today opcional → sin argumento, no excluye ninguna entry', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'press_banca');
+    expect(best.weight).toBe(60);
   });
 });
 
