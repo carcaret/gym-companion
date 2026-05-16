@@ -1016,25 +1016,22 @@ function showExercisePickerModal({ title, excludeIds, sortExercises = null, onSe
     { label: 'Cerrar', className: 'btn-secondary btn-sm', action: () => { } }
   ]);
 
-  setTimeout(() => {
-    const searchInput = document.getElementById('exercise-search-input');
-    if (searchInput) {
-      searchInput.focus();
-      searchInput.oninput = () => {
-        const q = searchInput.value.toLowerCase();
-        document.querySelectorAll('#exercise-modal-list .exercise-list-item').forEach(el => {
-          el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
-        });
-      };
-    }
+  const searchInput = document.getElementById('exercise-search-input');
+  if (searchInput) {
+    searchInput.oninput = () => {
+      const q = searchInput.value.toLowerCase();
+      document.querySelectorAll('#exercise-modal-list .exercise-list-item').forEach(el => {
+        el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    };
+  }
 
-    document.querySelectorAll('#exercise-modal-list .exercise-list-item').forEach(el => {
-      el.onclick = () => onSelect(el.dataset.id);
-    });
+  document.querySelectorAll('#exercise-modal-list .exercise-list-item').forEach(el => {
+    el.onclick = () => onSelect(el.dataset.id);
+  });
 
-    const createBtn = document.getElementById('create-exercise-btn');
-    if (createBtn) createBtn.onclick = onCreateNew;
-  }, 50);
+  const createBtn = document.getElementById('create-exercise-btn');
+  if (createBtn) createBtn.onclick = onCreateNew;
 }
 
 function showAddExerciseModal(dayType) {
