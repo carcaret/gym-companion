@@ -69,7 +69,7 @@ test.describe('Precarga "mejor de las últimas 4" al iniciar entreno', () => {
     expect(log.reps.actual).toEqual([12, 12, 12]);
   });
 
-  test('añadir ejercicio mid-entreno precarga los valores de la última ocurrencia (no los de la mejor)', async ({ page }) => {
+  test('añadir ejercicio mid-entreno precarga los valores de la sesión con mayor volumen (no los de la más reciente)', async ({ page }) => {
     const dayBtn = page.locator('.day-btn', { hasText: 'Día 1' });
     if (await dayBtn.isVisible().catch(() => false)) await dayBtn.click();
 
@@ -88,8 +88,8 @@ test.describe('Precarga "mejor de las últimas 4" al iniciar entreno', () => {
       return entry.logs.find(l => l.exercise_id === 'curl_biceps');
     });
 
-    // Última ocurrencia de curl_biceps fue 2024-04-22 con weight=12 y actual [8,8,8]
-    expect(log.weight).toBe(12);
-    expect(log.reps.actual).toEqual([8, 8, 8]);
+    // "Best" = 2024-04-01 con weight=20 actual [10,10,10] (volumen 600), no la última 2024-04-22 con weight=12 [8,8,8] (volumen 288)
+    expect(log.weight).toBe(20);
+    expect(log.reps.actual).toEqual([10, 10, 10]);
   });
 });
