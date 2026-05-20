@@ -45,39 +45,47 @@ export function isWorkoutActive(db, today) {
   return entry ? entry.completed === false : false;
 }
 
-export function getBestRecentValuesForExercise(db, exerciseId, today, windowSize = 6) {
-  if (!db?.history) return { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
-  const sorted = [...db.history].sort((a, b) => a.date.localeCompare(b.date));
+export function getBestRecentValuesForExercise(db, exerciseId, today, weeksWindow = 6) {
+  const defaults = { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
+  if (!db?.history) return defaults;
 
-  const occurrences = [];
-  for (let i = sorted.length - 1; i >= 0 && occurrences.length < windowSize; i--) {
-    if (today && sorted[i].date === today) continue;
-    const log = sorted[i].logs?.find(l => l.exercise_id === exerciseId);
-    if (log) occurrences.push(log);
-  }
+  const toValues = (log) => ({
+    series: log.series,
+    repsExpected: log.reps.expected,
+    weight: log.weight,
+    repsActual: log.reps.actual || []
+  });
 
-  if (occurrences.length === 0) return { series: 3, repsExpected: 10, weight: 0, repsActual: [] };
-
-  let best = occurrences[0];
-  let bestWeight = best.weight;
-  let bestVolume = computeVolume(best);
-  for (let i = 1; i < occurrences.length; i++) {
-    const log = occurrences[i];
-    const w = log.weight;
-    const v = computeVolume(log);
-    if (w > bestWeight || (w === bestWeight && v > bestVolume)) {
-      best = log;
-      bestWeight = w;
-      bestVolume = v;
+  // 1. Mejor de las sesiones completadas en la misma ventana que pinta la gráfica de la card
+  //    (últimas N semanas). Empate de peso → mayor volumen; empate total → la más reciente.
+  if (today) {
+    const sessions = getRecentSessionsForExercise(db, exerciseId, today, 6, weeksWindow, today);
+    if (sessions.length > 0) {
+      let best = sessions[sessions.length - 1].log;
+      let bestVolume = computeVolume(best);
+      for (let i = sessions.length - 2; i >= 0; i--) {
+        const log = sessions[i].log;
+        const v = computeVolume(log);
+        if (log.weight > best.weight || (log.weight === best.weight && v > bestVolume)) {
+          best = log;
+          bestVolume = v;
+        }
+      }
+      return toValues(best);
     }
   }
 
-  return {
-    series: best.series,
-    repsExpected: best.reps.expected,
-    weight: best.weight,
-    repsActual: best.reps.actual || []
-  };
+  // 2. Fallback: ejercicio "dormido" (sin sesiones en la ventana). Devuelve la ocurrencia más
+  //    reciente del ejercicio en cualquier momento del historial (cualquier dayType, cualquier
+  //    completed), no la de mayor peso histórico — evita resucitar pesos antiguos altos.
+  const sorted = [...db.history].sort((a, b) => a.date.localeCompare(b.date));
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    if (today && sorted[i].date === today) continue;
+    const log = sorted[i].logs?.find(l => l.exercise_id === exerciseId);
+    if (log) return toValues(log);
+  }
+
+  return defaults;
 }
 
 export function getRecentSessionsForExercise(db, exerciseId, anchorDate, maxSessions = 6, weeksWindow = 6, excludeDate = null) {

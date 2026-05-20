@@ -121,42 +121,36 @@ describe('getBestRecentValuesForExercise', () => {
     expect(best.repsExpected).toBe(11);
   });
 
-  test('ventana = últimas 6 ocurrencias del ejercicio (las anteriores no compiten)', () => {
-    // 7ª ocurrencia hacia atrás tiene peso muy alto, pero no debe entrar en la ventana.
+  test('ventana = últimas 6 semanas (las anteriores no compiten aunque tengan más peso)', () => {
+    // TODAY=2024-05-01 → windowStart = lunes(2024-04-29) - 35 = 2024-03-25.
+    // Sesión antigua (2024-01-01, 200kg) fuera de ventana + sesiones recientes a 50kg → gana 50.
     const db = {
       exercises: {}, routines: {},
       history: [
-        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 200 }] },
-        { date: '2024-01-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
-        { date: '2024-01-15', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
-        { date: '2024-01-22', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
-        { date: '2024-02-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
-        { date: '2024-02-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
-        { date: '2024-02-15', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 200 }] }, // FUERA
+        { date: '2024-03-25', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] }, // primer día de ventana
+        { date: '2024-04-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-04-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-04-15', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
+        { date: '2024-04-22', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
       ],
     };
     const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
-    // La de 200kg está fuera de las últimas 6 → no entra → gana 50
     expect(best.weight).toBe(50);
   });
 
-  test('ventana cuenta solo ocurrencias del ejercicio, NO sesiones globales (caso ejercicio dormido)', () => {
-    // Press_banca lo hace 6 veces hace meses, luego 7 sesiones sin tocarlo → debe seguir devolviendo
-    // sus mejores valores de hace meses, no defaults.
+  test('ejercicio dormido (sin sesiones en ventana) → fallback devuelve la MÁS RECIENTE del historial', () => {
+    // Las dos sesiones quedan fuera de la ventana. La más reciente (2024-02-08, 50kg) gana
+    // sobre la más antigua (2024-01-01, 80kg) — el fallback no escoge el máximo histórico.
     const db = {
       exercises: {}, routines: {},
       history: [
-        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 }] },
-        { date: '2024-01-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 65 }] },
-        // 7 sesiones sin press_banca
-        ...Array.from({ length: 7 }, (_, i) => ({
-          date: `2024-02-${String(i + 1).padStart(2, '0')}`, type: 'DIA2', completed: true,
-          logs: [{ exercise_id: 'otro', name: 'Otro', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 10 }],
-        })),
+        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 80 }] },
+        { date: '2024-02-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 50 }] },
       ],
     };
     const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
-    expect(best.weight).toBe(65);
+    expect(best.weight).toBe(50);
   });
 
   test('sin historial → defaults', () => {
@@ -188,7 +182,10 @@ describe('getBestRecentValuesForExercise', () => {
     expect(best.weight).toBe(50);
   });
 
-  test('incluye entries pasadas con completed=false (usuario olvidó finalizar)', () => {
+  test('ignora entries con completed=false dentro de la ventana (coherente con la gráfica)', () => {
+    // Una sesión completada (60kg) y otra más reciente sin completar (80kg, "olvidé pulsar
+    // finalizar"). La gráfica de la card no pinta la sin completar, y la precarga la ignora
+    // igual → gana 60.
     const db = {
       exercises: {}, routines: {},
       history: [
@@ -197,7 +194,20 @@ describe('getBestRecentValuesForExercise', () => {
       ],
     };
     const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
-    expect(best.weight).toBe(80);
+    expect(best.weight).toBe(60);
+  });
+
+  test('fallback considera entries con completed=false (única referencia disponible)', () => {
+    // Sin sesiones en ventana. La única ocurrencia es completed=false → en el fallback no
+    // filtramos por completed: devolvemos esa info aunque no esté finalizada (mejor que defaults).
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-02-01', type: 'DIA1', completed: false, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 75 }] },
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.weight).toBe(75);
   });
 
   test('empate total (peso, series, reps) → gana la más reciente', () => {
