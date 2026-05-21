@@ -18,7 +18,7 @@ import {
   fetchGithubDb, loadDBFromGitHub, saveDBToGitHub, saveDBLocal,
   applyRemoteDB, persistDB, pullFromGitHubIfClean, loadDB, initDB, flushPendingSave,
   getExerciseName, getTodayEntry, getBestRecentValuesForExercise,
-  getRecentSessionsForExercise, isWorkoutActive,
+  getRecentSessionsForExercise, isWorkoutActive, setConflict,
 } from './src/store.js';
 
 let currentChart = null;
@@ -35,7 +35,7 @@ function showConflictModal() {
           const remote = await loadDBFromGitHub();
           if (!remote) { toast('No se pudo conectar a GitHub', 'error'); return false; }
           const ok = await saveDBToGitHub();
-          if (ok) { conflict = false; toast('Datos locales subidos a GitHub', 'ok'); }
+          if (ok) { setConflict(false); toast('Datos locales subidos a GitHub', 'ok'); }
           else toast('No se pudo subir — sigue en pendiente', null);
         }
       },

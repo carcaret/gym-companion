@@ -202,3 +202,7 @@ export function flushPendingSave() {
     saveDBToGitHub({ keepalive: true });
   }
 }
+
+export function setConflict(value) {
+  conflict = value;
+}
