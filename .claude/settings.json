@@ -6,5 +6,16 @@
       "Bash(npm test:*)",
       "Bash(curl -s http://localhost:8000/index.css)"
     ]
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "juliusbrussee/caveman"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "caveman@caveman": true
   }
 }
