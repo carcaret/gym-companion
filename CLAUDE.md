@@ -72,7 +72,7 @@ let saveTimeout = null;      // handle del debounce 500ms para saveDBToGitHub
 
 1. `loadDB()` — cascada: localStorage → GitHub (primera instalación) → `db.json` → estructura vacía
 2. `ensureHistorySorted(DB)` — history siempre ordenada por date ascendente
-3. Si `needsUpload=true`: sube a GitHub. Si no: `pullFromGitHubIfClean()` en background
+3. Si `isSyncConfigured() && needsUpload=true`: sube a GitHub. Si no: `pullFromGitHubIfClean()` en background
 
 ### Flujo de persistencia — usar siempre `persistDB()`, nunca `saveDBLocal()` directamente
 
@@ -90,7 +90,8 @@ PUT /repos/{repo}/contents/{path} → buildGitHubPayload(DB, githubSha) → actu
 
 - Token PAT cifrado con XOR + contraseña, guardado en `localStorage[PAT_KEY]`
 - `githubSha` siempre debe estar actualizado antes del PUT — si es `null`, `saveDBToGitHub` hace un GET previo
-- `beforeunload` lanza PUT con `keepalive:true`
+- `beforeunload` lanza PUT con `keepalive:true` — solo si había un debounce pendiente (`saveTimeout != null`)
+- `online` event: si `needsUpload=true && !conflict && isSyncConfigured() && !workoutActive` → reintenta `saveDBToGitHub()` al recuperar red
 
 ## Estructura de datos (`DB`)
 
