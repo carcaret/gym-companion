@@ -5,7 +5,13 @@ const { clearStorage } = require('./helpers.js');
 // - la más antigua tiene mayor volumen (3×12×12 a 50kg → 1800)
 // - la más reciente tiene menor volumen (3×12×10 a 50kg → 1500)
 // press_banca aparece en rutina; curl_biceps NO (lo añadimos mid-entreno en el 2º test).
+// Las fechas se calculan dinámicamente dentro de la ventana de 6 semanas.
 function buildDB() {
+  const daysAgo = n => {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d.toISOString().split('T')[0];
+  };
   return JSON.stringify({
     exercises: {
       press_banca: { id: 'press_banca', name: 'Press Banca' },
@@ -18,14 +24,14 @@ function buildDB() {
     },
     history: [
       {
-        date: '2024-04-01', type: 'DIA1', completed: true,
+        date: daysAgo(30), type: 'DIA1', completed: true,
         logs: [
           { exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 12, actual: [12, 12, 12] }, weight: 50 },
           { exercise_id: 'curl_biceps', name: 'Curl Bíceps', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 20 },
         ],
       },
       {
-        date: '2024-04-22', type: 'DIA1', completed: true,
+        date: daysAgo(7), type: 'DIA1', completed: true,
         logs: [
           { exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 12, actual: [10, 10, 10] }, weight: 50 },
           { exercise_id: 'curl_biceps', name: 'Curl Bíceps', series: 3, reps: { expected: 10, actual: [8, 8, 8] }, weight: 12 },
