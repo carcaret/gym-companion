@@ -1,7 +1,7 @@
 import { DB, getExerciseName, getTodayEntry, getBestRecentValuesForExercise, persistDB, saveDBLocal, saveDBToGitHub, getGithubConfig, setSyncState } from '../src/store.js';
 import { icon, chevronIcon, toast, showModal, hideModal } from '../src/ui.js';
 import { buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
-import { buildWorkoutEntry, buildLog, finishWorkoutEntry, validateLog, validateEntry, reorderByIndex, swapLogExercise, detectRecords } from '../src/workout.js';
+import { buildWorkoutEntry, buildLog, finishWorkoutEntry, validateEntry, reorderByIndex, swapLogExercise, detectRecords } from '../src/workout.js';
 import { ensureHistorySorted, sortExercisesForSwap } from '../src/data.js';
 import { DAY_LABELS, ROUTINE_KEYS } from '../src/constants.js';
 import { todayStr } from '../src/dates.js';
