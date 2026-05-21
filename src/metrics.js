@@ -29,6 +29,12 @@ export function computeE1RM(log) {
  * @param {string} exerciseId
  * @returns {{ maxVolume: number, maxE1RM: number }}
  */
+export function computeSessionDeltaPct(currentMetric, prevMetric) {
+  if (prevMetric <= 0) return null;
+  const pct = Math.round(((currentMetric - prevMetric) / prevMetric) * 100);
+  return pct !== 0 ? pct : null;
+}
+
 export function getMaxMetrics(entries, exerciseId) {
   let maxVolume = 0, maxE1RM = 0;
   for (const entry of entries) {

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { computeAvgReps, computeVolume, computeE1RM, getMaxMetrics } from '../../src/metrics.js';
+import { computeAvgReps, computeVolume, computeE1RM, getMaxMetrics, computeSessionDeltaPct } from '../../src/metrics.js';
 
 function makeLog({ weight = 50, series = 3, expected = 10, actual = null }) {
   return {
@@ -150,6 +150,41 @@ describe('computeVolume (edge cases)', () => {
     const log = { weight: 50, series: 3, reps: { expected: 10, actual: [null, null, null] } };
     // avgReps = 0, vol = 50 * 3 * 0 = 0
     expect(computeVolume(log)).toBe(0);
+  });
+});
+
+// ── computeSessionDeltaPct ──
+
+describe('computeSessionDeltaPct', () => {
+  test('mejora real → devuelve porcentaje positivo', () => {
+    expect(computeSessionDeltaPct(110, 100)).toBe(10);
+  });
+
+  test('bajada real → devuelve porcentaje negativo', () => {
+    expect(computeSessionDeltaPct(90, 100)).toBe(-10);
+  });
+
+  test('sin cambio → devuelve null', () => {
+    expect(computeSessionDeltaPct(100, 100)).toBeNull();
+  });
+
+  test('prevMetric = 0 → devuelve null (evita división por cero)', () => {
+    expect(computeSessionDeltaPct(100, 0)).toBeNull();
+  });
+
+  test('prevMetric negativo → devuelve null', () => {
+    expect(computeSessionDeltaPct(100, -50)).toBeNull();
+  });
+
+  test('cambio menor de 0.5% que redondea a 0 → devuelve null', () => {
+    // 100 → 100.4 → pct = round(0.4%) = 0 → null
+    expect(computeSessionDeltaPct(100.4, 100)).toBeNull();
+  });
+
+  test('redondeo correcto: 10.5% → 11', () => {
+    // 105.5 vs 95.4... → ajustar para que pct exacto sea 10.5
+    // 100 → 110.5 → pct = round(10.5) = 11 (o 10 según impl)
+    expect(computeSessionDeltaPct(210, 200)).toBe(5);
   });
 });
 

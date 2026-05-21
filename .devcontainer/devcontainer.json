@@ -17,7 +17,7 @@
     }
   },
 
-  "onCreateCommand": "npm install",
+  "onCreateCommand": "npm install && npm install -g @anthropic-ai/claude-code",
   "postStartCommand": "npx playwright install chromium --with-deps && git config core.hooksPath .hooks",
 
   "customizations": {

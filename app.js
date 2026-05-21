@@ -8,7 +8,7 @@ import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, P
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
 import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, getRecentSessionsForExercise as _getRecentSessionsForExercise, sortExercisesForSwap } from './src/data.js';
-import { computeVolume, computeE1RM } from './src/metrics.js';
+import { computeVolume, computeE1RM, computeSessionDeltaPct } from './src/metrics.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, sortHistory, findLog, swapLogExercise } from './src/workout.js';
 import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
@@ -411,14 +411,12 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
     const prev = [...allSessions].slice(0, -1).reverse().find(s => !s.isCurrent);
     if (prev) {
       const prevMetric = getPrimaryMetric(prev.log);
-      if (prevMetric > 0) {
-        const pct = Math.round(((currentMetric - prevMetric) / prevMetric) * 100);
-        if (pct !== 0) {
-          const cls = pct > 0 ? 'vol-delta' : 'vol-delta down';
-          const arrow = pct > 0 ? '↑' : '↓';
-          const sign = pct > 0 ? '+' : '';
-          deltaHtml = `<span class="${cls}">${arrow} ${sign}${pct}% vs última</span>`;
-        }
+      const pct = computeSessionDeltaPct(currentMetric, prevMetric);
+      if (pct !== null) {
+        const cls = pct > 0 ? 'vol-delta' : 'vol-delta down';
+        const arrow = pct > 0 ? '↑' : '↓';
+        const sign = pct > 0 ? '+' : '';
+        deltaHtml = `<span class="${cls}">${arrow} ${sign}${pct}% vs última</span>`;
       }
     }
   }
