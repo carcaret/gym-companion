@@ -1,149 +1,149 @@
-# Gym Companion — CLAUDE.md
+# CLAUDE.md
 
-## Descripción del proyecto
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Gym Companion** es una PWA (Progressive Web App) en español para seguimiento personal de gimnasio. Permite registrar entrenamientos, métricas de rendimiento, visualizar progreso y sincronizar datos con GitHub. Sin frameworks — vanilla JS puro.
+## Proyecto
 
-## Caso de uso real (muy importante para dimensionar soluciones)
+PWA en español para seguimiento personal de gimnasio. Vanilla JS puro, sin frameworks. Un único usuario, un único dispositivo (móvil). Datos en localStorage + sync opcional con GitHub.
 
-- **Un único usuario** (el dueño del repo) y **un único dispositivo activo**: su móvil con la PWA instalada.
-- El usuario **de vez en cuando edita `db.json` directamente en GitHub** (desde la web). No hay otros editores ni otros dispositivos en paralelo.
-- **Requisito innegociable**: la sincronización con GitHub debe funcionar siempre y **nunca perder datos** — ni los del móvil ni los editados a mano en GitHub.
-
-**Implicaciones para el diseño**:
-
-- No hay concurrencia real entre dispositivos. No diseñar para multi-device, multi-usuario, colaboración ni merges tipo CRDT.
-- El único "conflicto" plausible es: móvil con cambios locales + GitHub editado a mano entre medias. La política actual (local es fuente de verdad al arrancar, modal de conflicto si el PUT devuelve 409/422) es adecuada.
-- Preferir **soluciones simples y obvias** sobre abstracciones genéricas. Si una solución parece que necesita un sistema de sync sofisticado, casi seguro estamos sobrediseñando.
-- Sí es aceptable añadir chequeos de seguridad baratos (p. ej. fetch de remote al arrancar para poblar `githubSha` y evitar 422 espurios) — pero siempre cuestionando si aportan valor real al flujo de un único usuario.
+**Restricción de diseño crítica**: no diseñar para multi-device, concurrencia ni merges CRDT. La solución siempre debe ser la más simple que funcione para un usuario solo.
 
 ## Despliegue
 
-- **Producción**: GitHub Pages (HTTPS) — rama `master`, raíz del repo
-- **Local**: requiere servidor HTTP (VS Code Live Server, `npx serve`, `python -m http.server`). Abrir `index.html` directamente con `file://` no funciona — el Service Worker y `fetch('./db.json')` requieren HTTP/HTTPS.
+- **Producción**: GitHub Pages, rama `master`, raíz del repo
+- **Local**: requiere servidor HTTP — `npx serve . -l 3000 -s` o Live Server. `file://` no funciona (Service Worker + fetch requieren HTTP/HTTPS)
+
+## Comandos
+
+```bash
+npm test                      # unit tests (Vitest), también corre en pre-commit
+npm run test:watch            # watch mode
+npm run test:e2e              # E2E Playwright (levanta servidor :3000 automáticamente)
+npx playwright test tests/e2e/routine.spec.js   # un spec concreto
+npx playwright test --grep "nombre del test"    # un test por nombre
+npm run test:all              # unit + e2e
+```
 
 ## Arquitectura
 
+### Módulos `src/` — lógica pura, sin DOM ni globales
+
+| Módulo | Responsabilidad | Funciones clave |
+|---|---|---|
+| `src/constants.js` | Claves localStorage, etiquetas de día | `DB_LOCAL_KEY`, `GITHUB_KEY`, `PAT_KEY` |
+| `src/dates.js` | Utilidades de fecha | `todayStr`, `formatDate`, `getWeekStartStr`, `addDaysStr` |
+| `src/formatting.js` | Formateadores de display | `formatRepsInteligente`, `formatLogSummary`, `slugifyExerciseName` |
+| `src/metrics.js` | Cálculos puros | `computeVolume`, `computeE1RM`, `computeSessionDeltaPct`, `getMaxMetrics` |
+| `src/data.js` | Consultas sobre DB | `getTodayEntry`, `getBestRecentValuesForExercise`, `getRecentSessionsForExercise`, `sortExercisesForSwap` |
+| `src/workout.js` | Mutaciones de entreno | `buildWorkoutEntry`, `buildLog`, `finishWorkoutEntry`, `adjustParam`, `setRep`, `detectRecords`, `swapLogExercise`, `reorderByIndex` |
+| `src/github.js` | GitHub API helpers | `buildGitHubPayload` (PUT), `parseGitHubResponse` (GET) |
+| `src/charts.js` | Builders de datasets Chart.js | `buildChartDatasets`, `getExercisesInRange`, `sortExercisesForDropdown` |
+
+Los módulos `src/` reciben `db` como parámetro — nunca acceden a `DB` global ni al DOM. Todo lo que toque DOM o estado global vive en `app.js`.
+
+### Zonas de `app.js` (~1700 líneas)
+
 ```
-index.html    → Estructura HTML: vistas (Hoy, Historial, Gráficas, Ajustes) + login
-app.js        → Toda la lógica de la app
-index.css     → Dark theme con glassmorphism, variables CSS, mobile-first
-db.json       → BD por defecto: ejercicios (~100), rutinas; también archivo de sync con GitHub
-manifest.json → Config PWA
-sw.js         → Service Worker (cache network-first, omite GitHub API) — versión gym-companion-v2
+L1–L167    Infraestructura UI: globals, SVG icons, toast, modal, sync indicator
+L168–L336  GitHub API: getGithubConfig, loadDBFromGitHub, saveDBToGitHub,
+                       persistDB, applyRemoteDB, pullFromGitHubIfClean
+L337–L570  Bootstrap + HTML builders compartidos: loadDB, showApp,
+                       buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml
+L571–L1135 Vista "Hoy": renderHoy, renderDaySelector, renderRoutinePreview,
+                       startWorkout, renderActiveWorkout (L733), finishWorkout (L872),
+                       renderCompletedToday, modales swap/add/create ejercicio
+L1136–L1353 Vista "Historial": renderHistorial, renderHistorialDetail
+L1354–L1537 Vista "Gráficas": initCharts, renderChart (L1462), makeChart (L1487),
+                       dropdowns de ejercicio
+L1538–EOF  Vista "Ajustes": initSettings, setupSettings, navigateToTab, init()
 ```
 
-## Stack técnico
+### Estado global en `app.js`
 
-- **Frontend**: Vanilla JS + CSS3 (sin frameworks)
-- **Charts**: Chart.js v4.4.7 + date-fns adapter
-- **Storage**: localStorage (primario) + GitHub REST API v3 (sync opcional)
-- **PWA**: Service Worker + Web Manifest
+```js
+let DB = null;               // fuente de verdad en memoria — se carga de localStorage al arrancar
+let githubSha = null;        // SHA del último GET/PUT; requerido para evitar 422 en el PUT
+let syncState = 'ok';        // 'ok' | 'pending' — icono de sync en la UI
+let conflict = false;        // true si GitHub tiene sha distinto al local → muestra modal
+let saveTimeout = null;      // handle del debounce 500ms para saveDBToGitHub
+```
 
-## Estructura de datos (db.json)
+### Flujo de arranque — `init()` (L1663)
+
+1. `loadDB()` — cascada: localStorage → GitHub (primera instalación) → `db.json` → estructura vacía
+2. `ensureHistorySorted(DB)` — history siempre ordenada por date ascendente
+3. Si `needsUpload=true`: sube a GitHub. Si no: `pullFromGitHubIfClean()` en background
+
+### Flujo de persistencia — usar siempre `persistDB()`, nunca `saveDBLocal()` directamente
+
+1. Guarda en localStorage inmediatamente + marca `NEEDS_UPLOAD_KEY=true`
+2. Si hay entreno activo: no lanza debounce (se sube al finalizar)
+3. Si no: debounce 500ms → `saveDBToGitHub()`
+4. PUT 409/422 → `conflict=true` + `syncState='pending'` → modal al tocar el icono de sync
+
+### Flujo GitHub sync
+
+```
+GET /repos/{repo}/contents/{path} → parseGitHubResponse → { db, sha }
+PUT /repos/{repo}/contents/{path} → buildGitHubPayload(DB, githubSha) → actualiza githubSha
+```
+
+- Token PAT cifrado con XOR + contraseña, guardado en `localStorage[PAT_KEY]`
+- `githubSha` siempre debe estar actualizado antes del PUT — si es `null`, `saveDBToGitHub` hace un GET previo
+- `beforeunload` lanza PUT con `keepalive:true`
+
+## Estructura de datos (`DB`)
 
 ```javascript
 {
-  exercises: { [id]: { id, name } },          // ~100 ejercicios en español
-  routines: { DIA1: [...ids], DIA2: [...ids], DIA3: [...ids] },
-  history: [{ date, type, completed, logs: [{ exercise_id, name, series, reps, weight }] }]
+  exercises: { [id]: { id, name, grupo? } },
+  routines:  { DIA1: [...ids], DIA2: [...ids], DIA3: [...ids] },
+  history: [{
+    date: 'YYYY-MM-DD',
+    type: 'DIA1'|'DIA2'|'DIA3',
+    completed: boolean,
+    logs: [{
+      exercise_id: string,
+      name: string,
+      series: number,
+      reps: { expected: number, actual: number[] },
+      weight: number,
+      swappedFrom?: string   // presente si el ejercicio fue intercambiado durante el entreno
+    }]
+  }]
 }
 ```
 
-## Funcionalidades clave
-
-- **Entrenamiento**: Rutinas Día 1 / Día 2 / Día 3, registro por series (reps reales vs esperadas), detección de PRs
-- **Métricas**: Volumen (peso × series × reps_avg), e1RM (peso × (1 + reps_avg/30))
-- **Historial**: Filtro por tipo de rutina, detalle expandible
-- **Gráficas**: Volumen, Peso, e1RM con Chart.js, selector de ejercicio y rango de fechas
-- **Sync GitHub**: PUT API con token PAT cifrado (XOR + contraseña), auto-save con debounce 500ms
-
-## UX / Diseño
-
-- Dark mode, acento azul `#569cd6`
-- Mobile-first, safe area insets (notches)
-- Bottom tab navigation, modales, toast notifications
-- Animaciones: fade-up, bounce en badges de PR
-
-## Convenciones de código
-
-- Funciones en camelCase (`startWorkout`, `renderHistory`)
-- IDs de ejercicios en snake_case (`curl_de_biceps_mancuerna`)
-- Estado global en objeto `state` dentro de `app.js`
-- Persistencia siempre vía `saveData()` → localStorage + GitHub sync
-- `DB` es la variable global con toda la BD en memoria
-
-## Principios de programación
-
-Todo el código de este proyecto debe seguir estos principios. Son no negociables:
-
-- **SOLID**: responsabilidad única, abierto/cerrado, sustitución de Liskov, segregación de interfaces, inversión de dependencias.
-- **DRY** (Don't Repeat Yourself): no duplicar lógica. Si algo se repite dos veces, extraerlo.
-- **KISS** (Keep It Simple, Stupid): la solución más simple que funcione correctamente es la buena. Complejidad solo cuando es inevitable.
-- **YAGNI** (You Aren't Gonna Need It): no añadir código para casos hipotéticos futuros que nadie ha pedido.
-- **Clean Code**: nombres descriptivos, funciones cortas con una sola responsabilidad, sin efectos colaterales inesperados, sin código muerto.
-
-Cuando un diseño viola estos principios de forma significativa, señalarlo al usuario antes de implementar y proponer una alternativa más limpia.
-
 ## Tests
 
-**Los tests son la especificación ejecutable de la funcionalidad.** Un test que falla no es un obstáculo — es la forma en que el código comunica que algo cambió o que la nueva feature tiene un conflicto con comportamiento existente.
+- Lógica pura → `tests/unit/` (Vitest, importan `src/` directamente)
+- DOM/interacción → `tests/e2e/` (Playwright, base URL `http://localhost:3000`)
+  - Fixture: `tests/fixtures/db-test.json` — inyectar con `await injectTestDB(page)` antes de `page.goto('/')`
+  - Helpers: `tests/e2e/helpers.js` — `injectTestDB`, `clearStorage`, `fillAllWorkoutReps`
 
-**Toda funcionalidad nueva DEBE llevar tests exhaustivos asociados.** No se considera terminado un cambio si no tiene tests que cubran:
+**Política crítica**: si una feature nueva rompe un test existente, explicar el conflicto al usuario y preguntar. **Nunca borrar ni modificar un test sin aprobación explícita.**
 
-- Casos normales (happy path)
-- Casos borde (vacíos, nulls, límites, valores negativos)
-- Regresiones (que lo anterior sigue funcionando)
+## Reglas del proyecto
 
-Si la funcionalidad es lógica pura → tests unitarios en `tests/unit/`. Si involucra DOM/interacción → tests E2E en `tests/e2e/`. Idealmente ambos.
+### Convenciones de código
 
-**Política ante tests que fallan por una feature nueva**: si al programar algo nuevo un test existente falla o necesita actualizarse, Claude DEBE:
+- Funciones en camelCase, IDs de ejercicio en snake_case (`curl_de_biceps_mancuerna`)
+- Render functions (`renderHoy`, `renderHistorial`…) leen `DB` global y reescriben el DOM completo de su vista
+- SVGs inline via `icon(name, size)` en `app.js` — no hay librería de iconos externa
 
-1. Explicar al usuario qué test falla y por qué (qué comportamiento entra en conflicto).
-2. Preguntar si el comportamiento anterior era correcto o si la nueva feature lo reemplaza.
-3. **Nunca borrar ni modificar un test sin aprobación explícita del usuario.**
+### Versionado
 
-Borrar un test porque "ya no aplica" sin consultar es inaceptable — puede estar protegiendo un comportamiento que el usuario quiere conservar.
+`APP_VERSION` en `app.js` (semver). Bump a mano — **preguntar al usuario antes de hacerlo**.
+- Cuándo: al completar un plan (`.aiplans/`), al hacer commit si no hubo plan, o si el usuario lo pide
+- **No existen hooks de versionado** — si aparece `.hooks/pre-push` que bumpea versión, eliminarlo (causaba commits colgando y divergencias con el SW)
 
-## Filosofía de cambios
+### Commits
 
-**Antes de modificar código, consultar al usuario** si hay más de una forma razonable de resolver el problema. Preferir la solución correcta sobre la rápida.
-
-- Leer y entender el código afectado antes de proponer cualquier cambio.
-- Si hay dudas sobre el enfoque, exponer las opciones con sus pros/contras y preguntar.
-- No hacer cambios colaterales no pedidos (refactors, limpieza, renombrados) aunque parezcan mejoras.
-- Un fix rápido que no entiende la causa raíz es peor que tardar más en dar la solución correcta.
-
-## Versionado
-
-La app tiene una `APP_VERSION` en [app.js](app.js) (formato semver `major.minor.patch`). El bump se hace **a mano**, no por hooks.
-
-- **Cuándo bumpear**: al finalizar un plan (`.aiplans/*.md` marcado como completado), cuando el usuario lo pida explícitamente, o si no ha habido plan, cuando se vaya a hacer un commit.
-- **Procedimiento**: Claude DEBE preguntar al usuario si quiere incrementar la versión antes de hacerlo. Si acepta, editar `APP_VERSION` en `app.js` (normalmente `+1` en patch) e incluir el bump en el commit del cambio.
-- **No existen hooks de versionado** — si aparece un `.hooks/pre-push` que bumpea versión, eliminarlo: dejaba commits colgando en local y causaba divergencias con la sync del PWA.
-
-## Commits
-
-**Al terminar cada cambio, Claude DEBE preguntar al usuario si quiere hacer commit.** Si el usuario acepta, Claude crea el commit con un mensaje descriptivo.
-
-### Formato del mensaje de commit
+Preguntar siempre al usuario antes de hacer commit. Formato:
 
 ```
-<verbo en infinitivo>: <qué se hizo> — <por qué o efecto>
+<verbo infinitivo>: <qué> — <por qué / efecto>
 
-Ejemplos correctos:
-  fix: corregir decodificación UTF-8 en loadDBFromGitHub — los tildes se mostraban como Ã³
-  feat: añadir filtro por rango de fechas en vista Gráficas
-  refactor: extraer lógica de PR detection a función propia
-  fix: evitar parpadeo al actualizar series durante entreno activo
-
-Ejemplos incorrectos (no usar):
-  Auto-commit: app.js — 1 file changed, 2 insertions(+)
-  update app.js
+fix: corregir decodificación UTF-8 en loadDBFromGitHub — los tildes se mostraban como Ã³
+feat: añadir filtro por rango de fechas en vista Gráficas
 ```
-
-### Procedimiento
-
-1. Terminar el cambio pedido por el usuario.
-2. Preguntar: "¿Hacemos commit?" (proponer el mensaje).
-3. Si acepta, hacer `git add` de los archivos relevantes y commit con el mensaje acordado.
