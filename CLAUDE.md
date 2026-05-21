@@ -26,6 +26,30 @@ npm run test:all              # unit + e2e
 
 ## Arquitectura
 
+### Capas (de menor a mayor dependencia)
+
+```
+┌──────────────────────────────────────────────┐
+│  app.js  — orquestador (~159 líneas)          │
+│  init(), navigateToTab(), showConflictModal() │
+├─────────────────┬────────────────────────────┤
+│  views/hoy.js   │  views/historial.js         │
+│  views/charts.js│  views/settings.js          │
+│  views/shared.js (setupLogActionDelegation,   │
+│                   applyValidationErrors)       │
+├─────────────────┴────────────────────────────┤
+│  src/store.js  — estado + persistencia        │
+│  src/ui.js     — toast, modal, icons, DOM     │
+│  src/builders.js — HTML builders compartidos  │
+├──────────────────────────────────────────────┤
+│  src/  (lógica pura — reciben db por param)   │
+│  data, workout, github, metrics, charts,      │
+│  formatting, dates, constants                 │
+└──────────────────────────────────────────────┘
+```
+
+**Regla de dependencia:** cada capa importa solo de capas inferiores. Las vistas no se importan entre sí (excepción: `views/shared.js` es importable por cualquier vista). `app.js` importa de todo.
+
 ### Módulos `src/` — lógica pura, sin DOM ni globales
 
 | Módulo | Responsabilidad | Funciones clave |
@@ -38,48 +62,60 @@ npm run test:all              # unit + e2e
 | `src/workout.js` | Mutaciones de entreno | `buildWorkoutEntry`, `buildLog`, `finishWorkoutEntry`, `adjustParam`, `setRep`, `detectRecords`, `swapLogExercise`, `reorderByIndex` |
 | `src/github.js` | GitHub API helpers | `buildGitHubPayload` (PUT), `parseGitHubResponse` (GET) |
 | `src/charts.js` | Builders de datasets Chart.js | `buildChartDatasets`, `getExercisesInRange`, `sortExercisesForDropdown` |
+| `src/ui.js` | Primitivas DOM sin estado | `icon`, `toast`, `showModal`, `hideModal`, `updateSyncIndicatorDOM`, `safeSetLocal` |
+| `src/builders.js` | HTML builders compartidos | `buildHistoryStripHtml(db,...)`, `buildParamRowsHtml`, `buildAllSeriesRowsHtml` |
+| `src/store.js` | Estado + persistencia GitHub | ver sección siguiente |
 
-Los módulos `src/` reciben `db` como parámetro — nunca acceden a `DB` global ni al DOM. Todo lo que toque DOM o estado global vive en `app.js`.
+Los módulos `src/data`, `src/workout`, `src/metrics`, etc. reciben `db` como parámetro — nunca acceden a `DB` global ni al DOM. `src/store.js` y `src/ui.js` sí tocan DOM/estado pero son la única excepción intencional.
 
-### Zonas de `app.js` (~1700 líneas)
+### `src/store.js` — fuente de verdad mutable
 
-```
-L1–L167    Infraestructura UI: globals, SVG icons, toast, modal, sync indicator
-L168–L336  GitHub API: getGithubConfig, loadDBFromGitHub, saveDBToGitHub,
-                       persistDB, applyRemoteDB, pullFromGitHubIfClean
-L337–L570  Bootstrap + HTML builders compartidos: loadDB, showApp,
-                       buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml
-L571–L1135 Vista "Hoy": renderHoy, renderDaySelector, renderRoutinePreview,
-                       startWorkout, renderActiveWorkout (L733), finishWorkout (L872),
-                       renderCompletedToday, modales swap/add/create ejercicio
-L1136–L1353 Vista "Historial": renderHistorial, renderHistorialDetail
-L1354–L1537 Vista "Gráficas": initCharts, renderChart (L1462), makeChart (L1487),
-                       dropdowns de ejercicio
-L1538–EOF  Vista "Ajustes": initSettings, setupSettings, navigateToTab, init()
-```
-
-### Estado global en `app.js`
+Estado exportado como live bindings (ES modules — reasignables dentro del módulo, read-only para importadores):
 
 ```js
-let DB = null;               // fuente de verdad en memoria — se carga de localStorage al arrancar
-let githubSha = null;        // SHA del último GET/PUT; requerido para evitar 422 en el PUT
-let syncState = 'ok';        // 'ok' | 'pending' — icono de sync en la UI
-let conflict = false;        // true si GitHub tiene sha distinto al local → muestra modal
-let saveTimeout = null;      // handle del debounce 500ms para saveDBToGitHub
+export let DB = null;          // fuente de verdad en memoria
+export let githubSha = null;   // SHA del último GET/PUT; requerido para evitar 422
+export let syncState = 'ok';   // 'ok' | 'pending' — icono de sync
+export let conflict = false;   // true si GitHub tiene sha distinto al local
+export let saveTimeout = null; // handle del debounce 500ms
 ```
 
-### Flujo de arranque — `init()` (L1663)
+Funciones exportadas clave: `loadDB`, `initDB`, `persistDB`, `saveDBLocal`, `saveDBToGitHub`, `loadDBFromGitHub`, `applyRemoteDB`, `pullFromGitHubIfClean`, `setSyncState`, `setConflict`, `flushPendingSave`, `isSyncConfigured`, `getGithubConfig`.
+
+Wrappers que cierran sobre `DB` live binding: `getExerciseName(id)`, `getTodayEntry()`, `getBestRecentValuesForExercise(id)`, `isWorkoutActive()`.
+
+### Módulos `views/` — vistas, solo tocan DOM
+
+| Módulo | Responsabilidad | Exports clave |
+|---|---|---|
+| `views/hoy.js` | Vista entreno del día | `renderHoy()` |
+| `views/historial.js` | Vista historial | `renderHistorial()`, `renderHistorialDetail(date)` |
+| `views/charts.js` | Vista gráficas | `initCharts()`, `setupFilters()` |
+| `views/settings.js` | Vista ajustes | `initSettings()`, `setupSettings({onConflict, onRemoteApplied})` |
+| `views/shared.js` | Helpers compartidos entre vistas | `setupLogActionDelegation(container, config)`, `applyValidationErrors(logIdx, log, prefix)` |
+
+Las vistas leen `DB` directamente: `import { DB } from '../src/store.js'`. ES modules garantizan live bindings — cuando store.js reasigna `DB`, todos los importadores ven el valor actualizado.
+
+Navegación cruzada sin importar app.js: `views/historial.js` despacha `new CustomEvent('gym:navigate', { detail: { view: 'hoy' } })` para triggear navegación. `app.js` escucha el evento en `setupTabs()`.
+
+### `app.js` — orquestador (~159 líneas)
+
+Responsabilidades: `init()`, `navigateToTab(view)`, `showConflictModal()`, `setupSyncIndicator()`, `showApp()`, `getDefaultDB()`, `setupTabs()`. No contiene lógica de negocio ni builders HTML.
+
+### Flujo de arranque — `init()`
 
 1. `loadDB()` — cascada: localStorage → GitHub (primera instalación) → `db.json` → estructura vacía
-2. `ensureHistorySorted(DB)` — history siempre ordenada por date ascendente
-3. Si `isSyncConfigured() && needsUpload=true`: sube a GitHub. Si no: `pullFromGitHubIfClean()` en background
+2. `initDB(data)` — asigna `DB`, ordena history, guarda en localStorage
+3. Si `isSyncConfigured() && needsUpload=true`: sube a GitHub. Si no: `pullFromGitHubIfClean()` en background → si devuelve `true`, llama `renderHoy()`
 
 ### Flujo de persistencia — usar siempre `persistDB()`, nunca `saveDBLocal()` directamente
 
 1. Guarda en localStorage inmediatamente + marca `NEEDS_UPLOAD_KEY=true`
-2. Si hay entreno activo: no lanza debounce (se sube al finalizar)
+2. Si hay entreno activo: no lanza debounce (se sube al finalizar con `saveDBToGitHub()` directo)
 3. Si no: debounce 500ms → `saveDBToGitHub()`
-4. PUT 409/422 → `conflict=true` + `syncState='pending'` → modal al tocar el icono de sync
+4. PUT 409/422 → `setConflict(true)` + `setSyncState('pending')` → modal al tocar el icono de sync
+
+**Excepción**: `finishWorkout()` en `views/hoy.js` llama `saveDBLocal()` + `saveDBToGitHub()` directamente (bypass del debounce — entreno activo impediría el sync desde `persistDB`).
 
 ### Flujo GitHub sync
 
@@ -88,10 +124,10 @@ GET /repos/{repo}/contents/{path} → parseGitHubResponse → { db, sha }
 PUT /repos/{repo}/contents/{path} → buildGitHubPayload(DB, githubSha) → actualiza githubSha
 ```
 
-- Token PAT cifrado con XOR + contraseña, guardado en `localStorage[PAT_KEY]`
+- Token PAT guardado en `localStorage[PAT_KEY]`
 - `githubSha` siempre debe estar actualizado antes del PUT — si es `null`, `saveDBToGitHub` hace un GET previo
-- `beforeunload` lanza PUT con `keepalive:true` — solo si había un debounce pendiente (`saveTimeout != null`)
-- `online` event: si `needsUpload=true && !conflict && isSyncConfigured() && !workoutActive` → reintenta `saveDBToGitHub()` al recuperar red
+- `beforeunload` → `flushPendingSave()` — lanza PUT con `keepalive:true` solo si había debounce pendiente
+- `online` event: si `needsUpload=true && !conflict && isSyncConfigured() && !workoutActive` → reintenta `saveDBToGitHub()`
 
 ## Estructura de datos (`DB`)
 
@@ -129,13 +165,13 @@ PUT /repos/{repo}/contents/{path} → buildGitHubPayload(DB, githubSha) → actu
 ### Convenciones de código
 
 - Funciones en camelCase, IDs de ejercicio en snake_case (`curl_de_biceps_mancuerna`)
-- Render functions (`renderHoy`, `renderHistorial`…) leen `DB` global y reescriben el DOM completo de su vista
-- SVGs inline via `icon(name, size)` en `app.js` — no hay librería de iconos externa
+- Render functions (`renderHoy`, `renderHistorial`…) importan `DB` de `src/store.js` (live binding) y reescriben el DOM completo de su vista
+- SVGs inline via `icon(name, size)` de `src/ui.js` — no hay librería de iconos externa
 
 ### Versionado
 
 `APP_VERSION` en `app.js` (semver). Bump a mano — **preguntar al usuario antes de hacerlo**.
-- Cuándo: al completar un plan (`.aiplans/`), al hacer commit si no hubo plan, o si el usuario lo pide
+- Cuándo: al completar un plan, al hacer commit si no hubo plan, o si el usuario lo pide
 - **No existen hooks de versionado** — si aparece `.hooks/pre-push` que bumpea versión, eliminarlo (causaba commits colgando y divergencias con el SW)
 
 ### Commits
