@@ -413,10 +413,12 @@ function buildHistoryStripHtml(exerciseId, currentLog, anchorDate) {
       const prevMetric = getPrimaryMetric(prev.log);
       if (prevMetric > 0) {
         const pct = Math.round(((currentMetric - prevMetric) / prevMetric) * 100);
-        const cls = pct >= 0 ? 'vol-delta' : 'vol-delta down';
-        const arrow = pct >= 0 ? '↑' : '↓';
-        const sign = pct >= 0 ? '+' : '';
-        deltaHtml = `<span class="${cls}">${arrow} ${sign}${pct}% vs última</span>`;
+        if (pct !== 0) {
+          const cls = pct > 0 ? 'vol-delta' : 'vol-delta down';
+          const arrow = pct > 0 ? '↑' : '↓';
+          const sign = pct > 0 ? '+' : '';
+          deltaHtml = `<span class="${cls}">${arrow} ${sign}${pct}% vs última</span>`;
+        }
       }
     }
   }
