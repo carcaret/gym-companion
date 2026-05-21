@@ -4,32 +4,25 @@
 
 const APP_VERSION = '1.0.34';
 
-import { escHtml, safeSetLocal, icon, chevronIcon, toast, showModal, hideModal, setupBarTooltips, updateSyncIndicatorDOM } from './src/ui.js';
 import { DAY_LABELS, ROUTINE_KEYS, GITHUB_KEY, DB_LOCAL_KEY, NEEDS_UPLOAD_KEY, PAT_KEY } from './src/constants.js';
 import { todayStr, formatDate, formatDateShort, relativeDate, dateBlock } from './src/dates.js';
 import { formatRepsInteligente, formatLogSummary, slugifyExerciseName } from './src/formatting.js';
-import { getExerciseName as _getExerciseName, getTodayEntry as _getTodayEntry, getBestRecentValuesForExercise as _getBestRecentValuesForExercise, isWorkoutActive as _isWorkoutActive, ensureHistorySorted, sortExercisesForSwap } from './src/data.js';
-import { computeVolume, computeE1RM, computeSessionDeltaPct } from './src/metrics.js';
+import { ensureHistorySorted, sortExercisesForSwap } from './src/data.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam, adjustRep, setRep, detectRecords, validateLog, validateEntry, reorderByIndex, sortHistory, findLog, swapLogExercise } from './src/workout.js';
-import { buildGitHubPayload, parseGitHubResponse } from './src/github.js';
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
+import { escHtml, safeSetLocal, icon, chevronIcon, toast, showModal, hideModal, setupBarTooltips, updateSyncIndicatorDOM } from './src/ui.js';
 import { buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml } from './src/builders.js';
+import {
+  DB, githubSha, syncState, conflict,
+  setSyncState, getGithubConfig, getPat, isSyncConfigured,
+  fetchGithubDb, loadDBFromGitHub, saveDBToGitHub, saveDBLocal,
+  applyRemoteDB, persistDB, pullFromGitHubIfClean, loadDB, initDB, flushPendingSave,
+  getExerciseName, getTodayEntry, getBestRecentValuesForExercise,
+  getRecentSessionsForExercise, isWorkoutActive,
+} from './src/store.js';
 
-let DB = null;
-let githubSha = null;
 let currentChart = null;
 let currentWeightChart = null;
-let saveTimeout = null;
-
-// ── sync state: 'ok' | 'pending' ──────────────────────────────────────────────
-let syncState = 'ok';
-let conflict = false;
-
-// ── Sync status indicator ──────────────────────────────────────────────────────
-function setSyncState(state) {
-  syncState = state;
-  updateSyncIndicatorDOM(state);
-}
 
 function showConflictModal() {
   showModal(
@@ -53,6 +46,7 @@ function showConflictModal() {
             toast('No se pudo descargar desde GitHub', 'error'); return false;
           }
           applyRemoteDB(remote);
+          renderHoy();
           toast('Datos de GitHub aplicados localmente', 'ok');
         }
       }
@@ -71,194 +65,6 @@ function setupSyncIndicator() {
   };
   document.querySelectorAll('.sync-status-btn').forEach(btn => { btn.onclick = handler; });
   setSyncState(getGithubConfig() ? 'ok' : 'disabled');
-}
-
-// ── GitHub API ──
-function getGithubConfig() {
-  try { return JSON.parse(localStorage.getItem(GITHUB_KEY)); } catch { return null; }
-}
-
-function getPat() {
-  return localStorage.getItem(PAT_KEY) || null;
-}
-
-function isSyncConfigured() {
-  return !!(getGithubConfig() && getPat());
-}
-
-async function fetchGithubDb(cfg, pat) {
-  try {
-    const res = await fetch(
-      `https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`,
-      { headers: { 'Authorization': `Bearer ${pat}`, 'Accept': 'application/vnd.github.v3+json' } }
-    );
-    if (!res.ok) return { ok: false, status: res.status, parsed: null };
-    const data = await res.json();
-    return { ok: true, status: res.status, parsed: parseGitHubResponse(data) };
-  } catch {
-    return { ok: false, status: 0, parsed: null };
-  }
-}
-
-async function loadDBFromGitHub(patOverride) {
-  const cfg = getGithubConfig();
-  const pat = patOverride || getPat();
-  if (!cfg || !pat) return null;
-  const { parsed } = await fetchGithubDb(cfg, pat);
-  if (!parsed) return null;
-  githubSha = parsed.sha;
-  return parsed.db;
-}
-
-async function saveDBToGitHub(options = {}) {
-  const cfg = getGithubConfig();
-  const pat = getPat();
-  if (!cfg || !pat || !DB) return false;
-
-  // Sin sha el PUT devuelve 422, que se trataría como falso conflicto.
-  // Pasa cuando el pull de arranque falló (red mala). Lo poblamos aquí.
-  if (!githubSha) {
-    const { parsed } = await fetchGithubDb(cfg, pat);
-    if (!parsed) {
-      setSyncState('pending');
-      return false;
-    }
-    githubSha = parsed.sha;
-  }
-
-  try {
-    const body = buildGitHubPayload(DB, githubSha, {
-      branch: cfg.branch,
-      message: `Gym Companion update ${todayStr()}`
-    });
-    const fetchOpts = {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${pat}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    };
-    if (options.keepalive) fetchOpts.keepalive = true;
-    const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, fetchOpts);
-
-    // 409/422: sha desactualizado o archivo sin sha — conflicto manual.
-    if (res.status === 409 || res.status === 422) {
-      conflict = true;
-      setSyncState('pending');
-      return false;
-    }
-
-    if (!res.ok) {
-      console.error('GitHub save failed', res.status);
-      setSyncState('pending');
-      return false;
-    }
-
-    const data = await res.json();
-    githubSha = data.content.sha;
-    safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
-    conflict = false;
-    setSyncState('ok');
-    return true;
-  } catch (e) {
-    console.error('GitHub save error', e);
-    setSyncState('pending');
-    return false;
-  }
-}
-
-function saveDBLocal() {
-  if (DB) {
-    safeSetLocal(DB_LOCAL_KEY, JSON.stringify(DB));
-  }
-}
-
-// Reemplaza DB con los datos remotos y deja el estado consistente
-// (sorted, persistido, sin pendientes, sin conflicto, indicador ok, UI refrescada).
-function applyRemoteDB(remote) {
-  DB = remote;
-  ensureHistorySorted(DB);
-  saveDBLocal();
-  safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
-  conflict = false;
-  setSyncState('ok');
-  renderHoy();
-}
-
-function persistDB() {
-  saveDBLocal();
-  safeSetLocal(NEEDS_UPLOAD_KEY, 'true');
-  if (_isWorkoutActive(DB, todayStr())) return;
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(async () => {
-    saveTimeout = null;
-    if (!isSyncConfigured()) {
-      setSyncState('ok');
-      return;
-    }
-    setSyncState('pending');
-    const ok = await saveDBToGitHub();
-    if (ok) toast('Guardado', 'save');
-  }, 500);
-}
-
-// Pull silencioso al arrancar si el local no tiene cambios pendientes y
-// no hay entreno en curso. Seguro: needsUpload=false ⟹ local ya está en GitHub.
-async function pullFromGitHubIfClean() {
-  if (!isSyncConfigured()) return;
-  if (localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true') return;
-  if (_isWorkoutActive(DB, todayStr())) return;
-
-  const cfg = getGithubConfig();
-  const pat = getPat();
-  const { parsed } = await fetchGithubDb(cfg, pat);
-  if (!parsed) return;
-
-  // Re-verificar condiciones tras el fetch (carreras R1/R2)
-  if (localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true') return;
-  if (_isWorkoutActive(DB, todayStr())) return;
-
-  githubSha = parsed.sha;
-
-  const localJson = JSON.stringify(DB);
-  const remoteJson = JSON.stringify(parsed.db);
-  if (localJson === remoteJson) return;
-
-  applyRemoteDB(parsed.db);
-  toast('Datos actualizados desde GitHub', 'ok');
-}
-
-window.addEventListener('online', () => {
-  const needsUpload = localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true';
-  if (needsUpload && !conflict && isSyncConfigured() && !_isWorkoutActive(DB, todayStr())) {
-    saveDBToGitHub().then(ok => {
-      if (ok) toast('Guardado en GitHub (recuperado tras reconexión)', 'save');
-    });
-  }
-});
-
-window.addEventListener('beforeunload', () => {
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
-    saveTimeout = null;
-    saveDBToGitHub({ keepalive: true });
-  }
-});
-
-async function loadDB() {
-  // Si hay local, es la fuente de verdad — nunca se reemplaza con remote al arrancar.
-  const localRaw = localStorage.getItem(DB_LOCAL_KEY);
-  if (localRaw) {
-    try {
-      const localData = JSON.parse(localRaw);
-      const needsUpload = localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true';
-      return { data: localData, needsUpload };
-    } catch { /* JSON corrupto — continuar como si no hubiera local */ }
-  }
-
-  // Sin local: primera instalación — intentar desde GitHub.
-  const remoteData = await loadDBFromGitHub();
-  if (remoteData) return { data: remoteData, needsUpload: false };
-
-  return { data: null, needsUpload: false };
 }
 
 function showApp() {
@@ -294,11 +100,6 @@ function applyValidationErrors(logIdx, log, prefix = 'w') {
     if (repInput) repInput.classList.toggle('input-error', errorFields.has(`rep-${s}`));
   }
 }
-
-// ── Data Helpers (wrappers que pasan DB global) ──
-const getExerciseName = (id) => _getExerciseName(DB, id);
-const getTodayEntry = () => _getTodayEntry(DB, todayStr());
-const getBestRecentValuesForExercise = (exerciseId) => _getBestRecentValuesForExercise(DB, exerciseId, todayStr());
 
 // ── View: Rutinas ──
 function renderHoy() {
@@ -1349,6 +1150,7 @@ function setupSettings() {
               return false;
             }
             applyRemoteDB(remote);
+            renderHoy();
             toast('Datos descargados de GitHub', 'ok');
           }
         }
@@ -1419,9 +1221,7 @@ async function init() {
     needsUpload = false;
   }
 
-  DB = data;
-  ensureHistorySorted(DB);
-  saveDBLocal();
+  initDB(data);
 
   if (isSyncConfigured() && needsUpload) {
     // Entrenos offline detectados en el merge — subir a GitHub sin bloquear UI
@@ -1431,9 +1231,22 @@ async function init() {
     setSyncState(isSyncConfigured() ? 'ok' : 'disabled');
     // Sin cambios pendientes: comprobar GitHub en background por si hubo edits externos
     if (isSyncConfigured()) {
-      pullFromGitHubIfClean();
+      pullFromGitHubIfClean().then(updated => { if (updated) renderHoy(); });
     }
   }
+
+  window.addEventListener('online', () => {
+    const needsUpload = localStorage.getItem(NEEDS_UPLOAD_KEY) === 'true';
+    if (needsUpload && !conflict && isSyncConfigured() && !isWorkoutActive()) {
+      saveDBToGitHub().then(ok => {
+        if (ok) toast('Guardado en GitHub (recuperado tras reconexión)', 'save');
+      });
+    }
+  });
+
+  window.addEventListener('beforeunload', () => {
+    flushPendingSave();
+  });
 
   showApp();
 }
