@@ -12,6 +12,7 @@ import { buildWorkoutEntry, buildLog, finishWorkoutEntry, adjustParam, setParam,
 import { getExercisesInRange, buildChartDatasets, sortExercisesForDropdown } from './src/charts.js';
 import { escHtml, safeSetLocal, icon, chevronIcon, toast, showModal, hideModal, setupBarTooltips, updateSyncIndicatorDOM } from './src/ui.js';
 import { buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml } from './src/builders.js';
+import { initSettings, setupSettings } from './views/settings.js';
 import {
   DB, githubSha, syncState, conflict,
   setSyncState, getGithubConfig, getPat, isSyncConfigured,
@@ -1069,96 +1070,6 @@ function makeChart(ctx, datasets, chartType, { yTitle }) {
   });
 }
 
-// ── View: Ajustes ──
-function initSettings() {
-  const cfg = getGithubConfig();
-  if (cfg) {
-    document.getElementById('set-repo').value = cfg.repo || '';
-    document.getElementById('set-branch').value = cfg.branch || 'main';
-    document.getElementById('set-path').value = cfg.path || 'db.json';
-  }
-
-  const pat = getPat();
-  if (pat) document.getElementById('set-pat').value = pat;
-}
-
-function setupSettings() {
-  document.getElementById('save-github-btn').onclick = async () => {
-    const repo = document.getElementById('set-repo').value.trim();
-    const branch = document.getElementById('set-branch').value.trim() || 'main';
-    const pat = document.getElementById('set-pat').value.trim();
-    const path = document.getElementById('set-path').value.trim() || 'db.json';
-
-    if (!repo || !pat) { toast('Repo y PAT requeridos', 'warn'); return; }
-
-    safeSetLocal(GITHUB_KEY, JSON.stringify({ repo, branch, path }));
-    safeSetLocal(PAT_KEY, pat);
-    setSyncState('pending');
-    toast('Configuración guardada — sincronizando...', 'ok');
-
-    // Obtener sha remoto (necesario para futuros PUTs). No se mezcla con local.
-    if (!githubSha) {
-      await loadDBFromGitHub(); // solo actualiza githubSha, no toca DB
-    }
-
-    persistDB();
-  };
-
-  document.getElementById('test-github-btn').onclick = async () => {
-    const patInput = document.getElementById('set-pat').value.trim();
-    const cfg = getGithubConfig();
-    if (!cfg || !patInput) {
-      toast('Guarda la configuración primero', 'warn');
-      return;
-    }
-
-    toast('Probando conexión...', null, 8000);
-    // Sólo verificar que la API responde — NO modificar githubSha ni DB
-    const { ok, status } = await fetchGithubDb(cfg, patInput);
-    if (ok) {
-      toast('Conexión exitosa', 'ok');
-    } else if (status > 0) {
-      toast(`Error ${status} — verifica repo, PAT y rama`, 'error');
-    } else {
-      toast('No se pudo conectar', 'error');
-    }
-  };
-
-  document.getElementById('force-sync-btn').onclick = async () => {
-    if (!isSyncConfigured()) { toast('GitHub no configurado', 'warn'); return; }
-    if (conflict) { showConflictModal(); return; }
-    toast('Subiendo a GitHub...', null, 8000);
-    setSyncState('pending');
-    const ok = await saveDBToGitHub();
-    if (ok) toast('Subido a GitHub', 'ok');
-    else if (conflict) showConflictModal();
-    else toast('No se pudo subir — sigue en pendiente', 'error');
-  };
-
-  document.getElementById('sync-github-btn').onclick = () => {
-    showModal(
-      'Descargar de GitHub',
-      '<p class="text-sm">Esto <strong>sobreescribirá tus datos locales</strong> con los de GitHub. Los cambios no subidos se perderán. ¿Continuar?</p>',
-      [
-        { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
-        {
-          label: 'Sobreescribir local', className: 'btn-primary btn-sm', action: async () => {
-            toast('Descargando de GitHub...', null, 8000);
-            const remote = await loadDBFromGitHub();
-            if (!remote || !remote.exercises || !remote.history) {
-              toast('No se pudo descargar o formato inválido', 'error');
-              return false;
-            }
-            applyRemoteDB(remote);
-            renderHoy();
-            toast('Datos descargados de GitHub', 'ok');
-          }
-        }
-      ]
-    );
-  };
-}
-
 // ── Navigation ──
 function navigateToTab(view) {
   document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
@@ -1204,7 +1115,10 @@ async function init() {
 
   setupTabs();
   setupFilters();
-  setupSettings();
+  setupSettings({
+    onConflict: showConflictModal,
+    onRemoteApplied: (remote) => { applyRemoteDB(remote); renderHoy(); },
+  });
   setupSyncIndicator();
   setupBarTooltips();
 
