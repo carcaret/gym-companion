@@ -122,7 +122,7 @@ test.describe('Ajustes — GitHub y PAT en claro', () => {
   // El service worker intercepta las llamadas a api.github.com y las re-emite
   // desde su propio contexto, eludiendo page.route(). Bloqueando el SW,
   // Playwright intercepta todas las peticiones de red correctamente.
-  test.describe('probar conexión (SW bloqueado)', () => {
+  test.describe('probar conexión — respuestas de red', () => {
     test.use({ serviceWorkers: 'block' });
 
     test('probar conexión sin config guardada → toast de aviso', async ({ page }) => {
