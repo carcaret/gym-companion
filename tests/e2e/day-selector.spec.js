@@ -23,7 +23,7 @@ test.describe('Selector de rutinas (Hoy)', () => {
   test('seleccionar DIA2 muestra preview con ejercicios de DIA2', async ({ page }) => {
     await page.locator('.day-btn', { hasText: 'Día 2' }).click();
     // DIA2 tiene 1 ejercicio: sentadilla
-    const cards = page.locator('.compact-card');
+    const cards = page.locator('[id^="rcard-"]');
     await expect(cards).toHaveCount(1);
     await expect(cards.first()).toContainText('Sentadilla');
   });
@@ -31,7 +31,7 @@ test.describe('Selector de rutinas (Hoy)', () => {
   test('seleccionar DIA3 muestra preview con ejercicios de DIA3', async ({ page }) => {
     await page.locator('.day-btn', { hasText: 'Día 3' }).click();
     // DIA3 tiene 2 ejercicios: press_banca, sentadilla
-    const cards = page.locator('.compact-card');
+    const cards = page.locator('[id^="rcard-"]');
     await expect(cards).toHaveCount(2);
     await expect(cards.nth(0)).toContainText('Press Banca');
     await expect(cards.nth(1)).toContainText('Sentadilla');
@@ -45,6 +45,7 @@ test.describe('Selector de rutinas (Hoy)', () => {
 
     await expect(page.locator('.day-selector-title')).toBeVisible();
     await expect(page.locator('.day-btn')).toHaveCount(3);
+    await expect(page.locator('#start-workout-btn')).not.toBeVisible();
   });
 
   test('iniciar desde DIA2 crea entry con type DIA2 en DB', async ({ page }) => {
