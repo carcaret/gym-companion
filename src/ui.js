@@ -50,6 +50,7 @@ export function toast(msg, type = null, duration = 2500) {
   t._timer = setTimeout(() => t.classList.remove('visible'), duration);
 }
 
+// actions[].action: async fn. Return false to keep modal open; any other return closes it.
 export function showModal(title, bodyHtml, actions) {
   const overlay = document.getElementById('modal-overlay');
   document.getElementById('modal-title').textContent = title;

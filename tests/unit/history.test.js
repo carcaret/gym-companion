@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { sortHistory, findLog } from '../../src/workout.js';
+import { sortHistory, findLog } from '../../src/data.js';
 
 // ── Helpers ──
 

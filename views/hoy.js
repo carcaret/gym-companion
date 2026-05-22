@@ -1,9 +1,9 @@
 import { DB, getExerciseName, getTodayEntry, getBestRecentValuesForExercise, persistDB, saveDBLocal, saveDBToGitHub, getGithubConfig, setSyncState } from '../src/store.js';
-import { icon, chevronIcon, toast, showModal, hideModal } from '../src/ui.js';
+import { icon, chevronIcon, toast, showModal, hideModal, safeSetLocal, escHtml } from '../src/ui.js';
 import { buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, validateEntry, reorderByIndex, swapLogExercise, detectRecords } from '../src/workout.js';
 import { ensureHistorySorted, sortExercisesForSwap } from '../src/data.js';
-import { DAY_LABELS, ROUTINE_KEYS } from '../src/constants.js';
+import { DAY_LABELS, ROUTINE_KEYS, NEEDS_UPLOAD_KEY } from '../src/constants.js';
 import { todayStr } from '../src/dates.js';
 import { formatLogSummary, slugifyExerciseName } from '../src/formatting.js';
 import { setupLogActionDelegation, applyValidationErrors } from './shared.js';
@@ -29,7 +29,7 @@ export function renderHoy() {
 function renderDaySelector(container) {
   let html = '<div class="day-selector"><p class="day-selector-title">Selecciona una rutina para entrenar</p>';
   for (const type of ROUTINE_KEYS) {
-    const exercises = (DB.routines[type] || []).map(id => getExerciseName(id));
+    const exercises = (DB.routines[type] || []).map(id => escHtml(getExerciseName(id)));
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
     html += `<div class="card day-btn ${type}" data-day="${type}">
     <div class="card-header">
@@ -58,7 +58,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
 
   exerciseIds.forEach((id, idx) => {
     const last = getBestRecentValuesForExercise(id);
-    const name = getExerciseName(id);
+    const name = escHtml(getExerciseName(id));
     const log = { exercise_id: id, weight: last.weight, series: last.series, reps: { expected: last.repsExpected, actual: last.repsActual } };
 
     html += `<div class="card compact-card" id="rcard-${idx}">
@@ -148,7 +148,7 @@ function renderActiveWorkout(container, entry) {
   let hasRecord = false;
 
   entry.logs.forEach((log, logIdx) => {
-    const name = getExerciseName(log.exercise_id);
+    const name = escHtml(getExerciseName(log.exercise_id));
 
     const prevEntries = DB.history.filter(h => h.date !== entry.date);
     const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
@@ -305,6 +305,7 @@ async function finishWorkout() {
 
   finishWorkoutEntry(entry);
   saveDBLocal();
+  safeSetLocal(NEEDS_UPLOAD_KEY, 'true');
   const hoyContent = document.getElementById('hoy-content');
   document.getElementById('hoy-title').innerHTML = `${DAY_LABELS[entry.type]} <span class="icon-done">${icon('check', 16)}</span>`;
   renderCompletedToday(hoyContent, entry);
@@ -330,7 +331,7 @@ function renderCompletedToday(container, entry) {
 </div>`;
 
   entry.logs.forEach(log => {
-    const name = getExerciseName(log.exercise_id);
+    const name = escHtml(getExerciseName(log.exercise_id));
     html += `<div class="card compact-card historial-detail-card">
       <div class="card-header">
         <div>
@@ -406,7 +407,7 @@ function showExercisePickerModal({ title, excludeIds, sortExercises = null, onSe
   let bodyHtml = `<div class="input-group"><input type="text" class="exercise-search" id="exercise-search-input" placeholder="Buscar ejercicio..."></div>
   <div class="exercise-list" id="exercise-modal-list">`;
   exercises.forEach(e => {
-    bodyHtml += `<div class="exercise-list-item" data-id="${e.id}"><span>${e.name}</span><span class="add-icon">+</span></div>`;
+    bodyHtml += `<div class="exercise-list-item" data-id="${e.id}"><span>${escHtml(e.name)}</span><span class="add-icon">+</span></div>`;
   });
   bodyHtml += '</div>';
   if (onCreateNew) {
@@ -495,7 +496,7 @@ function reorderExercises(dayType, fromIndex, toIndex) {
 }
 
 function removeExerciseFromRoutine(dayType, exerciseId) {
-  showModal('¿Quitar ejercicio?', `<p class="text-sm">Se eliminará <strong>${getExerciseName(exerciseId)}</strong> de la rutina de ${DAY_LABELS[dayType]}. Los registros históricos se conservarán.</p>`, [
+  showModal('¿Quitar ejercicio?', `<p class="text-sm">Se eliminará <strong>${escHtml(getExerciseName(exerciseId))}</strong> de la rutina de ${DAY_LABELS[dayType]}. Los registros históricos se conservarán.</p>`, [
     { label: 'Cancelar', className: 'btn-secondary btn-sm', action: () => {} },
     {
       label: 'Quitar', className: 'btn-danger btn-sm', action: () => {
@@ -510,5 +511,7 @@ function removeExerciseFromRoutine(dayType, exerciseId) {
   ]);
 }
 
-// Expose reorderExercises for E2E tests that simulate Sortable callbacks
-window.GymCompanion = { reorderExercises };
+// Exposed only in dev/test (localhost) for E2E tests that simulate Sortable callbacks
+if (location.hostname === 'localhost') {
+  window.GymCompanion = { reorderExercises };
+}

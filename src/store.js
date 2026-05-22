@@ -92,7 +92,7 @@ export async function saveDBToGitHub(options = {}) {
     const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, fetchOpts);
 
     if (res.status === 409 || res.status === 422) {
-      conflict = true;
+      setConflict(true);
       setSyncState('pending');
       return false;
     }
@@ -104,9 +104,9 @@ export async function saveDBToGitHub(options = {}) {
     }
 
     const data = await res.json();
-    githubSha = data.content.sha;
+    githubSha = data?.content?.sha ?? githubSha;
     safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
-    conflict = false;
+    setConflict(false);
     setSyncState('ok');
     return true;
   } catch (e) {
@@ -127,7 +127,7 @@ export function applyRemoteDB(remote) {
   ensureHistorySorted(DB);
   saveDBLocal();
   safeSetLocal(NEEDS_UPLOAD_KEY, 'false');
-  conflict = false;
+  setConflict(false);
   setSyncState('ok');
   // No llama renderHoy() — responsabilidad del caller
 }

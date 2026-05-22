@@ -1,12 +1,14 @@
 import { DB, getExerciseName, persistDB } from '../src/store.js';
-import { icon, chevronIcon, toast, showModal } from '../src/ui.js';
+import { icon, chevronIcon, toast, showModal, escHtml } from '../src/ui.js';
 import { buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
-import { validateLog, sortHistory, findLog } from '../src/workout.js';
+import { validateLog } from '../src/workout.js';
+import { sortHistory, findLog } from '../src/data.js';
 import { formatDate, relativeDate, dateBlock } from '../src/dates.js';
 import { formatLogSummary } from '../src/formatting.js';
 import { DAY_LABELS } from '../src/constants.js';
 import { setupLogActionDelegation, applyValidationErrors } from './shared.js';
 
+const CARD_COLLAPSE_MS = 350; // matches max-height transition in index.css (.card-body)
 const historialOpenCards = new Set();
 const historialDirtyCards = new Set();
 const historialSnapshots = new Map();
@@ -61,7 +63,7 @@ export function renderHistorial() {
   let html = '<div class="historial-list">';
   entries.forEach(entry => {
     const isIncomplete = entry.completed === false;
-    const exercises = entry.logs.map(l => getExerciseName(l.exercise_id));
+    const exercises = entry.logs.map(l => escHtml(getExerciseName(l.exercise_id)));
     const preview = exercises.slice(0, 3).join(' · ') + (exercises.length > 3 ? ` +${exercises.length - 3}` : '');
     const cardStyle = isIncomplete ? 'background:rgba(86,156,214,0.07);border:1px solid rgba(86,156,214,0.35);' : '';
     const { num, mon } = dateBlock(entry.date);
@@ -118,7 +120,7 @@ export function renderHistorialDetail(date) {
   let html = '';
 
   entry.logs.forEach((log, logIdx) => {
-    const name = getExerciseName(log.exercise_id);
+    const name = escHtml(getExerciseName(log.exercise_id));
     const isOpen = historialOpenCards.has(logIdx);
     const isDirty = historialDirtyCards.has(logIdx);
 
@@ -188,7 +190,7 @@ export function renderHistorialDetail(date) {
           if (snapshot) entry.logs[idx] = structuredClone(snapshot);
           historialDirtyCards.delete(idx);
           historialSnapshots.delete(idx);
-          setTimeout(() => renderHistorialDetail(date), 350);
+          setTimeout(() => renderHistorialDetail(date), CARD_COLLAPSE_MS);
         }
       } else {
         if (!historialSnapshots.has(idx)) {

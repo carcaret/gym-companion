@@ -7,11 +7,15 @@ let currentWeightChart = null;
 let chartExerciseIds = [];
 
 export function initCharts() {
-  const now = new Date();
-  const sixMonthsAgo = new Date(now);
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-  document.getElementById('chart-from').value = sixMonthsAgo.toISOString().split('T')[0];
-  document.getElementById('chart-to').value = todayStr();
+  const fromEl = document.getElementById('chart-from');
+  const toEl = document.getElementById('chart-to');
+  if (!fromEl.value || !toEl.value) {
+    const now = new Date();
+    const sixMonthsAgo = new Date(now);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    fromEl.value = sixMonthsAgo.toISOString().split('T')[0];
+    toEl.value = todayStr();
+  }
   updateChartExercises();
 }
 

@@ -141,3 +141,12 @@ export function getWeeklyBucketsForExercise(db, exerciseId, anchorDate, weeks = 
   return buckets;
 }
 
+export function sortHistory(history) {
+  return [...history].sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function findLog(history, date, logIdx) {
+  const entry = history.find(h => h.date === date);
+  return entry?.logs[logIdx] ?? null;
+}
+

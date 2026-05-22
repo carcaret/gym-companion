@@ -1,9 +1,10 @@
 import { adjustParam, adjustRep, setParam, setRep, validateLog } from '../src/workout.js';
 
+const delegatedContainers = new WeakSet();
+
 export function setupLogActionDelegation(container, config) {
-  const flag = '_logActionDelegated';
-  if (container[flag]) return;
-  container[flag] = true;
+  if (delegatedContainers.has(container)) return;
+  delegatedContainers.add(container);
 
   container.addEventListener('click', e => {
     const el = e.target.closest('[data-action]');

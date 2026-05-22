@@ -184,13 +184,3 @@ export function swapLogExercise(entry, logIdx, newExerciseId, last, newName) {
   return { ok: true, log: newLog };
 }
 
-// ── History helpers (find-by-date + delegate) ──
-
-export function sortHistory(history) {
-  return [...history].sort((a, b) => b.date.localeCompare(a.date));
-}
-
-export function findLog(history, date, logIdx) {
-  const entry = history.find(h => h.date === date);
-  return entry?.logs[logIdx] ?? null;
-}

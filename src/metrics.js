@@ -23,12 +23,6 @@ export function computeE1RM(log) {
   return maxE1RM;
 }
 
-/**
- * Scan history entries and return max volume and max e1RM for a given exercise.
- * @param {Array} entries - array of history entries
- * @param {string} exerciseId
- * @returns {{ maxVolume: number, maxE1RM: number }}
- */
 export function computeSessionDeltaPct(currentMetric, prevMetric) {
   if (prevMetric <= 0) return null;
   const pct = Math.round(((currentMetric - prevMetric) / prevMetric) * 100);
