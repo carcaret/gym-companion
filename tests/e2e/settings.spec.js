@@ -109,4 +109,65 @@ test.describe('Ajustes — GitHub y PAT en claro', () => {
     const dbAfter = await page.evaluate(() => localStorage.getItem('gym_companion_db'));
     expect(dbAfter).toBe(dbBefore);
   });
+
+  // ── Probar conexión ───────────────────────────────────────────────────────
+
+  async function injectGithubConfig(page) {
+    await page.addInitScript(() => {
+      localStorage.setItem('gym_companion_github', JSON.stringify({ repo: 'u/r', branch: 'main', path: 'db.json' }));
+      localStorage.setItem('gym_companion_pat', 'ghp_testpat');
+    });
+  }
+
+  // El service worker intercepta las llamadas a api.github.com y las re-emite
+  // desde su propio contexto, eludiendo page.route(). Bloqueando el SW,
+  // Playwright intercepta todas las peticiones de red correctamente.
+  test.describe('probar conexión (SW bloqueado)', () => {
+    test.use({ serviceWorkers: 'block' });
+
+    test('probar conexión sin config guardada → toast de aviso', async ({ page }) => {
+      await injectTestDB(page);
+      await page.goto('/');
+      await page.click('[data-view="ajustes"]');
+      // No hay config guardada, el campo PAT está vacío
+      await page.click('#test-github-btn');
+      await expect(page.locator('#toast')).toContainText('Guarda la configuración primero');
+    });
+
+    test('probar conexión con respuesta 200 → toast de éxito', async ({ page }) => {
+      await injectGithubConfig(page);
+      await injectTestDB(page);
+      await page.route('https://api.github.com/**', async (route) => {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '{"sha":"abc","content":"e30=","encoding":"base64"}' });
+      });
+      await page.goto('/');
+      await page.click('[data-view="ajustes"]');
+      await page.click('#test-github-btn');
+      await expect(page.locator('#toast')).toContainText('Conexión exitosa');
+    });
+
+    test('probar conexión con 401 → toast de error con código', async ({ page }) => {
+      await injectGithubConfig(page);
+      await injectTestDB(page);
+      await page.route('https://api.github.com/**', async (route) => {
+        await route.fulfill({ status: 401, contentType: 'application/json', body: '{"message":"Bad credentials"}' });
+      });
+      await page.goto('/');
+      await page.click('[data-view="ajustes"]');
+      await page.click('#test-github-btn');
+      await expect(page.locator('#toast')).toContainText('401');
+    });
+
+    test('probar conexión con fallo de red → toast de error genérico', async ({ page }) => {
+      await injectGithubConfig(page);
+      await injectTestDB(page);
+      await page.route('https://api.github.com/**', async (route) => {
+        await route.abort('failed');
+      });
+      await page.goto('/');
+      await page.click('[data-view="ajustes"]');
+      await page.click('#test-github-btn');
+      await expect(page.locator('#toast')).toContainText('No se pudo conectar');
+    });
+  });
 });
