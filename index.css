@@ -925,11 +925,14 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     0 8px 32px rgba(0, 0, 0, 0.50),
     0 2px 8px rgba(0, 0, 0, 0.25);
-  padding: 0 8px;
+  --bar-inset: 8px;
+  --bar-h: 60px;
+  padding: var(--bar-inset);
 }
 
 .tab {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -944,13 +947,15 @@ body {
 
 .tab.active { color: var(--accent-light); }
 
+
 .tab-pill {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 6px 16px;
+  padding: 0 16px;
+  height: calc(var(--bar-h) - 2 * var(--bar-inset) - 2px);
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
