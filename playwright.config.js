@@ -2,6 +2,8 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
+  fullyParallel: true,
+  workers: process.env.CI ? 2 : '75%',
   use: {
     baseURL: 'http://localhost:3000',
   },
