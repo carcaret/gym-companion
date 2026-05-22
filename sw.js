@@ -35,7 +35,6 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.url.includes('api.github.com')) {
-    e.respondWith(fetch(e.request));
     return;
   }
   
