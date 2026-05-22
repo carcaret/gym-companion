@@ -171,4 +171,28 @@ test.describe('Historial completo', () => {
 
     await expect(page.locator('.historial-entry-btn').first()).toBeVisible();
   });
+
+  test('navegar a entry A → volver → entry B no muestra datos de A', async ({ page }) => {
+    const entries = page.locator('.historial-entry-btn');
+    await expect(entries).toHaveCount(3);
+
+    // Entry 0 = 2024-01-10, DIA2, solo Sentadilla
+    await entries.nth(0).click();
+    const titlesDia2 = page.locator('.historial-detail-card .card-title');
+    await expect(titlesDia2).toHaveCount(1);
+    await expect(titlesDia2.first()).toContainText('Sentadilla');
+
+    // Volver a la lista
+    await page.locator('#historial-back-btn').click();
+    await expect(entries).toHaveCount(3);
+
+    // Entry 1 = 2024-01-08, DIA1, Press Banca + Curl Bíceps
+    await entries.nth(1).click();
+    const titlesDia1 = page.locator('.historial-detail-card .card-title');
+    await expect(titlesDia1).toHaveCount(2);
+    await expect(titlesDia1.nth(0)).toContainText('Press Banca');
+    await expect(titlesDia1.nth(1)).toContainText('Curl Bíceps');
+    // No debe quedar rastro de Sentadilla
+    await expect(page.locator('.historial-detail-card .card-title', { hasText: 'Sentadilla' })).toHaveCount(0);
+  });
 });
