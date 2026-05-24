@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { injectTestDB, clearStorage } = require('./helpers.js');
+const { injectTestDB, clearStorage, fillAllWorkoutReps } = require('./helpers.js');
 
 const TEST_DB = {
   exercises: { press_banca: { id: 'press_banca', name: 'Press Banca' } },
@@ -87,24 +87,7 @@ test.describe('GitHub sync (mock)', () => {
     expect(capturedRequest).toBeNull();
 
     // Fill reps and finish workout
-    const cards = page.locator('.card-header');
-    const cardCount = await cards.count();
-    for (let c = 0; c < cardCount; c++) {
-      const body = page.locator(`#body-${c}`);
-      if (!await body.evaluate(el => el.classList.contains('open'))) {
-        await cards.nth(c).click();
-      }
-      const repInputs = page.locator(`#body-${c} input[id^="w-rep-"]`);
-      const count = await repInputs.count();
-      for (let i = 0; i < count; i++) {
-        const input = repInputs.nth(i);
-        const val = await input.inputValue();
-        if (!val || val === '') {
-          await input.fill('10');
-          await input.dispatchEvent('change');
-        }
-      }
-    }
+    await fillAllWorkoutReps(page);
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
 
@@ -186,24 +169,7 @@ test.describe('GitHub sync (mock)', () => {
     if (hasDaySelector) await dayBtn.click();
     await page.locator('#start-workout-btn').click();
 
-    const cards = page.locator('.card-header');
-    const cardCount = await cards.count();
-    for (let c = 0; c < cardCount; c++) {
-      const body = page.locator(`#body-${c}`);
-      if (!await body.evaluate(el => el.classList.contains('open'))) {
-        await cards.nth(c).click();
-      }
-      const repInputs = page.locator(`#body-${c} input[id^="w-rep-"]`);
-      const count = await repInputs.count();
-      for (let i = 0; i < count; i++) {
-        const input = repInputs.nth(i);
-        const val = await input.inputValue();
-        if (!val || val === '') {
-          await input.fill('10');
-          await input.dispatchEvent('change');
-        }
-      }
-    }
+    await fillAllWorkoutReps(page);
     await page.locator('#finish-workout-btn').click();
     await expect(page.locator('.workout-status')).toContainText('completado');
 

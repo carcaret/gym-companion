@@ -77,12 +77,10 @@ test.describe('Workout flow completo', () => {
     await selectRoutineAndStart(page);
     await page.locator('.card-header').first().click();
 
-    const repInput = page.locator('#w-rep-0-0');
-    await repInput.fill('12');
-    await repInput.dispatchEvent('change');
-
-    // Verify value is saved
-    await expect(repInput).toHaveValue('12');
+    await page.locator('#w-rep-0-0').click();
+    await page.locator('.chip-strip .chip[data-value="12"]').click();
+    // After chip tap, rerenderWorkout rebuilds DOM — button shows new value
+    await expect(page.locator('#w-rep-0-0')).toHaveText('12');
   });
 
   test('finalizar entreno con reps completas marca completado', async ({ page }) => {

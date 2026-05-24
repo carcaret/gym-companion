@@ -126,9 +126,8 @@ test.describe('GitHub sync durante entreno activo', () => {
     await selectRoutineAndStart(page);
 
     await page.locator('.card-header').first().click();
-    const repInput = page.locator('#w-rep-0-0');
-    await repInput.fill('12');
-    await repInput.dispatchEvent('change');
+    await page.locator('#w-rep-0-0').click();
+    await page.locator('.chip-strip .chip[data-value="12"]').click();
 
     await page.waitForTimeout(300);
 
@@ -204,9 +203,8 @@ test.describe('GitHub sync durante entreno activo', () => {
     await page.waitForTimeout(300);
     await page.locator('#exercise-card-0 .param-row').first().locator('.btn-icon:last-child').click();
     await page.waitForTimeout(300);
-    const repInput = page.locator('#w-rep-0-0');
-    await repInput.fill('8');
-    await repInput.dispatchEvent('change');
+    await page.locator('#w-rep-0-0').click();
+    await page.locator('.chip-strip .chip[data-value="8"]').click();
 
     await page.waitForTimeout(300);
     expect(putCount).toBe(0);

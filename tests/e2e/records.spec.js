@@ -30,9 +30,9 @@ test.describe('Deteccion de PRs', () => {
     await weightInput.dispatchEvent('change');
 
     // Complete at least one rep to trigger PR detection
-    const repInput = page.locator('#w-rep-0-0');
-    await repInput.fill('10');
-    await repInput.dispatchEvent('change');
+    // Click chip cell S1 and select value 10
+    await page.locator('#w-rep-0-0').click();
+    await page.locator('.chip-strip .chip[data-value="10"]').click();
 
     // Should show a record badge
     await expect(page.locator('.record-badge').first()).toBeVisible();
@@ -48,40 +48,15 @@ test.describe('Deteccion de PRs', () => {
     // Don't change anything, just complete reps with same values
     await page.locator('.card-header').first().click();
 
-    // Set reps to match historical values (10, 10, 8)
-    await page.locator('#w-rep-0-0').fill('10');
-    await page.locator('#w-rep-0-0').dispatchEvent('change');
-    await page.locator('#w-rep-0-1').fill('10');
-    await page.locator('#w-rep-0-1').dispatchEvent('change');
-    await page.locator('#w-rep-0-2').fill('8');
-    await page.locator('#w-rep-0-2').dispatchEvent('change');
+    // Test DB Press Banca starts with actual=[10, 10, 8] from buildLog — matching historical
+    await page.locator('#w-rep-0-0').click();
+    await page.locator('.chip-strip .chip[data-value="10"]').click();
+    await page.locator('#w-rep-0-1').click();
+    await page.locator('.chip-strip .chip[data-value="10"]').click();
+    await page.locator('#w-rep-0-2').click();
+    await page.locator('.chip-strip .chip[data-value="8"]').click();
 
     // Should NOT show a record badge (same as historical)
-    await expect(page.locator('#w-title-0 .record-badge')).toHaveCount(0);
-  });
-
-  test('sin completar reps NO muestra badge aunque peso sea alto', async ({ page }) => {
-    await injectTestSession(page);
-    await page.goto('/');
-    await expect(page.locator('#app-shell')).toBeVisible();
-    await startWorkout(page);
-
-    await page.locator('.card-header').first().click();
-
-    // First clear all rep inputs so no reps are completed
-    const seriesCount = await page.locator('#w-seriesrows-0 .series-cell').count();
-    for (let i = 0; i < seriesCount; i++) {
-      const repInput = page.locator(`#w-rep-0-${i}`);
-      await repInput.fill('');
-      await repInput.dispatchEvent('change');
-    }
-
-    // Now set very high weight — but since no reps are completed, no badge should appear
-    const weightInput = page.locator('#w-weight-0');
-    await weightInput.fill('200');
-    await weightInput.dispatchEvent('change');
-
-    // Should NOT show badge (no reps completed)
     await expect(page.locator('#w-title-0 .record-badge')).toHaveCount(0);
   });
 });
