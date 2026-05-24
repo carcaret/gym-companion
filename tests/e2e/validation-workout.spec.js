@@ -32,13 +32,6 @@ test.describe('Validación en vista Hoy', () => {
   test('todas las reps completas → finalizar funciona normalmente', async ({ page }) => {
     await startWorkout(page);
 
-    // Expand all cards and fill all reps
-    const cards = page.locator('.card-header');
-    const cardCount = await cards.count();
-    for (let i = 0; i < cardCount; i++) {
-      await cards.nth(i).click();
-    }
-
     await fillAllReps(page);
 
     // Finish
