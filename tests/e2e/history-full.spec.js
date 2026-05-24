@@ -211,6 +211,45 @@ test.describe('Historial completo', () => {
     expect(subtitleAfter).not.toBe(subtitleBefore);
   });
 
+  test('boton + de peso actualiza el input de peso', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    const initialValue = parseFloat(await weightInput.inputValue());
+
+    await page.locator('[data-action="adjustParam"][data-param="weight"][data-delta="2.5"]').first().click();
+
+    await expect(weightInput).toHaveValue(String(initialValue + 2.5));
+  });
+
+  test('boton - de peso actualiza el input de peso', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    const initialValue = parseFloat(await weightInput.inputValue());
+
+    await page.locator('[data-action="adjustParam"][data-param="weight"][data-delta="-2.5"]').first().click();
+
+    await expect(weightInput).toHaveValue(String(Math.max(0, initialValue - 2.5)));
+  });
+
+  test('boton + de series actualiza el input de series', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    const seriesInput = page.locator('.card-body.open [id^="h-series-"]').first();
+    const initialValue = parseInt(await seriesInput.inputValue());
+
+    await page.locator('[data-action="adjustParam"][data-param="series"][data-delta="1"]').first().click();
+
+    await expect(seriesInput).toHaveValue(String(initialValue + 1));
+  });
+
   test('chip de serie en historial abre chip strip y permite cambiar rep', async ({ page }) => {
     await page.locator('.historial-entry-btn').first().click();
     await page.locator('.historial-detail-card .card-header').first().click();

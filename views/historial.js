@@ -6,7 +6,7 @@ import { sortHistory, findLog } from '../src/data.js';
 import { formatDate, relativeDate, dateBlock } from '../src/dates.js';
 import { formatLogSummary } from '../src/formatting.js';
 import { DAY_LABELS } from '../src/constants.js';
-import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection } from './shared.js';
+import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection, patchParamInputs } from './shared.js';
 
 const CARD_COLLAPSE_MS = 350; // matches max-height transition in index.css (.card-body)
 const historialOpenCards = new Set();
@@ -128,6 +128,7 @@ function patchHistorialCard(logIdx, updateSeries = true) {
   const log = entry.logs[logIdx];
   if (!log) return;
   patchSubtitle('h', logIdx, log);
+  patchParamInputs('h', logIdx, log);
   patchHistoryStrip('h', logIdx, DB, log, historialDetailDate);
   if (updateSeries) {
     const fi = historialFocusedSeries?.logIdx === logIdx ? historialFocusedSeries.seriesIdx : null;
