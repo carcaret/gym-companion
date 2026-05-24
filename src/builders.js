@@ -137,7 +137,40 @@ export function buildParamRowsHtml(prefix, logIdx, log, date = null, readOnly = 
   </div>`;
 }
 
-export function buildAllSeriesRowsHtml(prefix, logIdx, log, date = null, readOnly = false) {
+export function buildChipValues(current) {
+  let lo = current - 2;
+  if (lo < 0) lo = 0;
+  return [lo, lo + 1, lo + 2, lo + 3, lo + 4];
+}
+
+export function buildChipStripHtml(prefix, logIdx, seriesIdx, log, date = null) {
+  const d = date ? ` data-date="${date}"` : '';
+  const current = log.reps.actual[seriesIdx] != null ? log.reps.actual[seriesIdx] : log.reps.expected;
+  const target = log.reps.expected;
+  const values = buildChipValues(current);
+
+  const chipsHtml = values.map(v => {
+    const classes = ['chip'];
+    if (v === current) classes.push('current');
+    if (v === target) classes.push('target');
+    const star = (v === target && v !== current)
+      ? '<span class="chip-target-mark" aria-hidden="true">★</span>'
+      : '';
+    return `<button
+      type="button"
+      class="${classes.join(' ')}"
+      data-action="setRepFromChip"
+      data-logidx="${logIdx}"${d}
+      data-seriesidx="${seriesIdx}"
+      data-value="${v}">${v}${star}</button>`;
+  }).join('');
+
+  return `<div class="chip-strip" id="${prefix}-chips-${logIdx}" role="group" aria-label="Editar reps S${seriesIdx + 1}">
+    ${chipsHtml}
+  </div>`;
+}
+
+export function buildAllSeriesRowsHtml(prefix, logIdx, log, date = null, readOnly = false, focusedSeriesIdx = null) {
   if (readOnly) {
     let cellsHtml = '';
     for (let s = 0; s < log.series; s++) {
@@ -150,27 +183,34 @@ export function buildAllSeriesRowsHtml(prefix, logIdx, log, date = null, readOnl
     }
     return `<div class="series-row-inline">${cellsHtml}</div>`;
   }
+
   const d = date ? ` data-date="${date}"` : '';
   let cellsHtml = '';
   for (let s = 0; s < log.series; s++) {
     const val = log.reps.actual[s];
+    const isFocused = focusedSeriesIdx === s;
     let stateClass = '';
     if (val !== null && val !== undefined) {
       stateClass = val >= log.reps.expected ? ' done' : ' filled';
     }
+    if (isFocused) stateClass += ' focused';
+
     cellsHtml += `<div class="series-cell">
       <div class="series-cell-label">S${s + 1}</div>
-      <input
+      <button
+        type="button"
         id="${prefix}-rep-${logIdx}-${s}"
-        class="series-cell-input${stateClass}"
-        type="number"
-        inputmode="numeric"
-        value="${val !== null ? val : ''}"
-        placeholder="${log.reps.expected}"
-        data-action="setRep"
+        class="series-cell-chip${stateClass}"
+        data-action="focusSeries"
         data-logidx="${logIdx}"${d}
-        data-seriesidx="${s}">
+        data-seriesidx="${s}">${val != null ? val : '—'}</button>
     </div>`;
   }
-  return `<div class="series-row-inline">${cellsHtml}</div>`;
+
+  let stripHtml = '';
+  if (focusedSeriesIdx != null && focusedSeriesIdx < log.series) {
+    stripHtml = buildChipStripHtml(prefix, logIdx, focusedSeriesIdx, log, date);
+  }
+
+  return `<div class="series-row-inline">${cellsHtml}</div>${stripHtml}`;
 }
