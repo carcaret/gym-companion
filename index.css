@@ -1334,6 +1334,92 @@ body {
   background: var(--red-tint);
 }
 
+/* ── Botón-celda de serie (sustituye .series-cell-input en modo editable) ── */
+.series-cell-chip {
+  width: 100%;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.series-cell-chip:active { transform: scale(0.97); }
+.series-cell-chip.done {
+  background: rgba(93, 202, 165, 0.15);
+  border-color: rgba(93, 202, 165, 0.5);
+  color: #5dcaa5;
+}
+.series-cell-chip.filled {
+  background: rgba(86, 156, 214, 0.15);
+  border-color: rgba(86, 156, 214, 0.5);
+  color: #93c5ea;
+}
+.series-cell-chip.focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.series-cell-chip.input-error {
+  border-color: var(--danger, #d97070);
+  background: rgba(217, 112, 112, 0.12);
+  color: #ffa9a9;
+}
+
+/* ── Chip strip ─────────────────────────────────────────────────────────── */
+.chip-strip {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  animation: chip-strip-in 0.18s ease-out;
+}
+@keyframes chip-strip-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.chip-strip .chip {
+  flex: 1;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+}
+.chip-strip .chip:active { transform: scale(0.97); }
+.chip-strip .chip.current {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+.chip-strip .chip.target:not(.current) {
+  border-color: rgba(220, 220, 170, 0.4);
+  color: #dcdcaa;
+}
+.chip-target-mark {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  font-size: 7px;
+  line-height: 1;
+}
+
 /* ── Params section compactada ────────────────────────────────────────────── */
 .params-section { padding: 10px 14px; }
 
