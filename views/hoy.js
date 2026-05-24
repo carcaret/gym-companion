@@ -6,7 +6,7 @@ import { ensureHistorySorted, sortExercisesForSwap } from '../src/data.js';
 import { DAY_LABELS, ROUTINE_KEYS, NEEDS_UPLOAD_KEY } from '../src/constants.js';
 import { todayStr } from '../src/dates.js';
 import { formatLogSummary, slugifyExerciseName } from '../src/formatting.js';
-import { setupLogActionDelegation, applyValidationErrors } from './shared.js';
+import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection } from './shared.js';
 
 let focusedSeries = null; // { logIdx, seriesIdx } | null
 
@@ -132,6 +132,38 @@ function startWorkout(dayType) {
   toast('¡Entreno iniciado!', 'ok');
 }
 
+function patchRecordBadges(logIdx) {
+  const entry = getTodayEntry();
+  if (!entry) return;
+  const log = entry.logs[logIdx];
+  if (!log) return;
+  const prevEntries = DB.history.filter(h => h.date !== entry.date);
+  const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
+  const titleEl = document.getElementById(`w-title-${logIdx}`);
+  if (titleEl) {
+    const name = escHtml(getExerciseName(log.exercise_id));
+    titleEl.innerHTML = `${name}${isVolRecord ? `<span class="record-badge">${icon('trophy', 10)} Volumen</span>` : ''}${isE1RMRecord ? `<span class="record-badge">${icon('trophy', 10)} e1RM</span>` : ''}`;
+  }
+  const hasRecord = entry.logs.some(l => {
+    const { isVolRecord: v, isE1RMRecord: e } = detectRecords(l, prevEntries);
+    return v || e;
+  });
+  const badge = document.getElementById('hoy-badge');
+  if (badge) badge.hidden = !hasRecord;
+}
+
+function patchWorkoutCard(logIdx) {
+  const entry = getTodayEntry();
+  if (!entry) return;
+  const log = entry.logs[logIdx];
+  if (!log) return;
+  patchSubtitle('w', logIdx, log);
+  patchHistoryStrip('w', logIdx, DB, log, entry.date);
+  patchRecordBadges(logIdx);
+  const fi = focusedSeries?.logIdx === logIdx ? focusedSeries.seriesIdx : null;
+  patchSeriesSection('w', logIdx, log, null, fi);
+}
+
 function rerenderWorkout() {
   const container = document.getElementById('hoy-content');
   const entry = getTodayEntry();
@@ -172,7 +204,9 @@ function renderActiveWorkout(container, entry) {
     </div>
     <div class="card-body" id="body-${logIdx}">`;
 
+    html += `<div id="w-histstrip-${logIdx}">`;
     html += buildHistoryStripHtml(DB, log.exercise_id, log, entry.date);
+    html += '</div>';
 
     html += '<div class="params-section">';
     html += buildParamRowsHtml('w', logIdx, log);
