@@ -104,37 +104,12 @@ test.describe('Accordion: solo una card expandida a la vez', () => {
     // Open card 0
     await page.locator('.card-header').first().click();
 
-    // Fill a rep
-    const repInput = page.locator('#w-rep-0-0');
-    await repInput.fill('12');
-    await repInput.dispatchEvent('change');
+    // Fill a rep via chip strip
+    await page.locator('#w-rep-0-0').click();
+    await page.locator('.chip-strip .chip[data-value="12"]').click();
 
     // Card 0 should still be open
     await expect(page.locator('#body-0')).toHaveClass(/open/);
-    const openBodies = page.locator('.card-body.open');
-    await expect(openBodies).toHaveCount(1);
-  });
-
-  test('validación al finalizar abre solo la card del primer error', async ({ page }) => {
-    await selectRoutineAndStart(page);
-
-    // Open card 0 and clear a rep to create a validation error
-    await page.locator('.card-header').first().click();
-    const repInput = page.locator('#w-rep-0-0');
-    await repInput.fill('');
-    await repInput.dispatchEvent('change');
-
-    // Open card 1 (closes card 0 via accordion)
-    await page.locator('.card-header').nth(1).click();
-    await expect(page.locator('#body-1')).toHaveClass(/open/);
-    await expect(page.locator('#body-0')).not.toHaveClass(/open/);
-
-    // Try to finish → validation should fail and open card 0 (first error)
-    await page.locator('#finish-workout-btn').click();
-
-    // Card 0 should be open (first error), card 1 should be closed
-    await expect(page.locator('#body-0')).toHaveClass(/open/);
-    await expect(page.locator('#body-1')).not.toHaveClass(/open/);
     const openBodies = page.locator('.card-body.open');
     await expect(openBodies).toHaveCount(1);
   });

@@ -43,8 +43,8 @@ test.describe('Subtítulo de card muestra reps reales cuando difieren', () => {
     // press_banca starts with [10,10,8], expected=10 → differs
     // Fix all reps to match expected (10)
     await page.locator('.card-header').first().click();
-    await page.locator('#w-rep-0-2').fill('10');
-    await page.locator('#w-rep-0-2').dispatchEvent('change');
+    await page.locator('#w-rep-0-2').click();
+    await page.locator('.chip-strip .chip[data-value="10"]').click();
 
     const subtitle0 = page.locator('#w-subtitle-0');
     const text = await subtitle0.textContent();
@@ -58,14 +58,14 @@ test.describe('Subtítulo de card muestra reps reales cuando difieren', () => {
     // press_banca starts with [10,10,8] → subtitle shows 10-10-8
     await expect(page.locator('#w-subtitle-0')).toContainText('10-10-8');
 
-    // Expand card and change rep S3 to 5
+    // Expand card and change rep S3 to 7
     await page.locator('.card-header').first().click();
-    await page.locator('#w-rep-0-2').fill('5');
-    await page.locator('#w-rep-0-2').dispatchEvent('change');
+    await page.locator('#w-rep-0-2').click();
+    await page.locator('.chip-strip .chip[data-value="7"]').click();
 
-    // Now subtitle should show 10-10-5
+    // Now subtitle should show 10-10-7
     const text = await page.locator('#w-subtitle-0').textContent();
-    expect(text).toContain('10-10-5');
+    expect(text).toContain('10-10-7');
   });
 
   test('subtítulo se actualiza tras ajustar peso', async ({ page }) => {
@@ -100,8 +100,8 @@ test.describe('Subtítulo de card muestra reps reales cuando difieren', () => {
 
     // Expand and fix the last rep to 10
     await page.locator('.card-header').first().click();
-    await page.locator('#w-rep-0-2').fill('10');
-    await page.locator('#w-rep-0-2').dispatchEvent('change');
+    await page.locator('#w-rep-0-2').click();
+    await page.locator('.chip-strip .chip[data-value="10"]').click();
 
     const subtitle0 = page.locator('#w-subtitle-0');
     const text = await subtitle0.textContent();

@@ -21,37 +21,6 @@ test.describe('Validación en edición de Historial', () => {
     await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
   }
 
-  test('expandir entry → vaciar rep → click Guardar → se bloquea + input-error', async ({ page }) => {
-    await openFirstEntryAndExpand(page);
-
-    const repInput = page.locator('#h-rep-0-0');
-    await repInput.fill('');
-    await repInput.dispatchEvent('change');
-
-    await page.locator('.historial-save-btn').first().click();
-
-    // Card debe seguir abierta
-    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
-    await expect(repInput).toHaveClass(/input-error/);
-  });
-
-  test('expandir entry → vaciar rep → rellenarla → click Guardar → se cierra ok', async ({ page }) => {
-    await openFirstEntryAndExpand(page);
-
-    const repInput = page.locator('#h-rep-0-0');
-    await repInput.fill('');
-    await repInput.dispatchEvent('change');
-
-    await page.locator('.historial-save-btn').first().click();
-    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
-
-    await repInput.fill('10');
-    await repInput.dispatchEvent('change');
-
-    await page.locator('.historial-save-btn').first().click();
-    await expect(page.locator('.historial-detail-card .card-body.open')).toHaveCount(0);
-  });
-
   test('expandir entry → todo correcto → guardar se cierra normalmente', async ({ page }) => {
     await openFirstEntryAndExpand(page);
 
@@ -73,8 +42,7 @@ test.describe('Validación en edición de Historial', () => {
     await page.locator('.historial-detail-card .card-header').first().click();
     await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
 
-    const repInput = page.locator('#h-rep-0-0');
-    await expect(repInput).toHaveValue('10');
+    await expect(page.locator('#h-rep-0-0')).toHaveText('10');
   });
 
   test('entry con reps.actual vacío → colapsar sin guardar → reexpandir → sigue rellenando con expected', async ({ page }) => {
@@ -83,7 +51,7 @@ test.describe('Validación en edición de Historial', () => {
 
     const cardHeader = page.locator('.historial-detail-card .card-header').first();
     await cardHeader.click();
-    await expect(page.locator('#h-rep-0-0')).toHaveValue('10');
+    await expect(page.locator('#h-rep-0-0')).toHaveText('10');
 
     // Colapsar sin guardar
     await cardHeader.click();
@@ -91,19 +59,7 @@ test.describe('Validación en edición de Historial', () => {
 
     // Reexpandir: debe volver a rellenar con expected
     await cardHeader.click();
-    await expect(page.locator('#h-rep-0-0')).toHaveValue('10');
-  });
-
-  test('expandir entry → toast de warning al intentar guardar con errores', async ({ page }) => {
-    await openFirstEntryAndExpand(page);
-
-    const repInput = page.locator('#h-rep-0-0');
-    await repInput.fill('');
-    await repInput.dispatchEvent('change');
-
-    await page.locator('.historial-save-btn').first().click();
-
-    await expect(page.locator('.toast')).toContainText('Corrige los campos');
+    await expect(page.locator('#h-rep-0-0')).toHaveText('10');
   });
 
   test('guardar persiste cambio en localStorage', async ({ page }) => {
