@@ -6,7 +6,7 @@ export function initSettings() {
   const cfg = getGithubConfig();
   if (cfg) {
     document.getElementById('set-repo').value = cfg.repo || '';
-    document.getElementById('set-branch').value = cfg.branch || 'main';
+    document.getElementById('set-branch').value = cfg.branch || 'master';
     document.getElementById('set-path').value = cfg.path || 'db.json';
   }
 
@@ -17,7 +17,7 @@ export function initSettings() {
 export function setupSettings({ onConflict, onRemoteApplied }) {
   document.getElementById('save-github-btn').onclick = async () => {
     const repo = document.getElementById('set-repo').value.trim();
-    const branch = document.getElementById('set-branch').value.trim() || 'main';
+    const branch = document.getElementById('set-branch').value.trim() || 'master';
     const pat = document.getElementById('set-pat').value.trim();
     const path = document.getElementById('set-path').value.trim() || 'db.json';
 
