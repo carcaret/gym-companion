@@ -23,23 +23,14 @@ async function clearStorage(page) {
 }
 
 async function fillAllWorkoutReps(page) {
+  // reps pre-filled from buildLog; validation passes without touching chips.
+  // open all cards so tests that check DOM state find bodies expanded.
   const cards = page.locator('.card-header');
   const cardCount = await cards.count();
   for (let c = 0; c < cardCount; c++) {
     const body = page.locator(`#body-${c}`);
-    if (!await body.evaluate(el => el.classList.contains('open'))) {
-      await cards.nth(c).click();
-    }
-    const repInputs = page.locator(`#body-${c} input[id^="w-rep-"]`);
-    const count = await repInputs.count();
-    for (let i = 0; i < count; i++) {
-      const input = repInputs.nth(i);
-      const val = await input.inputValue();
-      if (!val || val === '') {
-        await input.fill('10');
-        await input.dispatchEvent('change');
-      }
-    }
+    const isOpen = await body.evaluate(el => el.classList.contains('open'));
+    if (!isOpen) await cards.nth(c).click();
   }
 }
 
