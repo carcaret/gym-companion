@@ -8,7 +8,10 @@ import { todayStr } from '../src/dates.js';
 import { formatLogSummary, slugifyExerciseName } from '../src/formatting.js';
 import { setupLogActionDelegation, applyValidationErrors } from './shared.js';
 
+let focusedSeries = null; // { logIdx, seriesIdx } | null
+
 export function renderHoy() {
+  focusedSeries = null;
   const content = document.getElementById('hoy-content');
   const title = document.getElementById('hoy-title');
   const badge = document.getElementById('hoy-badge');
@@ -180,7 +183,8 @@ function renderActiveWorkout(container, entry) {
     html += `<div class="series-section">
       <div class="series-section-label">Reps por serie</div>
       <div id="w-seriesrows-${logIdx}">`;
-    html += buildAllSeriesRowsHtml('w', logIdx, log);
+    const focused = focusedSeries?.logIdx === logIdx ? focusedSeries.seriesIdx : null;
+    html += buildAllSeriesRowsHtml('w', logIdx, log, null, false, focused);
     html += '</div></div>';
 
     html += `<div class="card-footer">
@@ -263,6 +267,14 @@ function renderActiveWorkout(container, entry) {
       return en?.logs[idx] ?? null;
     },
     onSuccess: () => { persistDB(); rerenderWorkout(); },
+    onFocusSeries: (_el, logIdx, seriesIdx) => {
+      if (focusedSeries?.logIdx === logIdx && focusedSeries?.seriesIdx === seriesIdx) {
+        focusedSeries = null;
+      } else {
+        focusedSeries = { logIdx, seriesIdx };
+      }
+      rerenderWorkout();
+    },
     extraActions: (el, action) => {
       if (action === 'removeExercise') {
         removeExerciseFromRoutine(el.dataset.daytype, el.dataset.exerciseid);
@@ -278,6 +290,7 @@ function renderActiveWorkout(container, entry) {
 async function finishWorkout() {
   const entry = getTodayEntry();
   if (!entry) return;
+  focusedSeries = null;
 
   const { valid, errorsByLog } = validateEntry(entry);
   if (!valid) {
