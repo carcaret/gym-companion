@@ -19,6 +19,14 @@ export function setupLogActionDelegation(container, config) {
     } else if (action === 'adjustRep' && log) {
       adjustRep(log, parseInt(el.dataset.seriesidx), parseFloat(el.dataset.delta));
       config.onSuccess(el, log, idx);
+    } else if (action === 'focusSeries' && log) {
+      const seriesIdx = parseInt(el.dataset.seriesidx);
+      config.onFocusSeries?.(el, idx, seriesIdx);
+    } else if (action === 'setRepFromChip' && log) {
+      const seriesIdx = parseInt(el.dataset.seriesidx);
+      const value = parseInt(el.dataset.value);
+      setRep(log, seriesIdx, value);
+      config.onSuccess(el, log, idx);
     } else if (config.extraActions) {
       config.extraActions(el, action);
     }
