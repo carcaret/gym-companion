@@ -1,4 +1,6 @@
 import { adjustParam, adjustRep, setParam, setRep, validateLog } from '../src/workout.js';
+import { formatLogSummary } from '../src/formatting.js';
+import { buildHistoryStripHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
 
 const delegatedContainers = new WeakSet();
 
@@ -67,4 +69,19 @@ export function applyValidationErrors(logIdx, log, prefix = 'w') {
     const repInput = document.getElementById(`${prefix}-rep-${logIdx}-${s}`);
     if (repInput) repInput.classList.toggle('input-error', errorFields.has(`rep-${s}`));
   }
+}
+
+export function patchSubtitle(prefix, logIdx, log) {
+  const el = document.getElementById(`${prefix}-subtitle-${logIdx}`);
+  if (el) el.textContent = formatLogSummary(log);
+}
+
+export function patchHistoryStrip(prefix, logIdx, db, log, anchorDate) {
+  const el = document.getElementById(`${prefix}-histstrip-${logIdx}`);
+  if (el) el.innerHTML = buildHistoryStripHtml(db, log.exercise_id, log, anchorDate);
+}
+
+export function patchSeriesSection(prefix, logIdx, log, date, focusedSeriesIdx) {
+  const el = document.getElementById(`${prefix}-seriesrows-${logIdx}`);
+  if (el) el.innerHTML = buildAllSeriesRowsHtml(prefix, logIdx, log, date, false, focusedSeriesIdx);
 }
