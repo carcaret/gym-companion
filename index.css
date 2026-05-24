@@ -54,9 +54,11 @@
   --red-soft:    #e2706a;
 
   /* Tintes (background tintado coherente con foreground-soft) */
-  --accent-tint: rgba(86, 156, 214, 0.15);
-  --green-tint:  rgba(93, 202, 165, 0.15);
-  --red-tint:    rgba(244, 71, 71, 0.12);
+  --accent-tint:  rgba(86, 156, 214, 0.15);
+  --green-tint:   rgba(93, 202, 165, 0.15);
+  --red-tint:     rgba(244, 71, 71, 0.12);
+  --danger:       #d97070;
+  --danger-tint:  rgba(217, 112, 112, 0.15);
 
   /* Radios extra */
   --radius-pill: 999px;
@@ -1353,22 +1355,24 @@ body {
 }
 .series-cell-chip:active { transform: scale(0.97); }
 .series-cell-chip.done {
-  background: rgba(93, 202, 165, 0.15);
+  background: var(--green-tint);
   border-color: rgba(93, 202, 165, 0.5);
-  color: #5dcaa5;
+  color: var(--green-soft);
 }
 .series-cell-chip.filled {
-  background: rgba(86, 156, 214, 0.15);
+  background: var(--accent-tint);
   border-color: rgba(86, 156, 214, 0.5);
-  color: #93c5ea;
+  color: var(--accent-soft);
 }
 .series-cell-chip.focused {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-glow);
+  border-color: #e8b84b;
+  background: rgba(232, 184, 75, 0.12);
+  box-shadow: 0 0 0 2px rgba(232, 184, 75, 0.18);
+  color: #e8b84b;
 }
 .series-cell-chip.input-error {
-  border-color: var(--danger, #d97070);
-  background: rgba(217, 112, 112, 0.12);
+  border-color: var(--danger);
+  background: var(--danger-tint);
   color: #ffa9a9;
 }
 
@@ -1403,14 +1407,32 @@ body {
   transition: background-color 0.12s, border-color 0.12s, color 0.12s;
 }
 .chip-strip .chip:active { transform: scale(0.97); }
-.chip-strip .chip.current {
-  background: var(--accent-glow);
-  border-color: var(--accent);
-  color: var(--accent-light);
+.chip-strip .chip.below {
+  color: var(--accent-soft);
+  border-color: rgba(86, 156, 214, 0.3);
 }
-.chip-strip .chip.target:not(.current) {
-  border-color: rgba(220, 220, 170, 0.4);
-  color: #dcdcaa;
+.chip-strip .chip.at-target {
+  color: var(--green-soft);
+  border-color: rgba(93, 202, 165, 0.3);
+}
+.chip-strip .chip.above {
+  color: var(--danger);
+  border-color: rgba(217, 112, 112, 0.3);
+}
+.chip-strip .chip.current.below {
+  background: var(--accent-tint);
+  border-color: var(--accent-soft);
+  color: var(--accent-soft);
+}
+.chip-strip .chip.current.at-target {
+  background: var(--green-tint);
+  border-color: var(--green-soft);
+  color: var(--green-soft);
+}
+.chip-strip .chip.current.above {
+  background: var(--danger-tint);
+  border-color: var(--danger);
+  color: var(--danger);
 }
 .chip-target-mark {
   position: absolute;

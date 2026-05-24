@@ -207,6 +207,14 @@ export function renderHistorialDetail(date) {
         body.classList.add('open');
         chevron.classList.add('open');
         historialOpenCards.add(idx);
+        for (let s = 0; s < log.series; s++) {
+          const chip = document.getElementById(`h-rep-${idx}-${s}`);
+          if (!chip) continue;
+          const val = log.reps.actual[s];
+          chip.textContent = val != null ? String(val) : '—';
+          chip.classList.remove('done', 'filled');
+          if (val != null) chip.classList.add(val >= log.reps.expected ? 'done' : 'filled');
+        }
       }
     };
   });

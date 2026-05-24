@@ -152,17 +152,16 @@ export function buildChipStripHtml(prefix, logIdx, seriesIdx, log, date = null) 
   const chipsHtml = values.map(v => {
     const classes = ['chip'];
     if (v === current) classes.push('current');
-    if (v === target) classes.push('target');
-    const star = (v === target && v !== current)
-      ? '<span class="chip-target-mark" aria-hidden="true">★</span>'
-      : '';
+    if (v < target) classes.push('below');
+    else if (v === target) classes.push('at-target');
+    else classes.push('above');
     return `<button
       type="button"
       class="${classes.join(' ')}"
       data-action="setRepFromChip"
       data-logidx="${logIdx}"${d}
       data-seriesidx="${seriesIdx}"
-      data-value="${v}">${v}${star}</button>`;
+      data-value="${v}">${v}</button>`;
   }).join('');
 
   return `<div class="chip-strip" id="${prefix}-chips-${logIdx}" role="group" aria-label="Editar reps S${seriesIdx + 1}">

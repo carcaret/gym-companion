@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.1.0';
 
 import { NEEDS_UPLOAD_KEY } from './src/constants.js';
 import { toast, showModal, setupBarTooltips } from './src/ui.js';
