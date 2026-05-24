@@ -85,3 +85,12 @@ export function patchSeriesSection(prefix, logIdx, log, date, focusedSeriesIdx) 
   const el = document.getElementById(`${prefix}-seriesrows-${logIdx}`);
   if (el) el.innerHTML = buildAllSeriesRowsHtml(prefix, logIdx, log, date, false, focusedSeriesIdx);
 }
+
+export function patchParamInputs(prefix, logIdx, log) {
+  const weightEl = document.getElementById(`${prefix}-weight-${logIdx}`);
+  if (weightEl) weightEl.value = log.weight;
+  const seriesEl = document.getElementById(`${prefix}-series-${logIdx}`);
+  if (seriesEl) seriesEl.value = log.series;
+  const repsEl = document.getElementById(`${prefix}-reps-${logIdx}`);
+  if (repsEl) repsEl.value = log.reps.expected;
+}

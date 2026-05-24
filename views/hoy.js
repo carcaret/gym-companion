@@ -6,7 +6,7 @@ import { ensureHistorySorted, sortExercisesForSwap } from '../src/data.js';
 import { DAY_LABELS, ROUTINE_KEYS, NEEDS_UPLOAD_KEY } from '../src/constants.js';
 import { todayStr } from '../src/dates.js';
 import { formatLogSummary, slugifyExerciseName } from '../src/formatting.js';
-import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection } from './shared.js';
+import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection, patchParamInputs } from './shared.js';
 
 let focusedSeries = null; // { logIdx, seriesIdx } | null
 
@@ -152,16 +152,19 @@ function patchRecordBadges(logIdx) {
   if (badge) badge.hidden = !hasRecord;
 }
 
-function patchWorkoutCard(logIdx) {
+function patchWorkoutCard(logIdx, updateSeries = true) {
   const entry = getTodayEntry();
   if (!entry) return;
   const log = entry.logs[logIdx];
   if (!log) return;
   patchSubtitle('w', logIdx, log);
+  patchParamInputs('w', logIdx, log);
   patchHistoryStrip('w', logIdx, DB, log, entry.date);
   patchRecordBadges(logIdx);
-  const fi = focusedSeries?.logIdx === logIdx ? focusedSeries.seriesIdx : null;
-  patchSeriesSection('w', logIdx, log, null, fi);
+  if (updateSeries) {
+    const fi = focusedSeries?.logIdx === logIdx ? focusedSeries.seriesIdx : null;
+    patchSeriesSection('w', logIdx, log, null, fi);
+  }
 }
 
 function rerenderWorkout() {
@@ -300,14 +303,25 @@ function renderActiveWorkout(container, entry) {
       const en = getTodayEntry();
       return en?.logs[idx] ?? null;
     },
-    onSuccess: () => { persistDB(); rerenderWorkout(); },
+    onSuccess: (el, _log, idx) => { persistDB(); patchWorkoutCard(idx, el.dataset.param !== 'weight'); },
     onFocusSeries: (_el, logIdx, seriesIdx) => {
+      const prevLogIdx = focusedSeries?.logIdx;
       if (focusedSeries?.logIdx === logIdx && focusedSeries?.seriesIdx === seriesIdx) {
         focusedSeries = null;
       } else {
         focusedSeries = { logIdx, seriesIdx };
       }
-      rerenderWorkout();
+      if (prevLogIdx != null && prevLogIdx !== logIdx) {
+        const en = getTodayEntry();
+        const oldLog = en?.logs[prevLogIdx];
+        if (oldLog) patchSeriesSection('w', prevLogIdx, oldLog, null, null);
+      }
+      const en = getTodayEntry();
+      const log = en?.logs[logIdx];
+      if (log) {
+        const fi = focusedSeries?.logIdx === logIdx ? focusedSeries.seriesIdx : null;
+        patchSeriesSection('w', logIdx, log, null, fi);
+      }
     },
     extraActions: (el, action) => {
       if (action === 'removeExercise') {

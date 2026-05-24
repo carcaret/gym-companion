@@ -195,4 +195,38 @@ test.describe('Historial completo', () => {
     // No debe quedar rastro de Sentadilla
     await expect(page.locator('.historial-detail-card .card-title', { hasText: 'Sentadilla' })).toHaveCount(0);
   });
+
+  test('subtitulo se actualiza al modificar peso sin guardar', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    const subtitleBefore = await page.locator('.historial-detail-card .card-subtitle').first().textContent();
+    const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
+    await weightInput.fill('123');
+    await weightInput.dispatchEvent('change');
+
+    const subtitleAfter = await page.locator('.historial-detail-card .card-subtitle').first().textContent();
+    expect(subtitleAfter).toContain('123');
+    expect(subtitleAfter).not.toBe(subtitleBefore);
+  });
+
+  test('chip de serie en historial abre chip strip y permite cambiar rep', async ({ page }) => {
+    await page.locator('.historial-entry-btn').first().click();
+    await page.locator('.historial-detail-card .card-header').first().click();
+    await expect(page.locator('.historial-detail-card .card-body.open').first()).toBeVisible();
+
+    // Click S1 chip to open the chip strip
+    await page.locator('#h-rep-0-0').click();
+    await expect(page.locator('.chip-strip').first()).toBeVisible();
+
+    // Select a different rep value
+    const chipToClick = page.locator('.chip-strip .chip').first();
+    const newValue = await chipToClick.textContent();
+    await chipToClick.click();
+
+    // h-rep-0-0 shows the selected value and card is dirty
+    await expect(page.locator('#h-rep-0-0')).toHaveText(newValue.trim());
+    await expect(page.locator('.historial-save-btn').first()).toBeVisible();
+  });
 });

@@ -6,7 +6,7 @@ import { sortHistory, findLog } from '../src/data.js';
 import { formatDate, relativeDate, dateBlock } from '../src/dates.js';
 import { formatLogSummary } from '../src/formatting.js';
 import { DAY_LABELS } from '../src/constants.js';
-import { setupLogActionDelegation, applyValidationErrors } from './shared.js';
+import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection } from './shared.js';
 
 const CARD_COLLAPSE_MS = 350; // matches max-height transition in index.css (.card-body)
 const historialOpenCards = new Set();
@@ -106,6 +106,36 @@ export function renderHistorial() {
   });
 }
 
+function patchDirtyFooter(logIdx, date) {
+  const body = document.getElementById(`hbody-${logIdx}`);
+  if (!body) return;
+  let footer = body.querySelector('.card-footer');
+  if (historialDirtyCards.has(logIdx)) {
+    if (!footer) {
+      footer = document.createElement('div');
+      footer.className = 'card-footer';
+      footer.innerHTML = `<button class="btn-primary historial-save-btn" data-action="histSave" data-logidx="${logIdx}" data-date="${date}">Guardar</button>`;
+      body.appendChild(footer);
+    }
+  } else {
+    if (footer) footer.remove();
+  }
+}
+
+function patchHistorialCard(logIdx, updateSeries = true) {
+  const entry = DB.history.find(h => h.date === historialDetailDate);
+  if (!entry) return;
+  const log = entry.logs[logIdx];
+  if (!log) return;
+  patchSubtitle('h', logIdx, log);
+  patchHistoryStrip('h', logIdx, DB, log, historialDetailDate);
+  if (updateSeries) {
+    const fi = historialFocusedSeries?.logIdx === logIdx ? historialFocusedSeries.seriesIdx : null;
+    patchSeriesSection('h', logIdx, log, historialDetailDate, fi);
+  }
+  patchDirtyFooter(logIdx, historialDetailDate);
+}
+
 export function renderHistorialDetail(date) {
   historialDetailDate = date;
   const entry = DB.history.find(h => h.date === date);
@@ -130,24 +160,27 @@ export function renderHistorialDetail(date) {
     <div class="card-header" data-idx="${logIdx}">
       <div>
         <div class="card-title">${name}</div>
-        <div class="card-subtitle">${formatLogSummary(log)}</div>
+        <div class="card-subtitle" id="h-subtitle-${logIdx}">${formatLogSummary(log)}</div>
       </div>
       ${chevronIcon(`hchevron-${logIdx}`, isOpen)}
     </div>
     <div class="card-body${isOpen ? ' open' : ''}" id="hbody-${logIdx}">`;
+    html += `<div id="h-histstrip-${logIdx}">`;
     html += buildHistoryStripHtml(DB, log.exercise_id, log, date);
+    html += '</div>';
     html += '<div class="params-section">';
     html += buildParamRowsHtml('h', logIdx, log, date);
     html += '</div>';
     html += '<div class="divider"></div>';
     html += `<div class="series-section">
-      <div class="series-section-label">Reps por serie</div>`;
+      <div class="series-section-label">Reps por serie</div>
+      <div id="h-seriesrows-${logIdx}">`;
     const focused = historialFocusedSeries?.logIdx === logIdx ? historialFocusedSeries.seriesIdx : null;
     html += buildAllSeriesRowsHtml('h', logIdx, log, date, false, focused);
-    html += '</div>';
+    html += '</div></div>';
     if (isDirty) {
       html += `<div class="card-footer">
-        <button class="btn-primary historial-save-btn" data-logidx="${logIdx}">Guardar</button>
+        <button class="btn-primary historial-save-btn" data-action="histSave" data-logidx="${logIdx}" data-date="${date}">Guardar</button>
       </div>`;
     }
     html += '</div></div>';
@@ -219,9 +252,42 @@ export function renderHistorialDetail(date) {
     };
   });
 
-  content.querySelectorAll('.historial-save-btn').forEach(btn => {
-    btn.onclick = () => {
-      const logIdx = parseInt(btn.dataset.logidx);
+  setupLogActionDelegation(content, {
+    getLog: (_el, idx) => {
+      if (!historialDetailDate) return null;
+      return findLog(DB.history, historialDetailDate, idx);
+    },
+    onSuccess: (el, _log, idx) => {
+      historialDirtyCards.add(idx);
+      patchHistorialCard(idx, el.dataset.param !== 'weight');
+      const entry = DB.history.find(h => h.date === historialDetailDate);
+      if (entry) applyValidationErrors(idx, entry.logs[idx], 'h');
+    },
+    onFocusSeries: (_el, logIdx, seriesIdx) => {
+      const prevLogIdx = historialFocusedSeries?.logIdx;
+      if (historialFocusedSeries?.logIdx === logIdx && historialFocusedSeries?.seriesIdx === seriesIdx) {
+        historialFocusedSeries = null;
+      } else {
+        historialFocusedSeries = { logIdx, seriesIdx };
+      }
+      if (prevLogIdx != null && prevLogIdx !== logIdx) {
+        const entry = DB.history.find(h => h.date === historialDetailDate);
+        const oldLog = entry?.logs[prevLogIdx];
+        if (oldLog) patchSeriesSection('h', prevLogIdx, oldLog, historialDetailDate, null);
+      }
+      const entry = DB.history.find(h => h.date === historialDetailDate);
+      const log = entry?.logs[logIdx];
+      if (log) {
+        const fi = historialFocusedSeries?.logIdx === logIdx ? historialFocusedSeries.seriesIdx : null;
+        patchSeriesSection('h', logIdx, log, historialDetailDate, fi);
+      }
+    },
+    extraActions: (el, action) => {
+      if (action !== 'histSave') return;
+      const logIdx = parseInt(el.dataset.logidx);
+      const date = el.dataset.date;
+      const entry = DB.history.find(h => h.date === date);
+      if (!entry) return;
       const log = entry.logs[logIdx];
       const errors = validateLog(log);
       if (errors.length > 0) {
@@ -234,29 +300,6 @@ export function renderHistorialDetail(date) {
       historialOpenCards.delete(logIdx);
       persistDB();
       renderHistorialDetail(date);
-    };
-  });
-
-  setupLogActionDelegation(content, {
-    getLog: (el, idx) => {
-      const d = el.dataset.date;
-      if (!d) return null;
-      return findLog(DB.history, d, idx);
-    },
-    onSuccess: (el, _log, idx) => {
-      const d = el.dataset.date;
-      historialDirtyCards.add(idx);
-      renderHistorialDetail(d);
-      const en = DB.history.find(h => h.date === d);
-      if (en) applyValidationErrors(idx, en.logs[idx], 'h');
-    },
-    onFocusSeries: (_el, logIdx, seriesIdx) => {
-      if (historialFocusedSeries?.logIdx === logIdx && historialFocusedSeries?.seriesIdx === seriesIdx) {
-        historialFocusedSeries = null;
-      } else {
-        historialFocusedSeries = { logIdx, seriesIdx };
-      }
-      renderHistorialDetail(historialDetailDate);
     }
   });
 }
