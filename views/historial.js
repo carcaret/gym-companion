@@ -13,6 +13,7 @@ const historialOpenCards = new Set();
 const historialDirtyCards = new Set();
 const historialSnapshots = new Map();
 let historialDetailDate = null;
+let historialFocusedSeries = null; // { logIdx, seriesIdx } | null
 
 export function deleteHistoryEntry(date) {
   showModal(
@@ -49,6 +50,7 @@ export function renderHistorial() {
     }
   }
   historialDetailDate = null;
+  historialFocusedSeries = null;
   historialOpenCards.clear();
   historialDirtyCards.clear();
   historialSnapshots.clear();
@@ -140,7 +142,8 @@ export function renderHistorialDetail(date) {
     html += '<div class="divider"></div>';
     html += `<div class="series-section">
       <div class="series-section-label">Reps por serie</div>`;
-    html += buildAllSeriesRowsHtml('h', logIdx, log, date);
+    const focused = historialFocusedSeries?.logIdx === logIdx ? historialFocusedSeries.seriesIdx : null;
+    html += buildAllSeriesRowsHtml('h', logIdx, log, date, false, focused);
     html += '</div>';
     if (isDirty) {
       html += `<div class="card-footer">
@@ -182,6 +185,7 @@ export function renderHistorialDetail(date) {
       const wasOpen = body.classList.contains('open');
 
       if (wasOpen) {
+        historialFocusedSeries = null;
         body.classList.remove('open');
         chevron.classList.remove('open');
         historialOpenCards.delete(idx);
@@ -200,13 +204,6 @@ export function renderHistorialDetail(date) {
         log.reps.actual = Array.from({ length: log.series }, (_, i) =>
           log.reps.actual[i] != null ? log.reps.actual[i] : log.reps.expected
         );
-        for (let s = 0; s < log.series; s++) {
-          const input = document.getElementById(`h-rep-${idx}-${s}`);
-          if (input) {
-            const v = log.reps.actual[s];
-            input.value = (v !== null && v !== undefined) ? v : '';
-          }
-        }
         body.classList.add('open');
         chevron.classList.add('open');
         historialOpenCards.add(idx);
@@ -244,6 +241,14 @@ export function renderHistorialDetail(date) {
       renderHistorialDetail(d);
       const en = DB.history.find(h => h.date === d);
       if (en) applyValidationErrors(idx, en.logs[idx], 'h');
+    },
+    onFocusSeries: (_el, logIdx, seriesIdx) => {
+      if (historialFocusedSeries?.logIdx === logIdx && historialFocusedSeries?.seriesIdx === seriesIdx) {
+        historialFocusedSeries = null;
+      } else {
+        historialFocusedSeries = { logIdx, seriesIdx };
+      }
+      renderHistorialDetail(historialDetailDate);
     }
   });
 }
