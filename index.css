@@ -87,6 +87,7 @@
 html {
   font-size: 16px;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
 }
 
 body {
@@ -97,7 +98,6 @@ body {
     var(--bg-deep);
   color: var(--text-primary);
   min-height: 100dvh;
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
