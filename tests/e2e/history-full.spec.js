@@ -138,6 +138,7 @@ test.describe('Historial completo', () => {
 
   test('eliminar entry confirmar desaparece de la lista', async ({ page }) => {
     const entries = page.locator('.historial-entry-btn');
+    await expect(entries.first()).toBeVisible();
     const initialCount = await entries.count();
 
     await page.locator('.historial-delete-btn').first().click();
@@ -152,6 +153,7 @@ test.describe('Historial completo', () => {
 
   test('eliminar entry cancelar sigue en la lista', async ({ page }) => {
     const entries = page.locator('.historial-entry-btn');
+    await expect(entries.first()).toBeVisible();
     const initialCount = await entries.count();
 
     await page.locator('.historial-delete-btn').first().click();

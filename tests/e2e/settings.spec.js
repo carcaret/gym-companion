@@ -56,6 +56,7 @@ test.describe('Ajustes — GitHub y PAT en claro', () => {
     await injectTestDB(page);
     await page.goto('/');
     await page.click('[data-view="ajustes"]');
+    await expect(page.locator('#save-github-btn')).toBeVisible();
 
     const val = await page.locator('#set-pat').inputValue();
     expect(val).toBe('ghp_visibletesttoken');
