@@ -66,11 +66,75 @@ function showApp() {
   renderHoy();
 }
 
+// ── Tab Indicator (Liquid Glass) ──
+let _indLeft = 0;
+let _indWidth = 0;
+
+function _getPillRect(tab) {
+  const pill = tab.querySelector('.tab-pill');
+  const bar = document.getElementById('tab-bar');
+  const barRect = bar.getBoundingClientRect();
+  const pillRect = pill.getBoundingClientRect();
+  return { left: pillRect.left - barRect.left - 4, width: pillRect.width + 8 };
+}
+
+function initIndicator() {
+  const ind = document.getElementById('tab-indicator');
+  const activeTab = document.querySelector('#tab-bar .tab.active');
+  if (!ind || !activeTab) return;
+  const { left, width } = _getPillRect(activeTab);
+  _indLeft = left; _indWidth = width;
+  ind.style.left = left + 'px';
+  ind.style.width = width + 'px';
+}
+
+function _moveIndicator(toTab) {
+  const ind = document.getElementById('tab-indicator');
+  if (!ind) return;
+  const to = _getPillRect(toTab);
+  if (!to.width) return;
+
+  const fromLeft = _indLeft;
+  const fromWidth = _indWidth;
+  const delta = to.left - fromLeft;
+  _indLeft = to.left;
+  _indWidth = to.width;
+
+  if (Math.abs(delta) < 2) {
+    ind.style.left = to.left + 'px';
+    ind.style.width = to.width + 'px';
+    return;
+  }
+
+  const absDelta = Math.abs(delta);
+  const rightward = delta > 0;
+  // Leading edge jumps ahead; trailing edge follows with spring
+  const stretchLeft = rightward ? fromLeft : to.left;
+  const stretchWidth = fromWidth + absDelta;
+
+  ind.getAnimations().forEach(a => a.cancel());
+
+  const anim = ind.animate([
+    { left: `${fromLeft}px`, width: `${fromWidth}px`, easing: 'ease-in' },
+    { left: `${stretchLeft}px`, width: `${stretchWidth}px`, offset: 0.35, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' },
+    { left: `${to.left}px`, width: `${to.width}px` },
+  ], { duration: 400, fill: 'forwards' });
+
+  anim.onfinish = () => {
+    ind.style.left = `${to.left}px`;
+    ind.style.width = `${to.width}px`;
+    anim.commitStyles();
+    anim.cancel();
+  };
+}
+
 // ── Navigation ──
 function navigateToTab(view) {
+  const toTab = document.querySelector(`#tab-bar .tab[data-view="${view}"]`);
+  if (toTab && !toTab.classList.contains('active')) _moveIndicator(toTab);
+
   document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
-  const tab = document.querySelector(`#tab-bar .tab[data-view="${view}"]`);
-  if (tab) tab.classList.add('active');
+  if (toTab) toTab.classList.add('active');
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(`view-${view}`)?.classList.add('active');
 
@@ -154,6 +218,7 @@ async function init() {
   });
 
   showApp();
+  initIndicator();
 }
 
 init();
