@@ -46,8 +46,12 @@ export function toast(msg, type = null, duration = 2500) {
   const t = document.getElementById('toast');
   t.innerHTML = buildStatusHtml(msg, type);
   clearTimeout(t._timer);
+  t.classList.remove('hiding');
   t.classList.add('visible');
-  t._timer = setTimeout(() => t.classList.remove('visible'), duration);
+  t._timer = setTimeout(() => {
+    t.classList.add('hiding');
+    setTimeout(() => t.classList.remove('visible', 'hiding'), 300);
+  }, duration);
 }
 
 // actions[].action: async fn. Return false to keep modal open; any other return closes it.
