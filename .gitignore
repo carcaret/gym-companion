@@ -5,4 +5,4 @@ node_modules/
 test-results/
 .aiplans/**.*
 .aiplans/*
-!.aiplans/.gitkeep
+!.aiplans/.gitkeep.superpowers/
