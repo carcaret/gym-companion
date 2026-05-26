@@ -134,6 +134,7 @@ function navigateToTab(view) {
   if (toTab && !toTab.classList.contains('active')) _moveIndicator(toTab);
 
   const doSwitch = () => {
+    window.scrollTo(0, 0);
     document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
     if (toTab) toTab.classList.add('active');
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -159,6 +160,19 @@ function setupTabs() {
   document.addEventListener('gym:navigate', e => navigateToTab(e.detail.view));
 }
 
+function setupScrollHeader() {
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const scrolled = window.scrollY > 52;
+      document.querySelectorAll('.view-header').forEach(h => h.classList.toggle('scrolled', scrolled));
+      ticking = false;
+    });
+  }, { passive: true });
+}
+
 // ── Default DB (fetch local file) ──
 async function getDefaultDB() {
   try {
@@ -177,6 +191,7 @@ async function init() {
   document.getElementById('settings-version').textContent = `v${APP_VERSION}`;
 
   setupTabs();
+  setupScrollHeader();
   setupFilters();
   setupSettings({
     onConflict: showConflictModal,
