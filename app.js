@@ -133,15 +133,23 @@ function navigateToTab(view) {
   const toTab = document.querySelector(`#tab-bar .tab[data-view="${view}"]`);
   if (toTab && !toTab.classList.contains('active')) _moveIndicator(toTab);
 
-  document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
-  if (toTab) toTab.classList.add('active');
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(`view-${view}`)?.classList.add('active');
+  const doSwitch = () => {
+    document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
+    if (toTab) toTab.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(`view-${view}`)?.classList.add('active');
 
-  if (view === 'hoy') renderHoy();
-  else if (view === 'historial') renderHistorial();
-  else if (view === 'graficas') initCharts();
-  else if (view === 'ajustes') initSettings();
+    if (view === 'hoy') renderHoy();
+    else if (view === 'historial') renderHistorial();
+    else if (view === 'graficas') initCharts();
+    else if (view === 'ajustes') initSettings();
+  };
+
+  if (document.startViewTransition) {
+    document.startViewTransition(doSwitch);
+  } else {
+    doSwitch();
+  }
 }
 
 function setupTabs() {
