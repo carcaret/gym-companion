@@ -1201,6 +1201,7 @@ body {
 ::view-transition-old(tab-bar),
 ::view-transition-new(tab-bar) {
   animation: none;
+  mix-blend-mode: normal;
 }
 @keyframes vtFadeOut {
   from { opacity: 1; transform: scale(1);    }
