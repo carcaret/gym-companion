@@ -116,14 +116,26 @@ export function setParam(log, param, value) {
   }
 }
 
+/**
+ * Tras editar una rep real, el objetivo sigue al máximo de las reales (sube y baja).
+ * Ignora nulls; si todas son null, deja el objetivo intacto. Clamp >=1 (validación).
+ */
+function syncExpectedToMax(log) {
+  const filled = log.reps.actual.filter(v => v != null);
+  if (filled.length === 0) return;
+  log.reps.expected = Math.max(1, ...filled);
+}
+
 export function adjustRep(log, seriesIdx, delta) {
   const current = log.reps.actual[seriesIdx] != null ? log.reps.actual[seriesIdx] : log.reps.expected;
   log.reps.actual[seriesIdx] = Math.max(0, current + delta);
+  syncExpectedToMax(log);
 }
 
 export function setRep(log, seriesIdx, value) {
   const num = parseInt(value);
   log.reps.actual[seriesIdx] = isNaN(num) ? null : Math.max(0, num);
+  syncExpectedToMax(log);
 }
 
 /**

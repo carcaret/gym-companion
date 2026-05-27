@@ -549,6 +549,63 @@ describe('setRep', () => {
   });
 });
 
+describe('objetivo sigue al máximo de reps reales', () => {
+  test('setRep: subir una real por encima del objetivo sube el objetivo', () => {
+    const log = makeLog({ expected: 12, actual: [12, 12, 12] });
+    setRep(log, 1, '13');
+    expect(log.reps.actual).toEqual([12, 13, 12]);
+    expect(log.reps.expected).toBe(13);
+  });
+
+  test('setRep: bajar el máximo baja el objetivo', () => {
+    const log = makeLog({ expected: 12, actual: [11, 12, 11] });
+    setRep(log, 1, '11');
+    expect(log.reps.actual).toEqual([11, 11, 11]);
+    expect(log.reps.expected).toBe(11);
+  });
+
+  test('setRep: editar real sin tocar el máximo deja el objetivo igual', () => {
+    const log = makeLog({ expected: 11, actual: [11, 11, 11] });
+    setRep(log, 0, '10');
+    expect(log.reps.actual).toEqual([10, 11, 11]);
+    expect(log.reps.expected).toBe(11);
+  });
+
+  test('setRep: ignora nulls al calcular el máximo', () => {
+    const log = makeLog({ expected: 10, actual: [10, null, 10] });
+    setRep(log, 0, '13');
+    expect(log.reps.expected).toBe(13);
+  });
+
+  test('setRep: si todas las reales quedan null, objetivo no cambia', () => {
+    const log = makeLog({ series: 1, expected: 12, actual: [12] });
+    setRep(log, 0, '');
+    expect(log.reps.actual).toEqual([null]);
+    expect(log.reps.expected).toBe(12);
+  });
+
+  test('setRep: máximo 0 → objetivo clamp a 1', () => {
+    const log = makeLog({ expected: 2, actual: [0, 0, 2] });
+    setRep(log, 2, '0');
+    expect(log.reps.actual).toEqual([0, 0, 0]);
+    expect(log.reps.expected).toBe(1);
+  });
+
+  test('adjustRep: subir real por encima del objetivo sube el objetivo', () => {
+    const log = makeLog({ expected: 12, actual: [12, 12, 12] });
+    adjustRep(log, 0, 1);
+    expect(log.reps.actual).toEqual([13, 12, 12]);
+    expect(log.reps.expected).toBe(13);
+  });
+
+  test('adjustRep: bajar el máximo baja el objetivo', () => {
+    const log = makeLog({ expected: 12, actual: [12, 11, 11] });
+    adjustRep(log, 0, -1);
+    expect(log.reps.actual).toEqual([11, 11, 11]);
+    expect(log.reps.expected).toBe(11);
+  });
+});
+
 // ════════════════════════════════════════════════
 // FASE A.6 — detectRecords
 // ════════════════════════════════════════════════
