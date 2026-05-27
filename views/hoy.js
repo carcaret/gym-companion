@@ -553,6 +553,7 @@ function reorderExercises(dayType, fromIndex, toIndex) {
   const entry = getTodayEntry();
   if (entry && !entry.completed) entry.logs = reorderByIndex(entry.logs, fromIndex, toIndex);
   persistDB();
+  rerenderWorkout();
   toast('Orden actualizado');
 }
 
