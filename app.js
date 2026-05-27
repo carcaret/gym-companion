@@ -137,10 +137,12 @@ function navigateToTab(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(`view-${view}`)?.classList.add('active');
 
-  if (view === 'hoy') renderHoy();
-  else if (view === 'historial') renderHistorial();
-  else if (view === 'graficas') initCharts();
-  else if (view === 'ajustes') initSettings();
+  setTimeout(() => {
+    if (view === 'hoy') renderHoy();
+    else if (view === 'historial') renderHistorial();
+    else if (view === 'graficas') initCharts();
+    else if (view === 'ajustes') initSettings();
+  }, 0);
 }
 
 function setupTabs() {
