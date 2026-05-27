@@ -100,32 +100,30 @@ function _moveIndicator(toTab) {
   _indLeft = to.left;
   _indWidth = to.width;
 
-  if (Math.abs(delta) < 2) {
-    ind.style.left = to.left + 'px';
-    ind.style.width = to.width + 'px';
-    return;
-  }
+  // Set final position immediately — no layout-affecting animation on left/width
+  // (animating left/width triggers continuous layout recalc → breaks backdrop-filter on parent)
+  ind.style.left = to.left + 'px';
+  ind.style.width = to.width + 'px';
 
-  const absDelta = Math.abs(delta);
-  const rightward = delta > 0;
-  // Leading edge jumps ahead; trailing edge follows with spring
-  const stretchLeft = rightward ? fromLeft : to.left;
-  const stretchWidth = fromWidth + absDelta;
+  if (Math.abs(delta) < 2) return;
 
   ind.getAnimations().forEach(a => a.cancel());
 
-  const anim = ind.animate([
-    { left: `${fromLeft}px`, width: `${fromWidth}px`, easing: 'ease-in' },
-    { left: `${stretchLeft}px`, width: `${stretchWidth}px`, offset: 0.35, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' },
-    { left: `${to.left}px`, width: `${to.width}px` },
-  ], { duration: 400, fill: 'forwards' });
+  const absDelta = Math.abs(delta);
+  const rightward = delta > 0;
 
-  anim.onfinish = () => {
-    ind.style.left = `${to.left}px`;
-    ind.style.width = `${to.width}px`;
-    anim.commitStyles();
-    anim.cancel();
-  };
+  // FLIP: animate transform only (compositor-safe, no layout recalc)
+  // transform-origin:left — translateX shifts the left edge, scaleX expands from left edge
+  const fromTx = fromLeft - to.left;
+  const fromSx = fromWidth / to.width;
+  const stretchTx = rightward ? fromLeft - to.left : 0;
+  const stretchSx = (fromWidth + absDelta) / to.width;
+
+  ind.animate([
+    { transform: `translateX(${fromTx}px) scaleX(${fromSx})`, easing: 'ease-in' },
+    { transform: `translateX(${stretchTx}px) scaleX(${stretchSx})`, offset: 0.35, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' },
+    { transform: 'translateX(0px) scaleX(1)' },
+  ], { duration: 400 });
 }
 
 // ── Navigation ──
@@ -133,24 +131,16 @@ function navigateToTab(view) {
   const toTab = document.querySelector(`#tab-bar .tab[data-view="${view}"]`);
   if (toTab && !toTab.classList.contains('active')) _moveIndicator(toTab);
 
-  const doSwitch = () => {
-    window.scrollTo(0, 0);
-    document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
-    if (toTab) toTab.classList.add('active');
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById(`view-${view}`)?.classList.add('active');
+  window.scrollTo(0, 0);
+  document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
+  if (toTab) toTab.classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${view}`)?.classList.add('active');
 
-    if (view === 'hoy') renderHoy();
-    else if (view === 'historial') renderHistorial();
-    else if (view === 'graficas') initCharts();
-    else if (view === 'ajustes') initSettings();
-  };
-
-  if (document.startViewTransition) {
-    document.startViewTransition(doSwitch);
-  } else {
-    doSwitch();
-  }
+  if (view === 'hoy') renderHoy();
+  else if (view === 'historial') renderHistorial();
+  else if (view === 'graficas') initCharts();
+  else if (view === 'ajustes') initSettings();
 }
 
 function setupTabs() {
