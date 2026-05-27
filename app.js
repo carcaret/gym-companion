@@ -137,7 +137,7 @@ function navigateToTab(view) {
     window.scrollTo(0, 0);
     document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
     if (toTab) toTab.classList.add('active');
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active', 'leaving'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(`view-${view}`)?.classList.add('active');
 
     if (view === 'hoy') renderHoy();
@@ -146,10 +146,8 @@ function navigateToTab(view) {
     else if (view === 'ajustes') initSettings();
   };
 
-  const fromView = document.querySelector('.view.active');
-  if (fromView && fromView.id !== `view-${view}`) {
-    fromView.classList.add('leaving');
-    fromView.addEventListener('animationend', doSwitch, { once: true });
+  if (document.startViewTransition) {
+    document.startViewTransition(doSwitch);
   } else {
     doSwitch();
   }
