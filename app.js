@@ -146,11 +146,7 @@ function navigateToTab(view) {
     else if (view === 'ajustes') initSettings();
   };
 
-  if (document.startViewTransition) {
-    document.startViewTransition(doSwitch);
-  } else {
-    doSwitch();
-  }
+  doSwitch();
 }
 
 function setupTabs() {
