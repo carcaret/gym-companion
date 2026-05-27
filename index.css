@@ -673,6 +673,9 @@ body {
   margin-bottom: 0;
   position: relative;
   overflow: hidden;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  animation: none;
 }
 .historial-entry-btn::before {
   content: '';
