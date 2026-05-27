@@ -243,21 +243,33 @@ body {
   top: 0;
   z-index: 10;
   padding: 20px var(--pad) 12px;
-  background: linear-gradient(to bottom, rgba(13, 13, 16, 0.90) 55%, transparent);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  background: linear-gradient(to bottom, rgba(13, 13, 16, 0.82) 55%, rgba(13, 13, 16, 0.00) 100%);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  transition: padding 0.3s var(--ease), background 0.3s var(--ease), backdrop-filter 0.3s;
+  transition: padding 0.35s var(--ease), background 0.35s var(--ease);
+}
+
+.view-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
 }
 
 .view-header.scrolled {
   padding: 10px var(--pad) 8px;
-  background: rgba(13, 13, 16, 0.88);
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  background: linear-gradient(to bottom, rgba(13, 13, 16, 0.92) 80%, rgba(13, 13, 16, 0.00) 100%);
+}
+
+.view-header.scrolled::after {
+  opacity: 1;
 }
 
 .view-header h2 {
@@ -1182,7 +1194,11 @@ body {
 ::view-transition-new(root) {
   animation: 320ms cubic-bezier(0.34, 1.20, 0.64, 1) both vtFadeIn;
 }
-/* tab-bar queda fuera de la transición root — siempre visible, sin fade */
+/* tab-bar fuera del root — pill shape preservada durante transición */
+::view-transition-image-pair(tab-bar) {
+  overflow: clip;
+  border-radius: 999px;
+}
 ::view-transition-old(tab-bar),
 ::view-transition-new(tab-bar) {
   animation: none;
