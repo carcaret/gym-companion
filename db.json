@@ -21065,13 +21065,12 @@
         {
           "exercise_id": "elevaciones_laterales_con_mancuernas",
           "name": "Elevaciones Laterales con Mancuernas",
-          "series": 3,
+          "series": 2,
           "reps": {
-            "expected": 10,
+            "expected": 7,
             "actual": [
-              10,
-              10,
-              10
+              7,
+              7
             ]
           },
           "weight": 12
