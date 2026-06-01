@@ -21052,13 +21052,12 @@
         {
           "exercise_id": "curl_femoral_sentado",
           "name": "Curl Femoral Sentado",
-          "series": 3,
+          "series": 2,
           "reps": {
-            "expected": 9,
+            "expected": 6,
             "actual": [
-              9,
-              9,
-              9
+              6,
+              6
             ]
           },
           "weight": 97
