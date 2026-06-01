@@ -21013,14 +21013,12 @@
         {
           "exercise_id": "prensa_de_piernas",
           "name": "Prensa de Piernas",
-          "series": 4,
+          "series": 2,
           "reps": {
-            "expected": 10,
+            "expected": 7,
             "actual": [
-              10,
-              10,
-              10,
-              10
+              7,
+              7
             ]
           },
           "weight": 220
