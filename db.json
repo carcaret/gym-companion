@@ -21026,13 +21026,11 @@
         {
           "exercise_id": "press_banca_mancuernas",
           "name": "Press de Banca con Mancuernas",
-          "series": 4,
+          "series": 2,
           "reps": {
-            "expected": 11,
+            "expected": 8,
             "actual": [
-              11,
-              11,
-              9,
+              8,
               8
             ]
           },
