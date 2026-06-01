@@ -21078,13 +21078,12 @@
         {
           "exercise_id": "hammer_curl_mancuernas",
           "name": "Hammer curl mancuernas",
-          "series": 3,
+          "series": 2,
           "reps": {
-            "expected": 13,
+            "expected": 10,
             "actual": [
-              13,
-              13,
-              13
+              10,
+              10
             ]
           },
           "weight": 12
