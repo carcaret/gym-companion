@@ -21039,14 +21039,12 @@
         {
           "exercise_id": "hammer_row_prono",
           "name": "Hammer Row Prono",
-          "series": 4,
+          "series": 2,
           "reps": {
-            "expected": 10,
+            "expected": 7,
             "actual": [
-              10,
-              10,
-              10,
-              10
+              7,
+              7
             ]
           },
           "weight": 27.5
