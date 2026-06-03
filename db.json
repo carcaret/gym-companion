@@ -305,8 +305,7 @@
       "hammer_curl_mancuernas"
     ],
     "DIA2": [
-      "adductores",
-      "abductores",
+      "zancadas_con_mancuernas",
       "press_inclinado_mancuernas",
       "jalon_al_pecho",
       "reverse_delt_con_mancuernas",
@@ -21087,6 +21086,91 @@
             ]
           },
           "weight": 12
+        }
+      ]
+    },
+    {
+      "date": "2026-06-03",
+      "type": "DIA2",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "zancadas_con_mancuernas",
+          "name": "Zancadas con Mancuernas",
+          "series": 2,
+          "reps": {
+            "expected": 7,
+            "actual": [
+              7,
+              7
+            ]
+          },
+          "weight": 16
+        },
+        {
+          "exercise_id": "press_inclinado_mancuernas",
+          "name": "Press Inclinado con Mancuernas",
+          "series": 2,
+          "reps": {
+            "expected": 8,
+            "actual": [
+              8,
+              8
+            ]
+          },
+          "weight": 26
+        },
+        {
+          "exercise_id": "jalon_al_pecho",
+          "name": "Jalón al Pecho",
+          "series": 2,
+          "reps": {
+            "expected": 7,
+            "actual": [
+              7,
+              7
+            ]
+          },
+          "weight": 68
+        },
+        {
+          "exercise_id": "reverse_delt_con_mancuernas",
+          "name": "Reverse Delt con Mancuernas",
+          "series": 2,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9
+            ]
+          },
+          "weight": 16
+        },
+        {
+          "exercise_id": "extensiones_de_espalda",
+          "name": "Extensiones de Espalda",
+          "series": 2,
+          "reps": {
+            "expected": 13,
+            "actual": [
+              13,
+              13
+            ]
+          },
+          "weight": 20
+        },
+        {
+          "exercise_id": "elevaciones_laterales_con_cable",
+          "name": "Elevaciones Laterales con Cable",
+          "series": 2,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11
+            ]
+          },
+          "weight": 16.5
         }
       ]
     }
