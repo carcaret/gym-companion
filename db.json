@@ -21173,6 +21173,104 @@
           "weight": 16.5
         }
       ]
+    },
+    {
+      "date": "2026-06-05",
+      "type": "DIA3",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "extension_de_cuadriceps",
+          "name": "Extensión de Cuádriceps",
+          "series": 2,
+          "reps": {
+            "expected": 6,
+            "actual": [
+              6,
+              6
+            ]
+          },
+          "weight": 104
+        },
+        {
+          "exercise_id": "press_maquina",
+          "name": "Press máquina",
+          "series": 2,
+          "reps": {
+            "expected": 8,
+            "actual": [
+              8,
+              8
+            ]
+          },
+          "weight": 63
+        },
+        {
+          "exercise_id": "jalon_al_pecho_neutro",
+          "name": "Jalón al pecho neutro",
+          "series": 2,
+          "reps": {
+            "expected": 7,
+            "actual": [
+              7,
+              7
+            ]
+          },
+          "weight": 68
+        },
+        {
+          "exercise_id": "press_de_hombros_mancuernas_sentado",
+          "name": "Press de Hombros con Mancuernas Sentado",
+          "series": 2,
+          "reps": {
+            "expected": 8,
+            "actual": [
+              8,
+              8
+            ]
+          },
+          "weight": 18
+        },
+        {
+          "exercise_id": "hip_thrust",
+          "name": "Hip Thrust",
+          "series": 2,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9
+            ]
+          },
+          "weight": 55
+        },
+        {
+          "exercise_id": "encogimiento_trapecio_barra",
+          "name": "Encogimiento de Trapecios con Barra",
+          "series": 2,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11
+            ]
+          },
+          "weight": 100
+        },
+        {
+          "exercise_id": "curl_de_biceps_mancuerna",
+          "name": "Curl de Bíceps con Mancuerna",
+          "series": 2,
+          "reps": {
+            "expected": 8,
+            "actual": [
+              8,
+              8
+            ]
+          },
+          "weight": 12
+        }
+      ]
     }
   ]
 }
