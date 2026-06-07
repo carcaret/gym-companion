@@ -23,12 +23,12 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "anthropic.claude-code",
         "ms-playwright.playwright",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "ritwickdey.LiveServer",
-        "bradlc.vscode-tailwindcss"
+        "bradlc.vscode-tailwindcss",
+        "PKief.material-icon-theme"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
