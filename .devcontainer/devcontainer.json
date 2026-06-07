@@ -17,7 +17,7 @@
     }
   },
 
-  "onCreateCommand": "npm install && npm install -g @anthropic-ai/claude-code && claude plugin install superpowers@claude-plugins-official || true && npx claudepluginhub juliusbrussee/caveman --plugin caveman || true",
+  "onCreateCommand": "npm install && npm install -g @anthropic-ai/claude-code && npx -y claudepluginhub obra/superpowers --plugin superpowers --yes || true && npx -y claudepluginhub juliusbrussee/caveman --plugin caveman --yes || true",
   "postStartCommand": "npx playwright install chromium --with-deps && git config core.hooksPath .hooks",
 
   "customizations": {
@@ -32,7 +32,8 @@
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
-        "editor.formatOnSave": false
+        "editor.formatOnSave": false,
+        "workbench.iconTheme": "material-icon-theme"
       }
     }
   }
