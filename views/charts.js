@@ -144,7 +144,6 @@ function renderChart() {
 function makeChart(ctx, datasets, chartType, { yTitle }) {
   const cs = getComputedStyle(document.documentElement);
   const tickColor    = cs.getPropertyValue('--text-secondary').trim();
-  const legendColor  = cs.getPropertyValue('--text-primary').trim();
   const tooltipBg    = cs.getPropertyValue('--bg-card-solid').trim();
   const tooltipText  = cs.getPropertyValue('--text-primary').trim();
   const tooltipBorder = cs.getPropertyValue('--border-strong').trim();
@@ -176,7 +175,7 @@ function makeChart(ctx, datasets, chartType, { yTitle }) {
       maintainAspectRatio: false,
       interaction: { intersect: false, mode: 'index' },
       plugins: {
-        legend: { display: true, labels: { color: legendColor, font: { size: 11, family: 'Inter' }, boxWidth: 12 } },
+        legend: { display: false },
         tooltip: {
           backgroundColor: tooltipBg,
           titleColor: tooltipText,

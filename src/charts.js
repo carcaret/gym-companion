@@ -67,22 +67,32 @@ export function buildChartDatasets(history, exerciseIds, from, to, getExerciseNa
         label: 'e1RM',
         data: e1rmData,
         borderColor: color,
-        backgroundColor: color + '33',
+        backgroundColor: color + '14',
+        borderWidth: 2,
         tension: 0.3,
         fill: chartType === 'line',
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointBackgroundColor: color,
         yAxisID: 'y',
         type: chartType
       });
     }
 
     if (weightData.length > 0) {
+      // Peso siempre en oro, independiente del índice del ejercicio
+      const weightColor = '#dcdcaa';
       weightDatasets.push({
         label: 'Peso (kg)',
         data: weightData,
-        borderColor: color,
-        backgroundColor: color + '33',
+        borderColor: weightColor,
+        backgroundColor: weightColor + '14',
+        borderWidth: 2,
         tension: 0.3,
         fill: chartType === 'line',
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointBackgroundColor: weightColor,
         yAxisID: 'y',
         type: chartType
       });

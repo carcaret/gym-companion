@@ -1,18 +1,23 @@
 /* =========================================
    Gym Companion — Design System & Styles
-   Mobile-first, dark theme, glassmorphism
+   Mobile-first, dark theme — FLAT redesign
+   (Liquid Glass removed · colores y estilos intactos)
    ========================================= */
 
 :root {
   /* Palette — VS Code / MacroFactor dark grays */
-  --bg-deep: #101010;
+  --bg-deep: #0f0f11;
   --bg-primary: #141414;
-  --bg-card: rgba(30, 35, 55, 0.28);
-  --bg-card-solid: rgba(20, 20, 28, 0.84);
-  --bg-input: rgba(255, 255, 255, 0.07);
-  --bg-hover: rgba(255, 255, 255, 0.08);
-  --border: rgba(255, 255, 255, 0.12);
-  --border-light: rgba(255, 255, 255, 0.07);
+
+  /* Superficies sólidas (antes glass translúcido) */
+  --surface:    #181a20;   /* card / sección base */
+  --surface-2:  #1e2028;   /* superficie anidada / elevada */
+  --bg-card: var(--surface);
+  --bg-card-solid: #1c1e26;
+  --bg-input: rgba(255, 255, 255, 0.05);
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-light: rgba(255, 255, 255, 0.06);
 
   --accent: #569cd6;
   --accent-glow: rgba(86, 156, 214, 0.25);
@@ -46,14 +51,14 @@
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Bordes */
-  --border-strong: rgba(255,255,255,0.22);
+  --border-strong: rgba(255, 255, 255, 0.16);
 
   /* Variantes de paleta para foreground sobre tinte */
   --accent-soft: #93c5ea;
   --green-soft:  #5dcaa5;
   --red-soft:    #e2706a;
 
-  /* Tintes (background tintado coherente con foreground-soft) */
+  /* Tintes */
   --accent-tint:  rgba(86, 156, 214, 0.15);
   --green-tint:   rgba(93, 202, 165, 0.15);
   --red-tint:     rgba(244, 71, 71, 0.12);
@@ -68,14 +73,9 @@
   --bg-tooltip: var(--bg-card-solid);
 
   /* Superficie compartida (card / chart-container / settings-section) */
-  --surface-bg:     var(--bg-card);
-  --surface-border: 1px solid rgba(255, 255, 255, 0.20);
+  --surface-bg:     var(--surface);
+  --surface-border: 1px solid var(--border);
   --surface-radius: var(--radius);
-  --surface-blur:   blur(48px) saturate(190%);
-
-  /* Liquid Glass */
-  --glass-specular: inset 0 1.5px 0 rgba(255, 255, 255, 0.32), inset 0 -1px 0 rgba(0, 0, 0, 0.20);
-  --glass-shadow:   0 12px 44px rgba(0, 0, 0, 0.58), 0 2px 8px rgba(0, 0, 0, 0.28);
 }
 
 *, *::before, *::after {
@@ -92,10 +92,8 @@ html {
 
 body {
   font-family: var(--font);
-  background:
-    radial-gradient(ellipse 80% 55% at 15% 10%, rgba(86, 156, 214, 0.16) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 70% at 85% 88%, rgba(78, 201, 176, 0.12) 0%, transparent 60%),
-    var(--bg-deep);
+  /* Fondo plano sólido — sin halos radiales */
+  background: var(--bg-deep);
   color: var(--text-primary);
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
@@ -135,10 +133,7 @@ body {
   width: 100%;
   padding: 13px 16px;
   background: var(--bg-input);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-family: var(--font);
@@ -170,38 +165,27 @@ body {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s var(--ease), box-shadow 0.2s var(--ease), background 0.2s;
+  transition: transform 0.15s var(--ease), background 0.2s, border-color 0.2s;
   margin-bottom: 10px;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), #4a8abf);
-  color: #fff;
-  box-shadow: 0 4px 20px var(--accent-glow);
+  background: var(--accent);
+  color: #08121c;
 }
-.btn-primary:active { transform: scale(0.97); }
+.btn-primary:active { transform: scale(0.97); background: #4a8abf; }
 
 .btn-secondary {
-  background: rgba(28, 28, 38, 0.55);
+  background: var(--surface-2);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.26),
-    0 2px 10px rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--border);
 }
-.btn-secondary:active { transform: scale(0.97); }
+.btn-secondary:active { transform: scale(0.97); background: var(--bg-hover); }
 
 .btn-danger {
-  background: rgba(244, 71, 71, 0.12);
+  background: var(--red-tint);
   color: var(--red-soft);
-  border: 1px solid rgba(244, 71, 71, 0.32);
-  box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.14),
-    0 2px 10px rgba(244, 71, 71, 0.18);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(244, 71, 71, 0.28);
 }
 .btn-danger:active { transform: scale(0.97); }
 
@@ -215,12 +199,9 @@ body {
 .btn-icon {
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  border: 1px solid var(--border);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: var(--bg-input);
   color: var(--text-primary);
   font-size: 18px;
   display: inline-flex;
@@ -243,9 +224,7 @@ body {
   top: 0;
   z-index: 10;
   padding: 20px var(--pad) 12px;
-  background: linear-gradient(to bottom, rgba(13, 13, 16, 0.82) 55%, rgba(13, 13, 16, 0.00) 100%);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  background: var(--bg-deep);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -265,7 +244,6 @@ body {
 
 .view-header.scrolled {
   padding: 10px var(--pad) 8px;
-  background: linear-gradient(to bottom, rgba(13, 13, 16, 0.92) 80%, rgba(13, 13, 16, 0.00) 100%);
 }
 
 .view-header.scrolled::after {
@@ -303,12 +281,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(28, 28, 38, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 .header-badge:not([hidden]) {
   color: var(--gold);
@@ -318,7 +293,6 @@ body {
 
 /* ── Sync indicator ── */
 .sync-indicator {
-  border: none;
   cursor: pointer;
   transition: background 0.2s;
   padding: 0;
@@ -344,25 +318,10 @@ body {
   border-radius: var(--surface-radius);
   padding: 16px;
   margin-bottom: 12px;
-  backdrop-filter: var(--surface-blur);
-  -webkit-backdrop-filter: var(--surface-blur);
-  box-shadow: var(--glass-specular), var(--glass-shadow);
-  transition: transform 0.2s var(--ease), box-shadow 0.2s;
+  transition: transform 0.2s var(--ease), border-color 0.2s, background 0.2s;
   animation: fadeUp 0.3s var(--ease);
   position: relative;
   overflow: hidden;
-}
-.card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.07) 0%,
-    rgba(255, 255, 255, 0.02) 40%,
-    transparent 60%
-  );
-  pointer-events: none;
 }
 
 .card:active { transform: scale(0.985); }
@@ -500,10 +459,7 @@ body {
   text-align: center;
   padding: 8px 4px;
   background: var(--bg-input);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-xs);
   color: var(--text-primary);
   font-family: var(--font);
@@ -553,9 +509,6 @@ body {
   border-radius: var(--radius-tag);
   border: 1px solid var(--border);
   background: var(--bg-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -600,16 +553,16 @@ body {
   position: relative;
   overflow: hidden;
 }
-.day-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+.day-btn:hover { border-color: var(--accent); }
 .day-btn::before {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 3px;
 }
-.day-btn.DIA1::before { background: var(--color-dia1); box-shadow: 2px 0 8px rgba(122, 174, 224, 0.45); }
-.day-btn.DIA2::before { background: var(--color-dia2); box-shadow: 2px 0 8px rgba(127, 202, 177, 0.45); }
-.day-btn.DIA3::before { background: var(--color-dia3); box-shadow: 2px 0 8px rgba(202, 190, 122, 0.45); }
+.day-btn.DIA1::before { background: var(--color-dia1); }
+.day-btn.DIA2::before { background: var(--color-dia2); }
+.day-btn.DIA3::before { background: var(--color-dia3); }
 .day-btn.DIA1 .card-title { color: var(--color-dia1); }
 .day-btn.DIA2 .card-title { color: var(--color-dia2); }
 .day-btn.DIA3 .card-title { color: var(--color-dia3); }
@@ -620,11 +573,8 @@ body {
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background: rgba(86, 156, 214, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--accent-tint);
   border: 1px solid rgba(86, 156, 214, 0.22);
-  box-shadow: inset 0 1px 0 rgba(86, 156, 214, 0.18);
   border-radius: var(--radius-sm);
   margin-bottom: 16px;
   font-size: 14px;
@@ -675,8 +625,6 @@ body {
   margin-bottom: 0;
   position: relative;
   overflow: hidden;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
   animation: none;
 }
 .historial-entry-btn::before {
@@ -685,9 +633,9 @@ body {
   left: 0; top: 0; bottom: 0;
   width: 3px;
 }
-.historial-entry-btn.DIA1::before { background: var(--color-dia1); box-shadow: 2px 0 8px rgba(122, 174, 224, 0.45); }
-.historial-entry-btn.DIA2::before { background: var(--color-dia2); box-shadow: 2px 0 8px rgba(127, 202, 177, 0.45); }
-.historial-entry-btn.DIA3::before { background: var(--color-dia3); box-shadow: 2px 0 8px rgba(202, 190, 122, 0.45); }
+.historial-entry-btn.DIA1::before { background: var(--color-dia1); }
+.historial-entry-btn.DIA2::before { background: var(--color-dia2); }
+.historial-entry-btn.DIA3::before { background: var(--color-dia3); }
 
 .historial-entry-btn .day-info { flex: 1; min-width: 0; overflow: hidden; }
 .historial-entry-btn .day-exercises {
@@ -745,7 +693,7 @@ body {
   border-radius: var(--radius-tag);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  white-space: nowrap;
 }
 
 .historial-delete-btn {
@@ -755,7 +703,6 @@ body {
 }
 .historial-delete-btn:hover { opacity: 1; }
 
-/* ── Historial Detail ── */
 /* ── Flat matte SVG icons (matches tab bar style) ── */
 .icon-svg { display: inline-block; vertical-align: middle; opacity: 0.5; }
 .btn-icon .icon-svg { opacity: 0.5; }
@@ -774,9 +721,6 @@ body {
   background: var(--surface-bg);
   border: var(--surface-border);
   border-radius: var(--surface-radius);
-  backdrop-filter: var(--surface-blur);
-  -webkit-backdrop-filter: var(--surface-blur);
-  box-shadow: var(--glass-specular), var(--glass-shadow);
 }
 
 .graficas-controls .input-group:last-child {
@@ -841,11 +785,9 @@ body {
   z-index: 20;
   max-height: 220px;
   overflow-y: auto;
-  background: rgba(20, 20, 30, 0.80);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.45);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
   border-radius: var(--radius-xs);
   margin-top: 4px;
 }
@@ -884,19 +826,16 @@ body {
   width: 100%;
   min-height: 300px;
   background: var(--surface-bg);
-  backdrop-filter: var(--surface-blur);
-  -webkit-backdrop-filter: var(--surface-blur);
   border-radius: var(--surface-radius);
   padding: 12px;
   border: var(--surface-border);
-  box-shadow: var(--glass-specular), var(--glass-shadow);
 }
 
 .chart-legend-box {
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface-bg);
+  border-radius: var(--surface-radius);
+  border: var(--surface-border);
   color: #9e9e9e;
   font-size: 12px;
   line-height: 1.6;
@@ -934,9 +873,6 @@ body {
   border-radius: var(--surface-radius);
   padding: 16px;
   margin-bottom: 16px;
-  backdrop-filter: var(--surface-blur);
-  -webkit-backdrop-filter: var(--surface-blur);
-  box-shadow: var(--glass-specular), var(--glass-shadow);
 }
 
 .settings-section h3 {
@@ -953,7 +889,11 @@ body {
   opacity: 0.5;
 }
 
-/* ── Tab Bar ── */
+/* ════════════════════════════════════════════════════════════════
+   ── Tab Bar ──  APLANADA (mismo estilo que el resto)
+   Superficie sólida + borde fino · sin difuminado ni brillos.
+   ★ Se conserva el pill (#tab-indicator) y su transición ★
+   ════════════════════════════════════════════════════════════════ */
 #tab-bar {
   position: fixed;
   bottom: 16px;
@@ -961,16 +901,11 @@ body {
   right: 16px;
   height: 60px;
   display: flex;
-  background: rgba(18, 18, 26, 0.06);
-  backdrop-filter: blur(36px) saturate(180%);
-  -webkit-backdrop-filter: blur(36px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   z-index: 100;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    0 8px 32px rgba(0, 0, 0, 0.50),
-    0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.38);
   --bar-inset: 8px;
   --bar-h: 60px;
   padding: var(--bar-inset);
@@ -1038,22 +973,20 @@ body {
   bottom: 5px;
   left: 0;
   width: 0;
-  background: rgba(86, 156, 214, 0.18);
+  background: var(--accent-tint);
   border: 1px solid rgba(86, 156, 214, 0.32);
   border-radius: var(--radius-pill);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
   pointer-events: none;
   z-index: 0;
   transform-origin: left center;
 }
+/* ════════════════════════ fin Tab Bar ════════════════════════ */
 
 /* ── Modal ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(10px) saturate(140%);
-  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 200;
   display: none;
   align-items: flex-end;
@@ -1066,10 +999,8 @@ body {
 }
 
 .modal {
-  background: rgba(18, 18, 28, 0.80);
-  backdrop-filter: blur(32px) saturate(160%);
-  -webkit-backdrop-filter: blur(32px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-bottom: none;
   border-radius: var(--radius) var(--radius) 0 0;
   padding: 24px 20px;
@@ -1077,7 +1008,7 @@ body {
   max-width: 480px;
   max-height: 85dvh;
   overflow-y: auto;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 -8px 40px rgba(0, 0, 0, 0.50);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.50);
   animation: slideUp 0.3s var(--ease);
 }
 
@@ -1123,16 +1054,14 @@ body {
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 24px;
-  background: rgba(20, 20, 30, 0.72);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
   z-index: 300;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 8px 30px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
   white-space: nowrap;
   display: none;
   align-items: center;
@@ -1399,9 +1328,6 @@ body {
   border-radius: var(--radius-tag);
   border: 1px solid var(--border);
   background: var(--bg-input);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
   font-size: 13px;
   text-align: center;

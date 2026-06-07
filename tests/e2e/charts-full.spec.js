@@ -184,9 +184,9 @@ test.describe('Graficas completo', () => {
       return chart.options.plugins.tooltip;
     });
 
-    expect(tooltipOpts.backgroundColor).toBe('rgba(20, 20, 28, 0.84)');
+    expect(tooltipOpts.backgroundColor).toBe('#1c1e26');
     expect(tooltipOpts.titleColor).toBe('#d4d4d4');
     expect(tooltipOpts.bodyColor).toBe('#d4d4d4');
-    expect(tooltipOpts.borderColor).toBe('rgba(255,255,255,0.22)');
+    expect(tooltipOpts.borderColor).toBe('rgba(255, 255, 255, 0.16)');
   });
 });
