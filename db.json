@@ -21459,6 +21459,117 @@
           "weight": 18
         }
       ]
+    },
+    {
+      "date": "2026-06-12",
+      "type": "DIA3",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "extension_de_cuadriceps",
+          "name": "Extensión de Cuádriceps",
+          "series": 4,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9,
+              9,
+              9
+            ]
+          },
+          "weight": 104
+        },
+        {
+          "exercise_id": "apertura_con_cable",
+          "name": "Apertura con Cable",
+          "series": 4,
+          "reps": {
+            "expected": 8,
+            "actual": [
+              8,
+              8,
+              8,
+              8
+            ]
+          },
+          "weight": 20.4,
+          "swappedFrom": "press_maquina"
+        },
+        {
+          "exercise_id": "jalon_al_pecho_neutro",
+          "name": "Jalón al pecho neutro",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              9
+            ]
+          },
+          "weight": 68
+        },
+        {
+          "exercise_id": "elevaciones_laterales_con_mancuernas",
+          "name": "Elevaciones Laterales con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 12,
+          "swappedFrom": "press_de_hombros_mancuernas_sentado"
+        },
+        {
+          "exercise_id": "hip_thrust",
+          "name": "Hip Thrust",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 55
+        },
+        {
+          "exercise_id": "encogimiento_trapecio_barra",
+          "name": "Encogimiento de Trapecios con Barra",
+          "series": 3,
+          "reps": {
+            "expected": 15,
+            "actual": [
+              15,
+              14,
+              14
+            ]
+          },
+          "weight": 100
+        },
+        {
+          "exercise_id": "hammer_curl_mancuernas",
+          "name": "Hammer curl mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              14
+            ]
+          },
+          "weight": 12,
+          "swappedFrom": "curl_de_biceps_mancuerna"
+        }
+      ]
     }
   ]
 }
