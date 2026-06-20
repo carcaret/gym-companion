@@ -35,6 +35,7 @@ test.describe('Saltar ejercicio', () => {
 
     await skippedCard.locator('.skip-btn').click();
     await expect(page.locator('#workout-cards-list .card.is-skipped')).toHaveCount(0);
+    await expect(firstCard.locator('.skip-btn')).toHaveText('Saltar');
   });
 
   test('la card saltada mantiene el fondo al expandir', async ({ page }) => {
