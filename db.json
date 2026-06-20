@@ -21538,7 +21538,8 @@
               12
             ]
           },
-          "weight": 55
+          "weight": 55,
+          "skipped": true
         },
         {
           "exercise_id": "encogimiento_trapecio_barra",
@@ -21835,7 +21836,8 @@
               12
             ]
           },
-          "weight": 55
+          "weight": 55,
+          "skipped": true
         },
         {
           "exercise_id": "encogimiento_trapecio_barra",
@@ -21849,7 +21851,8 @@
               14
             ]
           },
-          "weight": 100
+          "weight": 100,
+          "skipped": true
         },
         {
           "exercise_id": "curl_de_biceps_mancuerna",
