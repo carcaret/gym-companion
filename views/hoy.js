@@ -167,6 +167,16 @@ function patchWorkoutCard(logIdx, updateSeries = true) {
   }
 }
 
+// Patch ligero al saltar/reactivar: sin rerender de toda la vista.
+// Toggle de la clase (el grayscale del body cuelga de CSS) + etiqueta del botón.
+function patchSkipState(idx, log) {
+  const card = document.getElementById(`exercise-card-${idx}`);
+  if (!card) return;
+  card.classList.toggle('is-skipped', !!log.skipped);
+  const btn = card.querySelector('.skip-btn');
+  if (btn) btn.textContent = log.skipped ? 'Reactivar' : 'Saltar';
+}
+
 function rerenderWorkout() {
   const container = document.getElementById('hoy-content');
   const entry = getTodayEntry();
@@ -305,7 +315,7 @@ function renderActiveWorkout(container, entry) {
       return en?.logs[idx] ?? null;
     },
     onSuccess: (el, _log, idx) => { persistDB(); patchWorkoutCard(idx, el.dataset.param !== 'weight'); },
-    onToggleSkip: () => { persistDB(); rerenderWorkout(); },
+    onToggleSkip: (_el, log, idx) => { persistDB(); patchSkipState(idx, log); },
     onFocusSeries: (_el, logIdx, seriesIdx) => {
       const prevLogIdx = focusedSeries?.logIdx;
       if (focusedSeries?.logIdx === logIdx && focusedSeries?.seriesIdx === seriesIdx) {

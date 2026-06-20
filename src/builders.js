@@ -79,7 +79,7 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
     const label = formatDateShort(session.date);
     if (session.log.skipped) {
       return `<div class="history-bar-col skipped">
-      <div class="bar-wrap"><div class="bar skipped" style="height:0%"></div></div>
+      <div class="bar-wrap"><div class="bar skipped" style="height:6%"></div></div>
       <div class="bar-date">${label}</div>
     </div>`;
     }

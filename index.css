@@ -62,6 +62,7 @@
   --accent-tint:  rgba(86, 156, 214, 0.15);
   --green-tint:   rgba(93, 202, 165, 0.15);
   --red-tint:     rgba(244, 71, 71, 0.12);
+  --skip-tint:    rgba(244, 71, 71, 0.06);
   --danger:       #d97070;
   --danger-tint:  rgba(217, 112, 112, 0.15);
 
@@ -1473,6 +1474,7 @@ body {
   border: none;
   cursor: pointer;
   padding: 4px 6px;
+  font-family: var(--font);
 }
 .swap-btn { margin-right: auto; }
 .swap-btn:hover { color: var(--accent); }
@@ -1493,8 +1495,13 @@ body {
    Solo cambia el fondo (rojo apagado existente). Sin badge. Mismo layout.
    Se mantiene aunque la card esté expandida (.card-body.open). */
 .card.is-skipped {
-  background: var(--red-tint);
-  border-color: var(--red-soft);
+  background: var(--skip-tint);
+}
+/* Card saltada: el contenido (barras, chips, badges) se apaga para que no
+   compita visualmente — lee como "desactivada", no como árbol de navidad. */
+.card.is-skipped .card-body {
+  filter: grayscale(0.85);
+  opacity: 0.7;
 }
 .card.is-skipped .card-title,
 .card.is-skipped .card-subtitle {
@@ -1516,7 +1523,9 @@ body {
 .card.is-skipped .skip-btn { color: var(--red-soft); }
 
 /* Columna fantasma del history strip: sin barra, conserva la fecha */
+/* Sesión saltada en el strip: columnita roja de altura mínima.
+   En una card de historial saltada, el grayscale del body la vuelve gris
+   "como lo demás"; en entreno activo (card no saltada) se ve roja. */
 .history-bar-col.skipped .bar.skipped {
-  background: transparent;
-  border: 1px dashed var(--red-soft);
+  background: rgba(244, 71, 71, 0.45);
 }
