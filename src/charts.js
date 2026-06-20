@@ -53,12 +53,29 @@ export function buildChartDatasets(history, exerciseIds, from, to, getExerciseNa
     const e1rmData = [];
     const weightData = [];
 
+    let lastE1RM = null;
+    let lastWeight = null;
+
     entries.forEach(entry => {
       const log = entry.logs.find(l => l.exercise_id === exerciseId);
-      if (log) {
-        const e1rm = computeE1RM(log);
-        if (e1rm > 0) e1rmData.push({ x: entry.date, y: Math.round(e1rm * 10) / 10 });
-        if (log.weight > 0) weightData.push({ x: entry.date, y: log.weight });
+      if (!log) return;
+
+      if (log.skipped) {
+        // Forward-fill: mantener el último valor real. Si aún no hay, se omite.
+        if (lastE1RM !== null) e1rmData.push({ x: entry.date, y: lastE1RM, _skipped: true });
+        if (lastWeight !== null) weightData.push({ x: entry.date, y: lastWeight, _skipped: true });
+        return;
+      }
+
+      const e1rm = computeE1RM(log);
+      if (e1rm > 0) {
+        const y = Math.round(e1rm * 10) / 10;
+        e1rmData.push({ x: entry.date, y });
+        lastE1RM = y;
+      }
+      if (log.weight > 0) {
+        weightData.push({ x: entry.date, y: log.weight });
+        lastWeight = log.weight;
       }
     });
 

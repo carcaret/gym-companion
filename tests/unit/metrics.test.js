@@ -241,6 +241,18 @@ describe('getMaxMetrics', () => {
     expect(result.maxE1RM).toBe(0);
   });
 
+  test('ignora los logs saltados al calcular máximos', () => {
+    const skippedLog = { ...makeFullLog('press', { weight: 100, actual: [8, 8, 8] }), skipped: true };
+    const entries = [
+      makeEntry('2026-01-01', [skippedLog]),
+      makeEntry('2026-01-02', [makeFullLog('press', { weight: 80, actual: [8, 8, 8] })]),
+    ];
+    const result = getMaxMetrics(entries, 'press');
+    // El log de 100kg está saltado → el máximo sale del de 80kg
+    expect(result.maxVolume).toBe(80 * 3 * 8);
+    expect(result.maxE1RM).toBeCloseTo(80 * (1 + 8 / 30), 5);
+  });
+
   test('max e1RM es el de la mejor serie de la mejor sesión', () => {
     // Sesión A: [12, 8] → max e1RM = 90*(1+12/30) = 126
     // Sesión B: [10, 10] → e1RM = 90*(1+10/30) = 120

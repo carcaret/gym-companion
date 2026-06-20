@@ -192,7 +192,7 @@ function renderActiveWorkout(container, entry) {
     const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
     if (isVolRecord || isE1RMRecord) hasRecord = true;
 
-    html += `<div class="card" id="exercise-card-${logIdx}">
+    html += `<div class="card${log.skipped ? ' is-skipped' : ''}" id="exercise-card-${logIdx}">
     <div class="card-header" data-idx="${logIdx}" data-exerciseid="${log.exercise_id}">
       <span class="drag-handle" title="Reordenar">${icon('grip', 18)}</span>
       <div>
@@ -226,6 +226,7 @@ function renderActiveWorkout(container, entry) {
 
     html += `<div class="card-footer">
       <button class="swap-btn" data-action="swapExercise" data-logidx="${logIdx}">Cambiar por otro</button>
+      <button class="skip-btn" data-action="toggleSkip" data-logidx="${logIdx}">${log.skipped ? 'Reactivar' : 'Saltar'}</button>
       <button class="remove-btn" data-action="removeExercise" data-daytype="${entry.type}" data-exerciseid="${log.exercise_id}">Quitar de rutina</button>
     </div>`;
 
@@ -304,6 +305,7 @@ function renderActiveWorkout(container, entry) {
       return en?.logs[idx] ?? null;
     },
     onSuccess: (el, _log, idx) => { persistDB(); patchWorkoutCard(idx, el.dataset.param !== 'weight'); },
+    onToggleSkip: () => { persistDB(); rerenderWorkout(); },
     onFocusSeries: (_el, logIdx, seriesIdx) => {
       const prevLogIdx = focusedSeries?.logIdx;
       if (focusedSeries?.logIdx === logIdx && focusedSeries?.seriesIdx === seriesIdx) {

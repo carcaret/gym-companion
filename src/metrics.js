@@ -33,7 +33,7 @@ export function getMaxMetrics(entries, exerciseId) {
   let maxVolume = 0, maxE1RM = 0;
   for (const entry of entries) {
     for (const log of entry.logs) {
-      if (log.exercise_id === exerciseId) {
+      if (log.exercise_id === exerciseId && !log.skipped) {
         maxVolume = Math.max(maxVolume, computeVolume(log));
         maxE1RM = Math.max(maxE1RM, computeE1RM(log));
       }

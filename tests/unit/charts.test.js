@@ -225,6 +225,42 @@ describe('buildChartDatasets', () => {
     const { e1rmDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
     expect(e1rmDatasets.length).toBe(0);
   });
+
+  test('forward-fill: punto saltado copia el valor previo y se marca _skipped', () => {
+    const history = [
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 80, actual: [8, 8, 8] })] }),
+      makeEntry({ date: '2024-03-08', logs: [{ exercise_id: 'press_banca', name: 'press_banca', series: 3, reps: { expected: 8, actual: [0, 0, 0] }, weight: 0, skipped: true }] }),
+      makeEntry({ date: '2024-03-15', logs: [makeLog({ id: 'press_banca', weight: 85, actual: [9, 9, 9] })] }),
+    ];
+    const { weightDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    const data = weightDatasets[0].data;
+    expect(data.length).toBe(3);
+    expect(data[1]).toMatchObject({ x: '2024-03-08', y: 80, _skipped: true });
+    expect(data[0]).toMatchObject({ x: '2024-03-01', y: 80 });
+    expect(data[2]).toMatchObject({ x: '2024-03-15', y: 85 });
+  });
+
+  test('forward-fill: punto saltado al inicio del rango se omite (sin valor previo)', () => {
+    const history = [
+      makeEntry({ date: '2024-03-01', logs: [{ exercise_id: 'press_banca', name: 'press_banca', series: 3, reps: { expected: 8, actual: [0, 0, 0] }, weight: 0, skipped: true }] }),
+      makeEntry({ date: '2024-03-08', logs: [makeLog({ id: 'press_banca', weight: 80, actual: [8, 8, 8] })] }),
+    ];
+    const { weightDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    const data = weightDatasets[0].data;
+    expect(data.length).toBe(1);
+    expect(data[0]).toMatchObject({ x: '2024-03-08', y: 80 });
+  });
+
+  test('forward-fill: e1RM y peso se mantienen de forma independiente', () => {
+    const history = [
+      makeEntry({ date: '2024-03-01', logs: [makeLog({ id: 'press_banca', weight: 80, actual: [8, 8, 8] })] }),
+      makeEntry({ date: '2024-03-08', logs: [{ exercise_id: 'press_banca', name: 'press_banca', series: 3, reps: { expected: 8, actual: [0, 0, 0] }, weight: 0, skipped: true }] }),
+    ];
+    const { e1rmDatasets, weightDatasets } = buildChartDatasets(history, ['press_banca'], '2024-03-01', '2024-03-31', getName);
+    const prevE1RM = Math.round(80 * (1 + 8 / 30) * 10) / 10;
+    expect(e1rmDatasets[0].data[1]).toMatchObject({ x: '2024-03-08', y: prevE1RM, _skipped: true });
+    expect(weightDatasets[0].data[1]).toMatchObject({ x: '2024-03-08', y: 80, _skipped: true });
+  });
 });
 
 // ── sortExercisesForDropdown ──

@@ -183,7 +183,13 @@ function makeChart(ctx, datasets, chartType, { yTitle }) {
           borderColor: tooltipBorder,
           borderWidth: 1,
           cornerRadius: 8,
-          padding: 10
+          padding: 10,
+          callbacks: {
+            label: (ctx) => {
+              const base = `${ctx.dataset.label}: ${ctx.parsed.y}`;
+              return ctx.raw && ctx.raw._skipped ? `${base} · saltado (mantiene)` : base;
+            }
+          }
         }
       },
       scales

@@ -1,4 +1,4 @@
-import { adjustParam, adjustRep, setParam, setRep, validateLog } from '../src/workout.js';
+import { adjustParam, adjustRep, setParam, setRep, validateLog, toggleSkip } from '../src/workout.js';
 import { formatLogSummary } from '../src/formatting.js';
 import { buildHistoryStripHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
 
@@ -29,6 +29,9 @@ export function setupLogActionDelegation(container, config) {
       const value = parseInt(el.dataset.value);
       setRep(log, seriesIdx, value);
       config.onSuccess(el, log, idx);
+    } else if (action === 'toggleSkip' && log) {
+      toggleSkip(log);
+      config.onToggleSkip?.(el, log, idx);
     } else if (config.extraActions) {
       config.extraActions(el, action);
     }

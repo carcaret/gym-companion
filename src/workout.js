@@ -35,6 +35,7 @@ export function validateLog(log) {
 export function validateEntry(entry) {
   const errorsByLog = new Map();
   entry.logs.forEach((log, idx) => {
+    if (log.skipped) return;
     const errors = validateLog(log);
     if (errors.length > 0) errorsByLog.set(idx, errors);
   });
@@ -136,6 +137,12 @@ export function setRep(log, seriesIdx, value) {
   const num = parseInt(value);
   log.reps.actual[seriesIdx] = isNaN(num) ? null : Math.max(0, num);
   syncExpectedToMax(log);
+}
+
+/** Alterna el salto de un ejercicio. Reversible, no destruye datos. */
+export function toggleSkip(log) {
+  log.skipped = !log.skipped;
+  return log.skipped;
 }
 
 /**

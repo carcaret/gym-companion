@@ -59,7 +59,8 @@ export function getBestRecentValuesForExercise(db, exerciseId, today, weeksWindo
   // 1. Mejor de las sesiones completadas en la misma ventana que pinta la gráfica de la card
   //    (últimas N semanas). Empate de peso → mayor volumen; empate total → la más reciente.
   if (today) {
-    const sessions = getRecentSessionsForExercise(db, exerciseId, today, 6, weeksWindow, today);
+    const sessions = getRecentSessionsForExercise(db, exerciseId, today, 6, weeksWindow, today)
+      .filter(s => !s.log.skipped);
     if (sessions.length > 0) {
       let best = sessions[sessions.length - 1].log;
       let bestVolume = computeVolume(best);
@@ -81,7 +82,7 @@ export function getBestRecentValuesForExercise(db, exerciseId, today, weeksWindo
   const sorted = [...db.history].sort((a, b) => a.date.localeCompare(b.date));
   for (let i = sorted.length - 1; i >= 0; i--) {
     if (today && sorted[i].date === today) continue;
-    const log = sorted[i].logs?.find(l => l.exercise_id === exerciseId);
+    const log = sorted[i].logs?.find(l => l.exercise_id === exerciseId && !l.skipped);
     if (log) return toValues(log);
   }
 

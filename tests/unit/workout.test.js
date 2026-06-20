@@ -10,7 +10,8 @@ import {
   detectRecords,
   validateLog,
   validateEntry,
-  swapLogExercise
+  swapLogExercise,
+  toggleSkip
 } from '../../src/workout.js';
 
 // ── Helpers ──
@@ -1027,5 +1028,42 @@ describe('swapLogExercise', () => {
     const entry = makeSwapEntry();
     swapLogExercise(entry, 0, 'sentadilla', lastB, 'Sentadilla barbell');
     expect(entry.logs[0].name).toBe('Sentadilla barbell');
+  });
+});
+
+describe('toggleSkip', () => {
+  test('alterna skipped y devuelve el nuevo estado', () => {
+    const log = { exercise_id: 'press_banca', name: 'Press', series: 3, reps: { expected: 8, actual: [8, 8, 8] }, weight: 80 };
+    expect(toggleSkip(log)).toBe(true);
+    expect(log.skipped).toBe(true);
+    expect(toggleSkip(log)).toBe(false);
+    expect(log.skipped).toBe(false);
+  });
+
+  test('no destruye los datos del log al alternar', () => {
+    const log = { exercise_id: 'press_banca', name: 'Press', series: 3, reps: { expected: 8, actual: [8, 7, 6] }, weight: 80 };
+    toggleSkip(log);
+    expect(log.reps.actual).toEqual([8, 7, 6]);
+    expect(log.weight).toBe(80);
+  });
+});
+
+describe('validateEntry con saltados', () => {
+  test('no valida un log saltado aunque tenga reps vacías', () => {
+    const entry = { date: '2026-06-20', type: 'DIA1', completed: false, logs: [
+      { exercise_id: 'a', name: 'A', series: 3, reps: { expected: 8, actual: [null, null, null] }, weight: 0, skipped: true }
+    ]};
+    expect(validateEntry(entry).valid).toBe(true);
+  });
+
+  test('sí valida los logs no saltados del mismo entry', () => {
+    const entry = { date: '2026-06-20', type: 'DIA1', completed: false, logs: [
+      { exercise_id: 'a', name: 'A', series: 3, reps: { expected: 8, actual: [null, null, null] }, weight: 0, skipped: true },
+      { exercise_id: 'b', name: 'B', series: 3, reps: { expected: 8, actual: [null, null, null] }, weight: 0 }
+    ]};
+    const { valid, errorsByLog } = validateEntry(entry);
+    expect(valid).toBe(false);
+    expect(errorsByLog.has(1)).toBe(true);
+    expect(errorsByLog.has(0)).toBe(false);
   });
 });

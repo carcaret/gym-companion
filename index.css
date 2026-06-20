@@ -1488,3 +1488,35 @@ body {
   .modal { border-radius: var(--radius); }
   .modal-overlay { align-items: center; }
 }
+
+/* ── Ejercicio saltado: no cuenta este día, sigue en la rutina ──
+   Solo cambia el fondo (rojo apagado existente). Sin badge. Mismo layout.
+   Se mantiene aunque la card esté expandida (.card-body.open). */
+.card.is-skipped {
+  background: var(--red-tint);
+  border-color: var(--red-soft);
+}
+.card.is-skipped .card-title,
+.card.is-skipped .card-subtitle {
+  color: var(--text-muted);
+}
+
+/* Botón de texto en el footer (mismo estilo base que .swap-btn / .remove-btn) */
+.skip-btn {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-family: var(--font);
+}
+.skip-btn:hover { color: var(--text-secondary); }
+/* Cuando ya está saltado, el botón ("Reactivar") se tiñe sutil de rojo */
+.card.is-skipped .skip-btn { color: var(--red-soft); }
+
+/* Columna fantasma del history strip: sin barra, conserva la fecha */
+.history-bar-col.skipped .bar.skipped {
+  background: transparent;
+  border: 1px dashed var(--red-soft);
+}

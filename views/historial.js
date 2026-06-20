@@ -157,7 +157,7 @@ export function renderHistorialDetail(date) {
     const isOpen = historialOpenCards.has(logIdx);
     const isDirty = historialDirtyCards.has(logIdx);
 
-    html += `<div class="card historial-detail-card" id="hcard-${logIdx}">
+    html += `<div class="card historial-detail-card${log.skipped ? ' is-skipped' : ''}" id="hcard-${logIdx}">
     <div class="card-header" data-idx="${logIdx}">
       <div>
         <div class="card-title">${name}</div>

@@ -153,6 +153,32 @@ describe('getBestRecentValuesForExercise', () => {
     expect(best.weight).toBe(50);
   });
 
+  test('no usa una sesión saltada como semilla (dentro de ventana)', () => {
+    // Window para TODAY=2024-05-01 empieza 2024-03-25. La sesión saltada de 200kg
+    // no debe sembrar → gana la real de 70kg.
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-04-08', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 8, actual: [8, 8, 8] }, weight: 70 }] },
+        { date: '2024-04-22', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 8, actual: [0, 0, 0] }, weight: 200, skipped: true }] },
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.weight).toBe(70);
+  });
+
+  test('fallback ignora saltados cuando no hay sesiones en ventana', () => {
+    const db = {
+      exercises: {}, routines: {},
+      history: [
+        { date: '2024-01-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 8, actual: [8, 8, 8] }, weight: 60 }] },
+        { date: '2024-02-01', type: 'DIA1', completed: true, logs: [{ exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 8, actual: [0, 0, 0] }, weight: 999, skipped: true }] },
+      ],
+    };
+    const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);
+    expect(best.weight).toBe(60);
+  });
+
   test('sin historial → defaults', () => {
     const db = { exercises: {}, routines: {}, history: [] };
     const best = getBestRecentValuesForExercise(db, 'press_banca', TODAY);

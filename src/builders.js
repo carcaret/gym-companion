@@ -36,9 +36,10 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
 
   if (allSessions.length === 0) return '';
 
-  const sessionMetrics = allSessions.map(s => getPrimaryMetric(s.log));
-  const maxMetric = Math.max(...sessionMetrics);
-  const minMetric = Math.min(...sessionMetrics);
+  const realSessions = allSessions.filter(s => !s.log.skipped);
+  const sessionMetrics = realSessions.map(s => getPrimaryMetric(s.log));
+  const maxMetric = sessionMetrics.length ? Math.max(...sessionMetrics) : 0;
+  const minMetric = sessionMetrics.length ? Math.min(...sessionMetrics) : 0;
 
   const barColor = metric => {
     const t = maxMetric === minMetric ? 1 : (metric - minMetric) / (maxMetric - minMetric);
@@ -50,7 +51,7 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
 
   let deltaHtml = '';
   if (hasCurrent) {
-    const prev = [...allSessions].slice(0, -1).reverse().find(s => !s.isCurrent);
+    const prev = [...allSessions].slice(0, -1).reverse().find(s => !s.isCurrent && !s.log.skipped);
     if (prev) {
       const prevMetric = getPrimaryMetric(prev.log);
       const pct = computeSessionDeltaPct(currentMetric, prevMetric);
@@ -75,11 +76,17 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
   ).join('');
 
   const barsHtml = emptyColsHtml + displaySessions.map(session => {
+    const label = formatDateShort(session.date);
+    if (session.log.skipped) {
+      return `<div class="history-bar-col skipped">
+      <div class="bar-wrap"><div class="bar skipped" style="height:0%"></div></div>
+      <div class="bar-date">${label}</div>
+    </div>`;
+    }
     const metric = getPrimaryMetric(session.log);
     const height = maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 6;
     const barClass = session.isCurrent ? 'current' : 'prev';
     const barStyle = `height:${height}%; background:${barColor(metric)}`;
-    const label = formatDateShort(session.date);
     const tooltip = buildBarTooltip(session.log);
     const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}" tabindex="0" aria-label="${tooltip}"` : '';
     return `<div class="history-bar-col">
