@@ -21963,6 +21963,100 @@
           "weight": 14
         }
       ]
+    },
+    {
+      "date": "2026-06-24",
+      "type": "DIA2",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "zancadas_con_mancuernas",
+          "name": "Zancadas con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 16
+        },
+        {
+          "exercise_id": "press_maquina",
+          "name": "Press máquina",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              9,
+              7,
+              6
+            ]
+          },
+          "weight": 70
+        },
+        {
+          "exercise_id": "jalon_al_pecho",
+          "name": "Jalón al Pecho",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              8,
+              8
+            ]
+          },
+          "weight": 68
+        },
+        {
+          "exercise_id": "reverse_delt_con_mancuernas",
+          "name": "Reverse Delt con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              13,
+              13
+            ]
+          },
+          "weight": 16
+        },
+        {
+          "exercise_id": "extensiones_de_espalda",
+          "name": "Extensiones de Espalda",
+          "series": 3,
+          "reps": {
+            "expected": 20,
+            "actual": [
+              20,
+              20,
+              20
+            ]
+          },
+          "weight": 20
+        },
+        {
+          "exercise_id": "elevaciones_laterales_con_cable",
+          "name": "Elevaciones Laterales con Cable",
+          "series": 3,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9,
+              9
+            ]
+          },
+          "weight": 18
+        }
+      ]
     }
   ]
 }
