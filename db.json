@@ -293,6 +293,10 @@
     "jalon_al_pecho_neutro": {
       "id": "jalon_al_pecho_neutro",
       "name": "Jalón al pecho neutro"
+    },
+    "curl_biceps_polea": {
+      "id": "curl_biceps_polea",
+      "name": "Curl bíceps polea"
     }
   },
   "routines": {
@@ -317,9 +321,8 @@
       "press_inclinado_maquina",
       "jalon_al_pecho_neutro",
       "press_de_hombros_mancuernas_sentado",
-      "hip_thrust",
       "encogimiento_trapecio_barra",
-      "curl_de_biceps_mancuerna"
+      "curl_biceps_polea"
     ]
   },
   "history": [
@@ -22354,6 +22357,101 @@
             ]
           },
           "weight": 15
+        }
+      ]
+    },
+    {
+      "date": "2026-07-03",
+      "type": "DIA3",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "extension_de_cuadriceps",
+          "name": "Extensión de Cuádriceps",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              9,
+              9,
+              9
+            ]
+          },
+          "weight": 104
+        },
+        {
+          "exercise_id": "press_maquina",
+          "name": "Press máquina",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              9,
+              7
+            ]
+          },
+          "weight": 70,
+          "swappedFrom": "press_inclinado_maquina"
+        },
+        {
+          "exercise_id": "jalon_al_pecho_neutro",
+          "name": "Jalón al pecho neutro",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              9
+            ]
+          },
+          "weight": 68
+        },
+        {
+          "exercise_id": "press_de_hombros_mancuernas_sentado",
+          "name": "Press de Hombros con Mancuernas Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              10
+            ]
+          },
+          "weight": 18
+        },
+        {
+          "exercise_id": "encogimiento_trapecio_barra",
+          "name": "Encogimiento de Trapecios con Barra",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              14
+            ]
+          },
+          "weight": 110
+        },
+        {
+          "exercise_id": "curl_biceps_polea",
+          "name": "Curl bíceps polea",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              14
+            ]
+          },
+          "weight": 54
         }
       ]
     }
