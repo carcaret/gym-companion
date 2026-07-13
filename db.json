@@ -306,7 +306,7 @@
   "routines": {
     "DIA1": [
       "prensa_de_piernas",
-      "press_maquina",
+      "press_banca_mancuernas",
       "hammer_row_prono",
       "elevaciones_laterales_con_mancuernas",
       "curl_femoral_sentado",
@@ -22739,6 +22739,103 @@
             ]
           },
           "weight": 59
+        }
+      ]
+    },
+    {
+      "date": "2026-07-13",
+      "type": "DIA1",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "zancadas_con_mancuernas",
+          "name": "Zancadas con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 8,
+            "actual": [
+              8,
+              8,
+              8,
+              8
+            ]
+          },
+          "weight": 18,
+          "swappedFrom": "prensa_de_piernas"
+        },
+        {
+          "exercise_id": "press_banca_mancuernas",
+          "name": "Press de Banca con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11,
+              8
+            ]
+          },
+          "weight": 28
+        },
+        {
+          "exercise_id": "jalon_al_pecho",
+          "name": "Jalón al Pecho",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 68,
+          "swappedFrom": "hammer_row_prono"
+        },
+        {
+          "exercise_id": "elevaciones_laterales_con_mancuernas",
+          "name": "Elevaciones Laterales con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 15,
+            "actual": [
+              15,
+              14,
+              14
+            ]
+          },
+          "weight": 12
+        },
+        {
+          "exercise_id": "curl_femoral_sentado",
+          "name": "Curl Femoral Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9,
+              9
+            ]
+          },
+          "weight": 97,
+          "skipped": true
+        },
+        {
+          "exercise_id": "hammer_curl_mancuernas",
+          "name": "Hammer curl mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11
+            ]
+          },
+          "weight": 14
         }
       ]
     }
