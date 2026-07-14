@@ -157,19 +157,23 @@ test.describe('swap recíproco — pendiente caducado', () => {
 });
 
 test.describe('swap recíproco — día destino ya hecho esta semana', () => {
-  function daysAgoStr(n) {
+  // Lunes de la semana en curso (mismo algoritmo que getWeekStartStr de src/dates.js,
+  // pero con fecha local ya que aquí solo se usa como string a inyectar en la fixture).
+  // Cae siempre dentro de la semana ISO actual, sin importar qué día se ejecute el test.
+  function currentWeekMondayStr() {
     const d = new Date();
-    d.setDate(d.getDate() - n);
+    const day = d.getDay(); // 0=domingo..6=sábado
+    const diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff);
     return d.toISOString().split('T')[0];
   }
 
   test.beforeEach(async ({ page }) => {
     const db = JSON.parse(getTestDB());
-    // DIA1 ya completado hace 1 día (dentro de la semana en curso salvo que hoy sea lunes;
-    // el propio test verifica el comportamiento independientemente del día de la semana real
-    // usando el mismo cálculo de semana que la app, por eso solo afirmamos "no se ofrece modal").
+    // DIA1 ya completado el lunes de la semana en curso (dentro de la semana en curso
+    // siempre, sin importar qué día de la semana se ejecute la suite).
     db.history.push({
-      date: daysAgoStr(1),
+      date: currentWeekMondayStr(),
       type: 'DIA1',
       completed: true,
       logs: [
