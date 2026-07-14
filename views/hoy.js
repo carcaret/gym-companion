@@ -1,10 +1,10 @@
 import { DB, getExerciseName, getTodayEntry, getBestRecentValuesForExercise, persistDB, saveDBLocal, saveDBToGitHub, getGithubConfig, setSyncState } from '../src/store.js';
 import { icon, chevronIcon, toast, showModal, hideModal, safeSetLocal, escHtml } from '../src/ui.js';
 import { buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
-import { buildWorkoutEntry, buildLog, finishWorkoutEntry, validateEntry, reorderByIndex, swapLogExercise, detectRecords } from '../src/workout.js';
+import { buildWorkoutEntry, buildLog, finishWorkoutEntry, validateEntry, reorderByIndex, swapLogExercise, detectRecords, findReciprocalSwapTarget, buildPendingSwap, consumePendingSwap } from '../src/workout.js';
 import { ensureHistorySorted, sortExercisesForSwap } from '../src/data.js';
 import { DAY_LABELS, ROUTINE_KEYS, NEEDS_UPLOAD_KEY } from '../src/constants.js';
-import { todayStr } from '../src/dates.js';
+import { todayStr, getWeekStartStr } from '../src/dates.js';
 import { formatLogSummary, slugifyExerciseName } from '../src/formatting.js';
 import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection, patchParamInputs } from './shared.js';
 
@@ -441,6 +441,7 @@ function addExerciseToRoutineAndActiveWorkout(id, dayType) {
 function swapExerciseInActiveWorkout(logIdx, newExerciseId) {
   const entry = getTodayEntry();
   if (!entry) return;
+  const outgoingExerciseId = entry.logs[logIdx].exercise_id;
   const last = getBestRecentValuesForExercise(newExerciseId);
   const name = getExerciseName(newExerciseId);
   const result = swapLogExercise(entry, logIdx, newExerciseId, last, name);
@@ -451,6 +452,38 @@ function swapExerciseInActiveWorkout(logIdx, newExerciseId) {
   persistDB();
   rerenderWorkout();
   toast(`Cambiado a ${name}`, 'ok');
+
+  offerReciprocalSwap(entry.type, newExerciseId, outgoingExerciseId);
+}
+
+function offerReciprocalSwap(currentDayType, newExerciseId, outgoingExerciseId) {
+  const target = findReciprocalSwapTarget(DB.routines, currentDayType, newExerciseId);
+  if (!target) return;
+
+  const targetRoutineIds = DB.routines[target.dayType] || [];
+  const weekStart = getWeekStartStr(todayStr());
+  const pendingSwap = buildPendingSwap(newExerciseId, outgoingExerciseId, targetRoutineIds, weekStart);
+  if (!pendingSwap) return;
+
+  const newName = escHtml(getExerciseName(newExerciseId));
+  const outgoingName = escHtml(getExerciseName(outgoingExerciseId));
+  const dayLabel = DAY_LABELS[target.dayType];
+
+  showModal(
+    'Intercambio recíproco',
+    `<p class="text-sm">${newName} pertenece a ${dayLabel}. ¿Poner ${outgoingName} en su lugar la próxima vez que hagas ${dayLabel} (esta semana)?</p>`,
+    [
+      { label: 'No', className: 'btn-secondary btn-sm', action: () => {} },
+      {
+        label: 'Sí', className: 'btn-primary btn-sm', action: () => {
+          DB.pendingSwaps ??= {};
+          DB.pendingSwaps[target.dayType] = pendingSwap;
+          persistDB();
+          toast(`Se aplicará en ${dayLabel} la próxima vez`, 'ok');
+        }
+      }
+    ]
+  );
 }
 
 function showSwapExerciseModal(logIdx, entry) {
