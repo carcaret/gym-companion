@@ -36,8 +36,11 @@ fi
 countdown(){ r="$1"; now=$(date +%s); s=$((r-now)); [ "$s" -lt 0 ]&&s=0; dd=$((s/86400)); h=$(((s%86400)/3600)); m=$(((s%3600)/60)); if [ "$dd" -gt 0 ]; then printf '%dd%dh' "$dd" "$h"; elif [ "$h" -gt 0 ]; then printf '%dh%02dm' "$h" "$m"; else printf '%dm' "$m"; fi; }
 clock(){ TZ=Europe/Madrid date -d "@$1" +"$2" 2>/dev/null || TZ=Europe/Madrid date -r "$1" +"$2" 2>/dev/null; }
 
-# context window progress bar
-PCT=$(j '.context_window.used_percentage // 0' | cut -d. -f1)
+five=$(j '.rate_limits.five_hour.used_percentage // empty')
+week=$(j '.rate_limits.seven_day.used_percentage // empty')
+
+# 5h progress bar — tokens used in current 5h window
+PCT=$(printf '%s' "${five:-0}" | cut -d. -f1)
 [ -z "$PCT" ] && PCT=0
 BAR_WIDTH=10
 FILLED=$((PCT * BAR_WIDTH / 100))
@@ -48,12 +51,10 @@ else BARCOLOR="$G"; fi
 BAR=""
 [ "$FILLED" -gt 0 ] && printf -v FILL "%${FILLED}s" && BAR="${FILL// /▓}"
 [ "$EMPTY" -gt 0 ] && printf -v PAD "%${EMPTY}s" && BAR="${BAR}${PAD// /░}"
-ctxline="${BARCOLOR}${BAR}${R} ${PCT}%"
+barline="${BARCOLOR}${BAR}${R} ${PCT}%"
 
-# rate limits — 5h: reset countdown only. 7d: used % (numeric, no bar)
+# rate limits — 5h: reset countdown only (bar shows the %). 7d: numeric, no bar
 usage=""
-five=$(j '.rate_limits.five_hour.used_percentage // empty')
-week=$(j '.rate_limits.seven_day.used_percentage // empty')
 if [ -n "$five" ]; then
   fr=$(j '.rate_limits.five_hour.resets_at // empty')
   usage="${DIM}5h${R}"
@@ -67,9 +68,15 @@ if [ -n "$week" ]; then
   [ -n "$usage" ] && usage="${usage} ${DIM}·${R} ${WEEKTXT}" || usage="$WEEKTXT"
 fi
 
+# context window — plain number at the end
+CTXPCT=$(j '.context_window.used_percentage // empty' | cut -d. -f1)
+ctxtxt=""
+[ -n "$CTXPCT" ] && ctxtxt="${DIM}ctx${R} ${CTXPCT}% ${DIM}used${R}"
+
 line="${pre}"
 [ -n "$b" ] && line="${line}${BC}(${BR}${b}${x}${BC})${R}${wttag} "
 [ -z "$b" ] && line="${line}${wttag} "
-line="${line}${BC}[${MODEL}]${R} ${ctxline}"
+line="${line}${BC}[${MODEL}]${R} ${barline}"
 [ -n "$usage" ] && line="${line} ${DIM}·${R} ${usage}"
+[ -n "$ctxtxt" ] && line="${line} ${DIM}·${R} ${ctxtxt}"
 printf '%s' "$line"
