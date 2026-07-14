@@ -72,13 +72,13 @@ CTXPCT=$(j '.context_window.used_percentage // empty' | cut -d. -f1)
 ctxtxt=""
 [ -n "$CTXPCT" ] && ctxtxt="${DIM}ctx${R} ${CTXPCT}%"
 
-LEFT="${pre}"
-[ -n "$b" ] && LEFT="${LEFT}${BC}[${BR}${b}${x}${BC}]${R}${wttag}"
-[ -z "$b" ] && LEFT="${LEFT}${wttag}"
+LEFT="${BC}[${MODEL}]${R} ${barline}"
+[ -n "$usage" ] && LEFT="${LEFT} ${DIM}·${R} ${usage}"
+[ -n "$ctxtxt" ] && LEFT="${LEFT} ${DIM}·${R} ${ctxtxt}"
 
-RIGHT="${BC}[${MODEL}]${R} ${barline}"
-[ -n "$usage" ] && RIGHT="${RIGHT} ${DIM}·${R} ${usage}"
-[ -n "$ctxtxt" ] && RIGHT="${RIGHT} ${DIM}·${R} ${ctxtxt}"
+RIGHT="${pre}"
+[ -n "$b" ] && RIGHT="${RIGHT}${BC}[${BR}${b}${x}${BC}]${R}${wttag}"
+[ -z "$b" ] && RIGHT="${RIGHT}${wttag}"
 
 strip_ansi(){ printf '%s' "$1" | sed -E 's/\x1b\[[0-9;]*m//g'; }
 LEFT_PLAIN=$(strip_ansi "$LEFT")
