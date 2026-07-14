@@ -26,11 +26,10 @@ fi
 
 WTNAME=$(j '.workspace.git_worktree // empty')
 [ -z "$WTNAME" ] && WTNAME=$(j '.worktree.name // empty')
-wttag=""
 if [ -n "$WTNAME" ]; then
-  wttag=" ${DIM}[wt:${R}${BC}${WTNAME}${DIM}]${R}"
+  wttag=" ${G}[wt]${R}"
 else
-  wttag=" ${DIM}[no-wt]${R}"
+  wttag=" ${DIM}[wt]${R}"
 fi
 
 countdown(){ r="$1"; now=$(date +%s); s=$((r-now)); [ "$s" -lt 0 ]&&s=0; dd=$((s/86400)); h=$(((s%86400)/3600)); m=$(((s%3600)/60)); if [ "$dd" -gt 0 ]; then printf '%dd%dh' "$dd" "$h"; elif [ "$h" -gt 0 ]; then printf '%dh%02dm' "$h" "$m"; else printf '%dm' "$m"; fi; }
