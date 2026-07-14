@@ -71,7 +71,7 @@ fi
 # context window — plain number at the end
 CTXPCT=$(j '.context_window.used_percentage // empty' | cut -d. -f1)
 ctxtxt=""
-[ -n "$CTXPCT" ] && ctxtxt="${DIM}ctx${R} ${CTXPCT}% ${DIM}used${R}"
+[ -n "$CTXPCT" ] && ctxtxt="${DIM}ctx${R} ${CTXPCT}%"
 
 line="${pre}"
 [ -n "$b" ] && line="${line}${BC}(${BR}${b}${x}${BC})${R}${wttag} "
