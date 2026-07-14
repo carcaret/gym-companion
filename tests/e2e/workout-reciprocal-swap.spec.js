@@ -125,6 +125,29 @@ test.describe('swap recíproco entre días de rutina', () => {
     expect(pendingSwaps.DIA1).toBeUndefined();
   });
 
+  test('9 — revertir un swap (A→B→A) no vuelve a ofrecer el modal recíproco', async ({ page }) => {
+    await startWorkout(page, 'Día 2');
+    await openCardAndSwap(page, 0, 'Curl Bíceps');
+
+    await expect(page.locator('#modal-title')).toContainText('Intercambio recíproco');
+    await page.locator('#modal-actions button', { hasText: 'Sí' }).click();
+
+    const pendingSwapsAfterFirst = await getPendingSwaps(page);
+    expect(pendingSwapsAfterFirst.DIA1.fromExerciseId).toBe('curl_biceps');
+    expect(pendingSwapsAfterFirst.DIA1.toExerciseId).toBe('sentadilla');
+
+    // Swap de vuelta al ejercicio original (Curl Bíceps → Sentadilla) en el mismo slot.
+    await openCardAndSwap(page, 0, 'Sentadilla');
+
+    // Solo debe verse el modal del selector de ejercicio (ya cerrado tras elegir),
+    // nunca el modal de intercambio recíproco.
+    await expect(page.locator('#w-title-0')).toContainText('Sentadilla');
+    await expect(page.locator('#modal-overlay')).toBeHidden();
+
+    const pendingSwapsAfterRevert = await getPendingSwaps(page);
+    expect(pendingSwapsAfterRevert.DIA1).toEqual(pendingSwapsAfterFirst.DIA1);
+  });
+
 });
 
 test.describe('swap recíproco — pendiente caducado', () => {
@@ -157,14 +180,15 @@ test.describe('swap recíproco — pendiente caducado', () => {
 });
 
 test.describe('swap recíproco — día destino ya hecho esta semana', () => {
-  // Lunes de la semana en curso (mismo algoritmo que getWeekStartStr de src/dates.js,
-  // pero con fecha local ya que aquí solo se usa como string a inyectar en la fixture).
-  // Cae siempre dentro de la semana ISO actual, sin importar qué día se ejecute el test.
+  // Lunes de la semana en curso, replicando exactamente el algoritmo UTC de
+  // getWeekStartStr(todayStr()) en src/dates.js — inmune a la timezone local
+  // del runner, evitando la flakiness que este helper causaba en fechas locales.
   function currentWeekMondayStr() {
-    const d = new Date();
-    const day = d.getDay(); // 0=domingo..6=sábado
+    const todayIso = new Date().toISOString().split('T')[0];
+    const d = new Date(todayIso + 'T12:00:00Z');
+    const day = d.getUTCDay();
     const diff = day === 0 ? -6 : 1 - day;
-    d.setDate(d.getDate() + diff);
+    d.setUTCDate(d.getUTCDate() + diff);
     return d.toISOString().split('T')[0];
   }
 

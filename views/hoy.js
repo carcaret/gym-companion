@@ -465,7 +465,9 @@ function swapExerciseInActiveWorkout(logIdx, newExerciseId) {
   rerenderWorkout();
   toast(`Cambiado a ${name}`, 'ok');
 
-  offerReciprocalSwap(entry.type, newExerciseId, outgoingExerciseId);
+  if (entry.logs[logIdx].swappedFrom) {
+    offerReciprocalSwap(entry.type, newExerciseId, outgoingExerciseId);
+  }
 }
 
 function offerReciprocalSwap(currentDayType, newExerciseId, outgoingExerciseId) {

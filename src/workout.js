@@ -230,6 +230,12 @@ export function buildPendingSwap(fromExerciseId, toExerciseId, targetRoutineIds,
  * de un día. clearNow=true significa "nada que preservar" (caducado o inaplicable) —
  * el llamador debe borrar el pendiente ahí mismo. clearNow=false con sustitución
  * aplicada significa que el pendiente debe seguir vivo hasta que el entreno termine.
+ *
+ * Edge conocido y aceptado: si el usuario añade toExerciseId a la rutina destino
+ * DESPUÉS de crear el pendiente pero ANTES de consumirlo, esta función no lo detecta
+ * (buildPendingSwap solo comprueba esto en el momento de creación) y el ejercicio
+ * podría acabar duplicado en el entreno generado. Caso muy estrecho en un contexto
+ * single-user/single-device — no se añade guarda en runtime para esto.
  */
 export function consumePendingSwap(routineIds, pendingSwap, currentWeekStart) {
   if (!pendingSwap) return { routineIds, clearNow: false };
