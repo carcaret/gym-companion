@@ -388,6 +388,7 @@ async function finishWorkout() {
   }
 
   finishWorkoutEntry(entry);
+  if (DB.pendingSwaps?.[entry.type]) delete DB.pendingSwaps[entry.type];
   saveDBLocal();
   safeSetLocal(NEEDS_UPLOAD_KEY, 'true');
   const hoyContent = document.getElementById('hoy-content');

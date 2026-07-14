@@ -110,6 +110,21 @@ test.describe('swap recíproco entre días de rutina', () => {
     expect(pendingSwaps.DIA1).toBeDefined(); // sigue vivo, no se borra hasta terminar (Task 4)
   });
 
+  test('7 — al terminar el entreno del día destino, el pendiente se borra', async ({ page }) => {
+    await createPendingSwapOnDia1(page);
+    await startWorkout(page, 'Día 1');
+
+    let pendingSwaps = await getPendingSwaps(page);
+    expect(pendingSwaps.DIA1).toBeDefined();
+
+    await fillAllWorkoutReps(page);
+    await page.locator('#finish-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('completado');
+
+    pendingSwaps = await getPendingSwaps(page);
+    expect(pendingSwaps.DIA1).toBeUndefined();
+  });
+
 });
 
 test.describe('swap recíproco — pendiente caducado', () => {
