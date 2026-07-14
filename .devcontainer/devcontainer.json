@@ -18,7 +18,7 @@
   },
 
   "onCreateCommand": "npm install && npm install -g @anthropic-ai/claude-code && npx -y claudepluginhub obra/superpowers --plugin superpowers --yes || true && npx -y claudepluginhub juliusbrussee/caveman --plugin caveman --yes || true",
-  "postStartCommand": "npx playwright install chromium --with-deps && git config core.hooksPath .hooks",
+  "postStartCommand": "npx playwright install chromium --with-deps && git config core.hooksPath .hooks && mkdir -p ~/.claude && cp .devcontainer/statusline.sh ~/.claude/statusline.sh && chmod +x ~/.claude/statusline.sh && [ -f ~/.claude/settings.json ] || echo '{}' > ~/.claude/settings.json && jq '.statusLine = {\"type\":\"command\",\"command\":\"bash \\\"$HOME/.claude/statusline.sh\\\"\"}' ~/.claude/settings.json > ~/.claude/settings.json.tmp && mv ~/.claude/settings.json.tmp ~/.claude/settings.json",
 
   "customizations": {
     "vscode": {
