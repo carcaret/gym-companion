@@ -73,7 +73,7 @@ ctxtxt=""
 [ -n "$CTXPCT" ] && ctxtxt="${DIM}ctx${R} ${CTXPCT}%"
 
 line="${pre}"
-[ -n "$b" ] && line="${line}${BC}(${BR}${b}${x}${BC})${R}${wttag} "
+[ -n "$b" ] && line="${line}${BC}[${BR}${b}${x}${BC}]${R}${wttag} "
 [ -z "$b" ] && line="${line}${wttag} "
 line="${line}${BC}[${MODEL}]${R} ${barline}"
 [ -n "$usage" ] && line="${line} ${DIM}·${R} ${usage}"
