@@ -86,8 +86,9 @@ RIGHT_PLAIN=$(strip_ansi "$RIGHT")
 LEFT_LEN=${#LEFT_PLAIN}
 RIGHT_LEN=${#RIGHT_PLAIN}
 
+MARGIN=4
 COLS="${COLUMNS:-0}"
-GAP=$((COLS - LEFT_LEN - RIGHT_LEN))
+GAP=$((COLS - LEFT_LEN - RIGHT_LEN - MARGIN))
 if [ "$COLS" -gt 0 ] && [ "$GAP" -gt 0 ]; then
   printf -v PADDING '%*s' "$GAP" ''
   printf '%s%s%s' "$LEFT" "$PADDING" "$RIGHT"
