@@ -11,7 +11,10 @@ import {
   validateLog,
   validateEntry,
   swapLogExercise,
-  toggleSkip
+  toggleSkip,
+  findReciprocalSwapTarget,
+  buildPendingSwap,
+  consumePendingSwap
 } from '../../src/workout.js';
 
 // ── Helpers ──
@@ -1065,5 +1068,96 @@ describe('validateEntry con saltados', () => {
     expect(valid).toBe(false);
     expect(errorsByLog.has(1)).toBe(true);
     expect(errorsByLog.has(0)).toBe(false);
+  });
+});
+
+// ════════════════════════════════════════════════
+// findReciprocalSwapTarget
+// ════════════════════════════════════════════════
+
+describe('findReciprocalSwapTarget', () => {
+  const routines = {
+    DIA1: ['press_banca', 'curl_biceps'],
+    DIA2: ['sentadilla'],
+    DIA3: ['press_banca', 'sentadilla']
+  };
+
+  test('1 — match único en otro día → devuelve ese dayType', () => {
+    expect(findReciprocalSwapTarget(routines, 'DIA2', 'curl_biceps')).toEqual({ dayType: 'DIA1' });
+  });
+
+  test('2 — ningún otro día lo tiene → null', () => {
+    expect(findReciprocalSwapTarget(routines, 'DIA1', 'ejercicio_nuevo')).toBeNull();
+  });
+
+  test('3 — aparece en 2+ días distintos (ambiguo) → null', () => {
+    // sentadilla está en DIA2 y DIA3; consultando desde DIA1 hay 2 matches
+    expect(findReciprocalSwapTarget(routines, 'DIA1', 'sentadilla')).toBeNull();
+  });
+
+  test('4 — el ejercicio está solo en el propio currentDayType → null (no cuenta el propio día)', () => {
+    expect(findReciprocalSwapTarget(routines, 'DIA1', 'press_banca')).toEqual({ dayType: 'DIA3' });
+    expect(findReciprocalSwapTarget(routines, 'DIA3', 'curl_biceps')).toEqual({ dayType: 'DIA1' });
+  });
+});
+
+// ════════════════════════════════════════════════
+// buildPendingSwap
+// ════════════════════════════════════════════════
+
+describe('buildPendingSwap', () => {
+  test('1 — caso normal → construye el objeto pendiente', () => {
+    const result = buildPendingSwap('curl_biceps', 'sentadilla', ['press_banca', 'curl_biceps'], '2026-07-13');
+    expect(result).toEqual({ fromExerciseId: 'curl_biceps', toExerciseId: 'sentadilla', weekStart: '2026-07-13' });
+  });
+
+  test('2 — toExerciseId ya presente en la rutina destino → null (evita duplicado)', () => {
+    const result = buildPendingSwap('curl_biceps', 'press_banca', ['press_banca', 'curl_biceps'], '2026-07-13');
+    expect(result).toBeNull();
+  });
+});
+
+// ════════════════════════════════════════════════
+// consumePendingSwap
+// ════════════════════════════════════════════════
+
+describe('consumePendingSwap', () => {
+  const routineIds = ['press_banca', 'curl_biceps', 'ejercicio_sin_historial'];
+
+  test('1 — sin pendiente → routineIds intacto, clearNow false', () => {
+    expect(consumePendingSwap(routineIds, undefined, '2026-07-13'))
+      .toEqual({ routineIds, clearNow: false });
+    expect(consumePendingSwap(routineIds, null, '2026-07-13'))
+      .toEqual({ routineIds, clearNow: false });
+  });
+
+  test('2 — semana coincide y ejercicio presente → sustituye y NO limpia', () => {
+    const pendingSwap = { fromExerciseId: 'curl_biceps', toExerciseId: 'sentadilla', weekStart: '2026-07-13' };
+    const result = consumePendingSwap(routineIds, pendingSwap, '2026-07-13');
+    expect(result.clearNow).toBe(false);
+    expect(result.routineIds).toEqual(['press_banca', 'sentadilla', 'ejercicio_sin_historial']);
+    // no muta el array original
+    expect(routineIds).toEqual(['press_banca', 'curl_biceps', 'ejercicio_sin_historial']);
+  });
+
+  test('3 — semana caducada → no sustituye, clearNow true', () => {
+    const pendingSwap = { fromExerciseId: 'curl_biceps', toExerciseId: 'sentadilla', weekStart: '2026-06-01' };
+    const result = consumePendingSwap(routineIds, pendingSwap, '2026-07-13');
+    expect(result).toEqual({ routineIds, clearNow: true });
+  });
+
+  test('4 — ejercicio ya no está en la rutina destino → no sustituye, clearNow true', () => {
+    const pendingSwap = { fromExerciseId: 'ya_no_existe', toExerciseId: 'sentadilla', weekStart: '2026-07-13' };
+    const result = consumePendingSwap(routineIds, pendingSwap, '2026-07-13');
+    expect(result).toEqual({ routineIds, clearNow: true });
+  });
+
+  test('5 — reaplicar dos veces seguidas sin borrar el pendiente da la misma sustitución (reinicio mismo día)', () => {
+    const pendingSwap = { fromExerciseId: 'curl_biceps', toExerciseId: 'sentadilla', weekStart: '2026-07-13' };
+    const first = consumePendingSwap(routineIds, pendingSwap, '2026-07-13');
+    const second = consumePendingSwap(routineIds, pendingSwap, '2026-07-13');
+    expect(first.routineIds).toEqual(second.routineIds);
+    expect(first.clearNow).toBe(false);
+    expect(second.clearNow).toBe(false);
   });
 });

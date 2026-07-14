@@ -203,3 +203,43 @@ export function swapLogExercise(entry, logIdx, newExerciseId, last, newName) {
   return { ok: true, log: newLog };
 }
 
+/**
+ * Busca en qué otro día (distinto de currentDayType) aparece newExerciseId.
+ * Solo devuelve resultado si aparece en exactamente un otro día — si no aparece
+ * en ninguno, o aparece en 2+, es ambiguo/no aplica y devuelve null.
+ */
+export function findReciprocalSwapTarget(routines, currentDayType, newExerciseId) {
+  const matches = Object.keys(routines)
+    .filter(dayType => dayType !== currentDayType)
+    .filter(dayType => (routines[dayType] || []).includes(newExerciseId));
+  if (matches.length !== 1) return null;
+  return { dayType: matches[0] };
+}
+
+/**
+ * Construye el pendiente de intercambio recíproco para el día destino.
+ * Devuelve null si toExerciseId ya está en la rutina destino (evitaría duplicado al aplicar).
+ */
+export function buildPendingSwap(fromExerciseId, toExerciseId, targetRoutineIds, weekStart) {
+  if ((targetRoutineIds || []).includes(toExerciseId)) return null;
+  return { fromExerciseId, toExerciseId, weekStart };
+}
+
+/**
+ * Aplica (si procede) el pendiente de intercambio recíproco al generar el entreno
+ * de un día. clearNow=true significa "nada que preservar" (caducado o inaplicable) —
+ * el llamador debe borrar el pendiente ahí mismo. clearNow=false con sustitución
+ * aplicada significa que el pendiente debe seguir vivo hasta que el entreno termine.
+ */
+export function consumePendingSwap(routineIds, pendingSwap, currentWeekStart) {
+  if (!pendingSwap) return { routineIds, clearNow: false };
+  if (pendingSwap.weekStart !== currentWeekStart) return { routineIds, clearNow: true };
+
+  const idx = routineIds.indexOf(pendingSwap.fromExerciseId);
+  if (idx === -1) return { routineIds, clearNow: true };
+
+  const newRoutineIds = [...routineIds];
+  newRoutineIds[idx] = pendingSwap.toExerciseId;
+  return { routineIds: newRoutineIds, clearNow: false };
+}
+
