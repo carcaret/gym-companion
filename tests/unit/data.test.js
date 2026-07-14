@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getExerciseName, getTodayEntry, getBestRecentValuesForExercise, ensureHistorySorted, getWeeklyBucketsForExercise, getRecentSessionsForExercise, sortExercisesForSwap } from '../../src/data.js';
+import { getExerciseName, getTodayEntry, getBestRecentValuesForExercise, ensureHistorySorted, getWeeklyBucketsForExercise, getRecentSessionsForExercise, sortExercisesForSwap, hasDayOccurredThisWeek } from '../../src/data.js';
 
 const DB_FIXTURE = {
   exercises: {
@@ -912,5 +912,46 @@ describe('sortExercisesForSwap — edge cases', () => {
     const sorted = sortExercisesForSwap(available, 'origen', exercises, routines, 'DIA1');
     // multidia: pecho + en DIA2 (otro día) → tier 0
     expect(sorted[0].id).toBe('multidia');
+  });
+});
+
+// ════════════════════════════════════════════════
+// hasDayOccurredThisWeek
+// ════════════════════════════════════════════════
+
+describe('hasDayOccurredThisWeek', () => {
+  const db = {
+    history: [
+      { date: '2026-07-13', type: 'DIA1', completed: true, logs: [] },  // lunes de esta semana (weekStart)
+      { date: '2026-07-09', type: 'DIA2', completed: true, logs: [] },  // semana anterior
+      { date: '2026-07-16', type: 'DIA3', completed: false, logs: [] } // esta semana pero NO completado
+    ]
+  };
+  const weekStart = '2026-07-13'; // lunes
+
+  test('1 — hay una entrada completada de ese dayType dentro de la semana → true', () => {
+    expect(hasDayOccurredThisWeek(db, 'DIA1', weekStart)).toBe(true);
+  });
+
+  test('2 — la entrada de ese dayType es de otra semana → false', () => {
+    expect(hasDayOccurredThisWeek(db, 'DIA2', weekStart)).toBe(false);
+  });
+
+  test('3 — hay entrada esta semana pero no completada → false', () => {
+    expect(hasDayOccurredThisWeek(db, 'DIA3', weekStart)).toBe(false);
+  });
+
+  test('4 — dayType sin ninguna entrada en el historial → false', () => {
+    expect(hasDayOccurredThisWeek(db, 'DIA_INEXISTENTE', weekStart)).toBe(false);
+  });
+
+  test('5 — historial vacío/ausente → false', () => {
+    expect(hasDayOccurredThisWeek({ history: [] }, 'DIA1', weekStart)).toBe(false);
+    expect(hasDayOccurredThisWeek({}, 'DIA1', weekStart)).toBe(false);
+  });
+
+  test('6 — fecha en el último día de la semana (domingo) cuenta como dentro de la semana', () => {
+    const dbSunday = { history: [{ date: '2026-07-19', type: 'DIA1', completed: true, logs: [] }] };
+    expect(hasDayOccurredThisWeek(dbSunday, 'DIA1', weekStart)).toBe(true);
   });
 });

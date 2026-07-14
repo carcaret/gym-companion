@@ -146,6 +146,16 @@ export function sortHistory(history) {
   return [...history].sort((a, b) => b.date.localeCompare(a.date));
 }
 
+/**
+ * true si existe una entrada de historial completada de `dayType` dentro de la
+ * semana ISO que arranca en `weekStart` (weekStart..weekStart+6 inclusive).
+ */
+export function hasDayOccurredThisWeek(db, dayType, weekStart) {
+  if (!db?.history) return false;
+  const weekEnd = addDaysStr(weekStart, 6);
+  return db.history.some(h => h.completed && h.type === dayType && h.date >= weekStart && h.date <= weekEnd);
+}
+
 export function findLog(history, date, logIdx) {
   const entry = history.find(h => h.date === date);
   return entry?.logs[logIdx] ?? null;

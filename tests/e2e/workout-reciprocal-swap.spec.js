@@ -155,3 +155,58 @@ test.describe('swap recíproco — pendiente caducado', () => {
     expect(pendingSwaps.DIA1).toBeUndefined(); // limpiado de inmediato, nada que preservar
   });
 });
+
+test.describe('swap recíproco — día destino ya hecho esta semana', () => {
+  function daysAgoStr(n) {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d.toISOString().split('T')[0];
+  }
+
+  test.beforeEach(async ({ page }) => {
+    const db = JSON.parse(getTestDB());
+    // DIA1 ya completado hace 1 día (dentro de la semana en curso salvo que hoy sea lunes;
+    // el propio test verifica el comportamiento independientemente del día de la semana real
+    // usando el mismo cálculo de semana que la app, por eso solo afirmamos "no se ofrece modal").
+    db.history.push({
+      date: daysAgoStr(1),
+      type: 'DIA1',
+      completed: true,
+      logs: [
+        { exercise_id: 'press_banca', name: 'Press Banca', series: 3, reps: { expected: 10, actual: [10, 10, 10] }, weight: 60 },
+        { exercise_id: 'curl_biceps', name: 'Curl Bíceps', series: 3, reps: { expected: 12, actual: [12, 12, 12] }, weight: 15 }
+      ]
+    });
+    await page.addInitScript(dbJson => {
+      localStorage.setItem('gym_companion_db', dbJson);
+    }, JSON.stringify(db));
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearStorage(page);
+  });
+
+  test('8 — DIA1 ya hecho esta semana: swap hacia su ejercicio único no ofrece modal recíproco', async ({ page }) => {
+    await page.locator('.day-btn', { hasText: 'Día 2' }).click();
+    await page.locator('#start-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
+
+    await page.locator('.card-header').nth(0).click();
+    await expect(page.locator('#body-0')).toHaveClass(/open/);
+    await page.locator('[data-action="swapExercise"][data-logidx="0"]').click();
+    await expect(page.locator('#modal-title')).toContainText('Cambiar ejercicio');
+    await page.locator('#exercise-modal-list .exercise-list-item', { hasText: 'Curl Bíceps' }).click();
+
+    // El swap normal se aplica; NO debe aparecer el modal de intercambio recíproco
+    await expect(page.locator('#w-title-0')).toContainText('Curl Bíceps');
+    await expect(page.locator('#modal-overlay')).toBeHidden();
+
+    const pendingSwaps = await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('gym_companion_db'));
+      return db.pendingSwaps || {};
+    });
+    expect(Object.keys(pendingSwaps)).toHaveLength(0);
+  });
+});

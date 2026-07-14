@@ -2,7 +2,7 @@ import { DB, getExerciseName, getTodayEntry, getBestRecentValuesForExercise, per
 import { icon, chevronIcon, toast, showModal, hideModal, safeSetLocal, escHtml } from '../src/ui.js';
 import { buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, validateEntry, reorderByIndex, swapLogExercise, detectRecords, findReciprocalSwapTarget, buildPendingSwap, consumePendingSwap } from '../src/workout.js';
-import { ensureHistorySorted, sortExercisesForSwap } from '../src/data.js';
+import { ensureHistorySorted, sortExercisesForSwap, hasDayOccurredThisWeek } from '../src/data.js';
 import { DAY_LABELS, ROUTINE_KEYS, NEEDS_UPLOAD_KEY } from '../src/constants.js';
 import { todayStr, getWeekStartStr } from '../src/dates.js';
 import { formatLogSummary, slugifyExerciseName } from '../src/formatting.js';
@@ -472,8 +472,10 @@ function offerReciprocalSwap(currentDayType, newExerciseId, outgoingExerciseId) 
   const target = findReciprocalSwapTarget(DB.routines, currentDayType, newExerciseId);
   if (!target) return;
 
-  const targetRoutineIds = DB.routines[target.dayType] || [];
   const weekStart = getWeekStartStr(todayStr());
+  if (hasDayOccurredThisWeek(DB, target.dayType, weekStart)) return;
+
+  const targetRoutineIds = DB.routines[target.dayType] || [];
   const pendingSwap = buildPendingSwap(newExerciseId, outgoingExerciseId, targetRoutineIds, weekStart);
   if (!pendingSwap) return;
 
