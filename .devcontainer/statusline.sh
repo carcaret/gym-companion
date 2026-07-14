@@ -76,9 +76,10 @@ LEFT="${BC}[${MODEL}]${R} ${barline}"
 [ -n "$usage" ] && LEFT="${LEFT} ${DIM}·${R} ${usage}"
 [ -n "$ctxtxt" ] && LEFT="${LEFT} ${DIM}·${R} ${ctxtxt}"
 
-RIGHT="${pre}"
-[ -n "$b" ] && RIGHT="${RIGHT}${BC}[${BR}${b}${x}${BC}]${R}${wttag}"
-[ -z "$b" ] && RIGHT="${RIGHT}${wttag}"
+RIGHT=""
+[ -n "$b" ] && RIGHT="${BC}[${BR}${b}${x}${BC}]${R}${wttag}"
+[ -z "$b" ] && RIGHT="${wttag}"
+[ -n "$pre" ] && RIGHT="${RIGHT} ${pre}"
 
 strip_ansi(){ printf '%s' "$1" | sed -E 's/\x1b\[[0-9;]*m//g'; }
 LEFT_PLAIN=$(strip_ansi "$LEFT")
