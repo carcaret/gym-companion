@@ -61,7 +61,7 @@ if [ -n "$five" ]; then
 fi
 if [ -n "$week" ]; then
   WU=$(awk -v v="$week" 'BEGIN{printf "%.0f",v}')
-  WEEKTXT="${DIM}7d${R} ${WU}% ${DIM}used${R}"
+  WEEKTXT="${DIM}7d${R} ${WU}%"
   fr7=$(j '.rate_limits.seven_day.resets_at // empty')
   [ -n "$fr7" ] && WEEKTXT="${WEEKTXT} ${DIM}↻$(clock "$fr7" '%a %H:%M') ($(countdown "$fr7"))${R}"
   [ -n "$usage" ] && usage="${usage} ${DIM}·${R} ${WEEKTXT}" || usage="$WEEKTXT"
