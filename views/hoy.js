@@ -31,14 +31,22 @@ export function renderHoy() {
 
 function renderDaySelector(container) {
   let html = '<div class="day-selector"><p class="day-selector-title">Selecciona una rutina para entrenar</p>';
+  const currentWeekStart = getWeekStartStr(todayStr());
   for (const type of ROUTINE_KEYS) {
     const exercises = (DB.routines[type] || []).map(id => escHtml(getExerciseName(id)));
     const preview = exercises.slice(0, 3).join(', ') + (exercises.length > 3 ? '...' : '');
+
+    const pending = DB.pendingSwaps?.[type];
+    const pendingNote = (pending && pending.weekStart === currentWeekStart)
+      ? `<div class="day-pending-note">Próxima vez: ${escHtml(getExerciseName(pending.toExerciseId))} en vez de ${escHtml(getExerciseName(pending.fromExerciseId))}</div>`
+      : '';
+
     html += `<div class="card day-btn ${type}" data-day="${type}">
     <div class="card-header">
       <div>
         <div class="card-title">${DAY_LABELS[type]}</div>
         <div class="card-subtitle">${exercises.length} ejercicios · ${preview}</div>
+        ${pendingNote}
       </div>
     </div>
   </div>`;
@@ -121,7 +129,10 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
 }
 
 function startWorkout(dayType) {
-  const routineIds = DB.routines[dayType] || [];
+  const weekStart = getWeekStartStr(todayStr());
+  const { routineIds, clearNow } = consumePendingSwap(DB.routines[dayType] || [], DB.pendingSwaps?.[dayType], weekStart);
+  if (clearNow && DB.pendingSwaps) delete DB.pendingSwaps[dayType];
+
   const entry = buildWorkoutEntry(todayStr(), dayType, routineIds, getBestRecentValuesForExercise, getExerciseName);
 
   DB.history = DB.history.filter(h => h.date !== todayStr());

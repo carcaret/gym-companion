@@ -568,6 +568,13 @@ body {
 .day-btn.DIA2 .card-title { color: var(--color-dia2); }
 .day-btn.DIA3 .card-title { color: var(--color-dia3); }
 
+.day-pending-note {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
 /* ── Workout Active ── */
 .workout-status {
   display: flex;

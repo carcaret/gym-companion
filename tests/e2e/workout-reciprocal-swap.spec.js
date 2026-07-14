@@ -79,4 +79,64 @@ test.describe('swap recíproco entre días de rutina', () => {
     const pendingSwaps = await getPendingSwaps(page);
     expect(Object.keys(pendingSwaps)).toHaveLength(0);
   });
+
+  async function createPendingSwapOnDia1(page) {
+    await startWorkout(page, 'Día 2');
+    await openCardAndSwap(page, 0, 'Curl Bíceps');
+    await page.locator('#modal-actions button', { hasText: 'Sí' }).click();
+    await fillAllWorkoutReps(page);
+    await page.locator('#finish-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('completado');
+    await page.locator('#back-to-selector-btn').click();
+  }
+
+  test('4 — selector de días muestra aviso del intercambio pendiente', async ({ page }) => {
+    await createPendingSwapOnDia1(page);
+
+    const dia1Card = page.locator('.day-btn', { hasText: 'Día 1' });
+    await expect(dia1Card).toContainText('Sentadilla');
+    await expect(dia1Card).toContainText('Curl Bíceps');
+  });
+
+  test('5 — al iniciar el día destino, el ejercicio queda sustituido y el pendiente sigue vivo', async ({ page }) => {
+    await createPendingSwapOnDia1(page);
+    await startWorkout(page, 'Día 1');
+
+    await expect(page.locator('#w-title-0')).toContainText('Press Banca');
+    await expect(page.locator('#w-title-1')).toContainText('Sentadilla'); // curl_biceps sustituido
+    await expect(page.locator('#w-title-2')).toContainText('Ejercicio Sin Historial');
+
+    const pendingSwaps = await getPendingSwaps(page);
+    expect(pendingSwaps.DIA1).toBeDefined(); // sigue vivo, no se borra hasta terminar (Task 4)
+  });
+
+});
+
+test.describe('swap recíproco — pendiente caducado', () => {
+  test.beforeEach(async ({ page }) => {
+    const db = JSON.parse(getTestDB());
+    db.pendingSwaps = { DIA1: { fromExerciseId: 'curl_biceps', toExerciseId: 'sentadilla', weekStart: '2000-01-03' } };
+    await page.addInitScript(dbJson => {
+      localStorage.setItem('gym_companion_db', dbJson);
+    }, JSON.stringify(db));
+    await page.goto('/');
+    await expect(page.locator('#app-shell')).toBeVisible();
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearStorage(page);
+  });
+
+  test('6 — pendiente con semana caducada no se aplica y se limpia al iniciar', async ({ page }) => {
+    await page.locator('.day-btn', { hasText: 'Día 1' }).click();
+    await page.locator('#start-workout-btn').click();
+    await expect(page.locator('.workout-status')).toContainText('Entreno en curso');
+    await expect(page.locator('#w-title-1')).toContainText('Curl Bíceps'); // sin sustituir
+
+    const pendingSwaps = await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('gym_companion_db'));
+      return db.pendingSwaps || {};
+    });
+    expect(pendingSwaps.DIA1).toBeUndefined(); // limpiado de inmediato, nada que preservar
+  });
 });
