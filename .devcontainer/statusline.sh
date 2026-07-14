@@ -72,10 +72,25 @@ CTXPCT=$(j '.context_window.used_percentage // empty' | cut -d. -f1)
 ctxtxt=""
 [ -n "$CTXPCT" ] && ctxtxt="${DIM}ctx${R} ${CTXPCT}%"
 
-line="${pre}"
-[ -n "$b" ] && line="${line}${BC}[${BR}${b}${x}${BC}]${R}${wttag} "
-[ -z "$b" ] && line="${line}${wttag} "
-line="${line}${BC}[${MODEL}]${R} ${barline}"
-[ -n "$usage" ] && line="${line} ${DIM}·${R} ${usage}"
-[ -n "$ctxtxt" ] && line="${line} ${DIM}·${R} ${ctxtxt}"
-printf '%s' "$line"
+LEFT="${pre}"
+[ -n "$b" ] && LEFT="${LEFT}${BC}[${BR}${b}${x}${BC}]${R}${wttag}"
+[ -z "$b" ] && LEFT="${LEFT}${wttag}"
+
+RIGHT="${BC}[${MODEL}]${R} ${barline}"
+[ -n "$usage" ] && RIGHT="${RIGHT} ${DIM}·${R} ${usage}"
+[ -n "$ctxtxt" ] && RIGHT="${RIGHT} ${DIM}·${R} ${ctxtxt}"
+
+strip_ansi(){ printf '%s' "$1" | sed -E 's/\x1b\[[0-9;]*m//g'; }
+LEFT_PLAIN=$(strip_ansi "$LEFT")
+RIGHT_PLAIN=$(strip_ansi "$RIGHT")
+LEFT_LEN=${#LEFT_PLAIN}
+RIGHT_LEN=${#RIGHT_PLAIN}
+
+COLS="${COLUMNS:-0}"
+GAP=$((COLS - LEFT_LEN - RIGHT_LEN))
+if [ "$COLS" -gt 0 ] && [ "$GAP" -gt 0 ]; then
+  printf -v PADDING '%*s' "$GAP" ''
+  printf '%s%s%s' "$LEFT" "$PADDING" "$RIGHT"
+else
+  printf '%s %s' "$LEFT" "$RIGHT"
+fi
