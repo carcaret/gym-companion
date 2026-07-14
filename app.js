@@ -201,7 +201,7 @@ async function init() {
 
   if (!data) {
     // Situación extrema — arrancar con estructura vacía
-    data = { exercises: {}, routines: { DIA1: [], DIA2: [], DIA3: [] }, history: [] };
+    data = { exercises: {}, routines: { DIA1: [], DIA2: [], DIA3: [] }, history: [], pendingSwaps: {} };
     needsUpload = false;
   }
 
