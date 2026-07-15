@@ -314,7 +314,7 @@
     ],
     "DIA2": [
       "zancadas_con_mancuernas",
-      "press_maquina",
+      "press_inclinado_mancuernas",
       "jalon_al_pecho",
       "reverse_delt_con_mancuernas",
       "extensiones_de_espalda",
@@ -22836,6 +22836,102 @@
             ]
           },
           "weight": 14
+        }
+      ]
+    },
+    {
+      "date": "2026-07-15",
+      "type": "DIA2",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "prensa_de_piernas",
+          "name": "Prensa de Piernas",
+          "series": 4,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 220,
+          "swappedFrom": "zancadas_con_mancuernas"
+        },
+        {
+          "exercise_id": "press_inclinado_mancuernas",
+          "name": "Press Inclinado con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              10,
+              9
+            ]
+          },
+          "weight": 26
+        },
+        {
+          "exercise_id": "hammer_row_prono",
+          "name": "Hammer Row Prono",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 30,
+          "swappedFrom": "jalon_al_pecho"
+        },
+        {
+          "exercise_id": "reverse_delt_con_mancuernas",
+          "name": "Reverse Delt con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 15,
+            "actual": [
+              15,
+              15,
+              15
+            ]
+          },
+          "weight": 16
+        },
+        {
+          "exercise_id": "extensiones_de_espalda",
+          "name": "Extensiones de Espalda",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 35
+        },
+        {
+          "exercise_id": "press_de_hombros_maquina",
+          "name": "Press de Hombros en Máquina",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              10
+            ]
+          },
+          "weight": 15
         }
       ]
     }
