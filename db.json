@@ -322,7 +322,7 @@
     ],
     "DIA3": [
       "extension_de_cuadriceps",
-      "press_inclinado_mancuernas",
+      "press_inclinado_maquina",
       "jalon_al_pecho_neutro",
       "press_de_hombros_mancuernas_sentado",
       "trapecio_polea",
@@ -22932,6 +22932,100 @@
             ]
           },
           "weight": 15
+        }
+      ]
+    },
+    {
+      "date": "2026-07-17",
+      "type": "DIA3",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "extension_de_cuadriceps",
+          "name": "Extensión de Cuádriceps",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 104
+        },
+        {
+          "exercise_id": "press_inclinado_maquina",
+          "name": "Press Inclinado en Máquina",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              8
+            ]
+          },
+          "weight": 32.5
+        },
+        {
+          "exercise_id": "jalon_al_pecho_neutro",
+          "name": "Jalón al pecho neutro",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              9,
+              9
+            ]
+          },
+          "weight": 68
+        },
+        {
+          "exercise_id": "press_de_hombros_mancuernas_sentado",
+          "name": "Press de Hombros con Mancuernas Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              10
+            ]
+          },
+          "weight": 18
+        },
+        {
+          "exercise_id": "trapecio_polea",
+          "name": "Trapecio polea",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 82
+        },
+        {
+          "exercise_id": "curl_biceps_polea",
+          "name": "Curl bíceps polea",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              10
+            ]
+          },
+          "weight": 59
         }
       ]
     }
