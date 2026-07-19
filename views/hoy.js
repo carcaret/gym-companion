@@ -9,6 +9,7 @@ import { formatLogSummary, slugifyExerciseName } from '../src/formatting.js';
 import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection, patchParamInputs } from './shared.js';
 
 let focusedSeries = null; // { logIdx, seriesIdx } | null
+let openExerciseId = null; // exercise_id de la tarjeta expandida en el entreno activo | null
 
 export function renderHoy() {
   focusedSeries = null;
@@ -26,6 +27,7 @@ export function renderHoy() {
   }
 
   title.textContent = 'Rutinas';
+  openExerciseId = null;
   renderDaySelector(content);
 }
 
@@ -138,6 +140,7 @@ function startWorkout(dayType) {
   DB.history = DB.history.filter(h => h.date !== todayStr());
   DB.history.push(entry);
   ensureHistorySorted(DB);
+  openExerciseId = null;
   persistDB();
   renderHoy();
   toast('¡Entreno iniciado!', 'ok');
@@ -213,6 +216,7 @@ function renderActiveWorkout(container, entry) {
     const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
     if (isVolRecord || isE1RMRecord) hasRecord = true;
 
+    const isOpen = log.exercise_id === openExerciseId;
     html += `<div class="card${log.skipped ? ' is-skipped' : ''}" id="exercise-card-${logIdx}">
     <div class="card-header" data-idx="${logIdx}" data-exerciseid="${log.exercise_id}">
       <span class="drag-handle" title="Reordenar">${icon('grip', 18)}</span>
@@ -224,9 +228,9 @@ function renderActiveWorkout(container, entry) {
         </div>
         <div class="card-subtitle" id="w-subtitle-${logIdx}">${formatLogSummary(log)}</div>
       </div>
-      ${chevronIcon(`chevron-${logIdx}`)}
+      ${chevronIcon(`chevron-${logIdx}`, isOpen)}
     </div>
-    <div class="card-body" id="body-${logIdx}">`;
+    <div class="card-body${isOpen ? ' open' : ''}" id="body-${logIdx}">`;
 
     html += `<div id="w-histstrip-${logIdx}">`;
     html += buildHistoryStripHtml(DB, log.exercise_id, log, entry.date);
@@ -263,43 +267,29 @@ function renderActiveWorkout(container, entry) {
   <button class="btn-accent-subtle" id="add-exercise-mid-btn">+ Ejercicio</button>
 </div>`;
 
-  let openIdx = null;
-  const prevOpen = container.querySelector('.card-body.open');
-  if (prevOpen) {
-    const prevBodyIdx = prevOpen.id.replace('body-', '');
-    const prevHeader = container.querySelector(`.card-header[data-idx="${prevBodyIdx}"]`);
-    const prevExerciseId = prevHeader?.dataset.exerciseid;
-    const byExercise = prevExerciseId ? entry.logs.findIndex(l => l.exercise_id === prevExerciseId) : -1;
-    if (byExercise >= 0) openIdx = String(byExercise);
-    else if (Number(prevBodyIdx) < entry.logs.length) openIdx = prevBodyIdx;
-  }
-
   container.innerHTML = html;
 
   container.querySelectorAll('.card-header').forEach(header => {
     header.onclick = (e) => {
       if (e.target.closest('.drag-handle')) return;
       const idx = header.dataset.idx;
+      const clickedId = header.dataset.exerciseid;
       const body = document.getElementById(`body-${idx}`);
       const chevron = document.getElementById(`chevron-${idx}`);
-      const wasOpen = body.classList.contains('open');
+      const wasOpen = openExerciseId === clickedId;
 
       container.querySelectorAll('.card-body.open').forEach(b => b.classList.remove('open'));
       container.querySelectorAll('.card-chevron.open').forEach(c => c.classList.remove('open'));
 
-      if (!wasOpen) {
+      if (wasOpen) {
+        openExerciseId = null;
+      } else {
+        openExerciseId = clickedId;
         body.classList.add('open');
         chevron.classList.add('open');
       }
     };
   });
-
-  if (openIdx !== null) {
-    const body = document.getElementById(`body-${openIdx}`);
-    const chevron = document.getElementById(`chevron-${openIdx}`);
-    if (body) body.classList.add('open');
-    if (chevron) chevron.classList.add('open');
-  }
 
   document.getElementById('finish-workout-btn').onclick = () => finishWorkout();
   const addMidBtn = document.getElementById('add-exercise-mid-btn');
@@ -370,6 +360,7 @@ async function finishWorkout() {
     const firstErrorIdx = errorsByLog.keys().next().value;
     document.querySelectorAll('.card-body.open').forEach(b => b.classList.remove('open'));
     document.querySelectorAll('.card-chevron.open').forEach(c => c.classList.remove('open'));
+    openExerciseId = entry.logs[firstErrorIdx]?.exercise_id ?? null;
     const body = document.getElementById(`body-${firstErrorIdx}`);
     if (body) {
       body.classList.add('open');
@@ -461,6 +452,7 @@ function swapExerciseInActiveWorkout(logIdx, newExerciseId) {
     if (result.reason === 'duplicate') toast('Ese ejercicio ya está en el entreno', 'warn');
     return;
   }
+  openExerciseId = newExerciseId; // la tarjeta cambiada queda abierta mostrando el nuevo ejercicio
   persistDB();
   rerenderWorkout();
   toast(`Cambiado a ${name}`, 'ok');
@@ -626,6 +618,7 @@ function removeExerciseFromRoutine(dayType, exerciseId) {
         DB.routines[dayType] = DB.routines[dayType].filter(id => id !== exerciseId);
         const entry = getTodayEntry();
         if (entry && !entry.completed) entry.logs = entry.logs.filter(l => l.exercise_id !== exerciseId);
+        if (openExerciseId === exerciseId) openExerciseId = null;
         persistDB();
         renderHoy();
         toast(`Ejercicio eliminado de ${DAY_LABELS[dayType]}`);
