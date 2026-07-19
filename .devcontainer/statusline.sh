@@ -72,12 +72,12 @@ CTXPCT=$(j '.context_window.used_percentage // empty' | cut -d. -f1)
 ctxtxt=""
 [ -n "$CTXPCT" ] && ctxtxt="${DIM}ctx${R} ${CTXPCT}%"
 
-LEFT="${BC}[${MODEL}]${R} ${barline}"
+LEFT="${BC}${MODEL}${R} ${barline}"
 [ -n "$usage" ] && LEFT="${LEFT} ${DIM}·${R} ${usage}"
 [ -n "$ctxtxt" ] && LEFT="${LEFT} ${DIM}·${R} ${ctxtxt}"
 
 RIGHT=""
-[ -n "$b" ] && RIGHT="${BC}[${BR}${b}${x}${BC}]${R}${wttag}"
+[ -n "$b" ] && RIGHT="${BR}${b}${x}${R}${wttag}"
 [ -z "$b" ] && RIGHT="${wttag}"
 [ -n "$pre" ] && RIGHT="${RIGHT} ${pre}"
 
