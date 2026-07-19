@@ -1,12 +1,12 @@
 import { DB, getExerciseName, persistDB } from '../src/store.js';
 import { icon, chevronIcon, toast, showModal, escHtml } from '../src/ui.js';
-import { buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
+import { buildExerciseCardBodyHtml } from '../src/builders.js';
 import { validateLog } from '../src/workout.js';
 import { sortHistory, findLog } from '../src/data.js';
 import { formatDate, relativeDate, dateBlock } from '../src/dates.js';
 import { formatLogSummary } from '../src/formatting.js';
 import { DAY_LABELS } from '../src/constants.js';
-import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection, patchParamInputs } from './shared.js';
+import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection, patchParamInputs, handleFocusSeries } from './shared.js';
 
 const CARD_COLLAPSE_MS = 350; // matches max-height transition in index.css (.card-body)
 const historialOpenCards = new Set();
@@ -166,19 +166,8 @@ export function renderHistorialDetail(date) {
       ${chevronIcon(`hchevron-${logIdx}`, isOpen)}
     </div>
     <div class="card-body${isOpen ? ' open' : ''}" id="hbody-${logIdx}">`;
-    html += `<div id="h-histstrip-${logIdx}">`;
-    html += buildHistoryStripHtml(DB, log.exercise_id, log, date);
-    html += '</div>';
-    html += '<div class="params-section">';
-    html += buildParamRowsHtml('h', logIdx, log, date);
-    html += '</div>';
-    html += '<div class="divider"></div>';
-    html += `<div class="series-section">
-      <div class="series-section-label">Reps por serie</div>
-      <div id="h-seriesrows-${logIdx}">`;
     const focused = historialFocusedSeries?.logIdx === logIdx ? historialFocusedSeries.seriesIdx : null;
-    html += buildAllSeriesRowsHtml('h', logIdx, log, date, false, focused);
-    html += '</div></div>';
+    html += buildExerciseCardBodyHtml(DB, 'h', logIdx, log, date, { date, focusedSeriesIdx: focused });
     if (isDirty) {
       html += `<div class="card-footer">
         <button class="btn-primary historial-save-btn" data-action="histSave" data-logidx="${logIdx}" data-date="${date}">Guardar</button>
@@ -264,25 +253,13 @@ export function renderHistorialDetail(date) {
       const entry = DB.history.find(h => h.date === historialDetailDate);
       if (entry) applyValidationErrors(idx, entry.logs[idx], 'h');
     },
-    onFocusSeries: (_el, logIdx, seriesIdx) => {
-      const prevLogIdx = historialFocusedSeries?.logIdx;
-      if (historialFocusedSeries?.logIdx === logIdx && historialFocusedSeries?.seriesIdx === seriesIdx) {
-        historialFocusedSeries = null;
-      } else {
-        historialFocusedSeries = { logIdx, seriesIdx };
-      }
-      if (prevLogIdx != null && prevLogIdx !== logIdx) {
-        const entry = DB.history.find(h => h.date === historialDetailDate);
-        const oldLog = entry?.logs[prevLogIdx];
-        if (oldLog) patchSeriesSection('h', prevLogIdx, oldLog, historialDetailDate, null);
-      }
-      const entry = DB.history.find(h => h.date === historialDetailDate);
-      const log = entry?.logs[logIdx];
-      if (log) {
-        const fi = historialFocusedSeries?.logIdx === logIdx ? historialFocusedSeries.seriesIdx : null;
-        patchSeriesSection('h', logIdx, log, historialDetailDate, fi);
-      }
-    },
+    onFocusSeries: (_el, logIdx, seriesIdx) => handleFocusSeries({
+      prefix: 'h',
+      current: historialFocusedSeries,
+      setCurrent: v => { historialFocusedSeries = v; },
+      getLogAt: i => DB.history.find(h => h.date === historialDetailDate)?.logs[i] ?? null,
+      date: historialDetailDate,
+    }, logIdx, seriesIdx),
     extraActions: (el, action) => {
       if (action !== 'histSave') return;
       const logIdx = parseInt(el.dataset.logidx);

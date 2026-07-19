@@ -1,12 +1,12 @@
 import { DB, getExerciseName, getTodayEntry, getBestRecentValuesForExercise, persistDB, saveDBLocal, saveDBToGitHub, getGithubConfig, setSyncState } from '../src/store.js';
 import { icon, chevronIcon, toast, showModal, hideModal, safeSetLocal, escHtml } from '../src/ui.js';
-import { buildHistoryStripHtml, buildParamRowsHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
+import { buildExerciseCardBodyHtml } from '../src/builders.js';
 import { buildWorkoutEntry, buildLog, finishWorkoutEntry, validateEntry, reorderByIndex, swapLogExercise, detectRecords, findReciprocalSwapTarget, buildPendingSwap, consumePendingSwap } from '../src/workout.js';
 import { ensureHistorySorted, sortExercisesForSwap, hasDayOccurredThisWeek } from '../src/data.js';
 import { DAY_LABELS, ROUTINE_KEYS, NEEDS_UPLOAD_KEY } from '../src/constants.js';
 import { todayStr, getWeekStartStr } from '../src/dates.js';
 import { formatLogSummary, slugifyExerciseName } from '../src/formatting.js';
-import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection, patchParamInputs } from './shared.js';
+import { setupLogActionDelegation, applyValidationErrors, patchSubtitle, patchHistoryStrip, patchSeriesSection, patchParamInputs, handleFocusSeries } from './shared.js';
 
 let focusedSeries = null; // { logIdx, seriesIdx } | null
 let openExerciseId = null; // exercise_id de la tarjeta expandida en el entreno activo | null
@@ -29,6 +29,11 @@ export function renderHoy() {
   title.textContent = 'Rutinas';
   openExerciseId = null;
   renderDaySelector(content);
+}
+
+function goToDaySelector(container) {
+  document.getElementById('hoy-title').textContent = 'Rutinas';
+  renderDaySelector(container);
 }
 
 function renderDaySelector(container) {
@@ -84,15 +89,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
     </div>
     <div class="card-body" id="rbody-${idx}">`;
 
-    html += buildHistoryStripHtml(DB, id, log, todayStr());
-    html += '<div class="params-section">';
-    html += buildParamRowsHtml('r', idx, log, null, true);
-    html += '</div>';
-    html += '<div class="divider"></div>';
-    html += `<div class="series-section">
-      <div class="series-section-label">Reps por serie</div>`;
-    html += buildAllSeriesRowsHtml('r', idx, log, null, true);
-    html += '</div>';
+    html += buildExerciseCardBodyHtml(DB, 'r', idx, log, todayStr(), { readOnly: true });
     html += '</div></div>';
   });
 
@@ -123,10 +120,7 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
 
   const backBtn = document.getElementById('back-to-selector-btn');
   if (backBtn) {
-    backBtn.onclick = () => {
-      document.getElementById('hoy-title').textContent = 'Rutinas';
-      renderDaySelector(container);
-    };
+    backBtn.onclick = () => goToDaySelector(container);
   }
 }
 
@@ -208,11 +202,11 @@ function renderActiveWorkout(container, entry) {
 <div id="workout-cards-list">`;
 
   let hasRecord = false;
+  const prevEntries = DB.history.filter(h => h.date !== entry.date);
 
   entry.logs.forEach((log, logIdx) => {
     const name = escHtml(getExerciseName(log.exercise_id));
 
-    const prevEntries = DB.history.filter(h => h.date !== entry.date);
     const { isVolRecord, isE1RMRecord } = detectRecords(log, prevEntries);
     if (isVolRecord || isE1RMRecord) hasRecord = true;
 
@@ -232,22 +226,8 @@ function renderActiveWorkout(container, entry) {
     </div>
     <div class="card-body${isOpen ? ' open' : ''}" id="body-${logIdx}">`;
 
-    html += `<div id="w-histstrip-${logIdx}">`;
-    html += buildHistoryStripHtml(DB, log.exercise_id, log, entry.date);
-    html += '</div>';
-
-    html += '<div class="params-section">';
-    html += buildParamRowsHtml('w', logIdx, log);
-    html += '</div>';
-
-    html += '<div class="divider"></div>';
-
-    html += `<div class="series-section">
-      <div class="series-section-label">Reps por serie</div>
-      <div id="w-seriesrows-${logIdx}">`;
     const focused = focusedSeries?.logIdx === logIdx ? focusedSeries.seriesIdx : null;
-    html += buildAllSeriesRowsHtml('w', logIdx, log, null, false, focused);
-    html += '</div></div>';
+    html += buildExerciseCardBodyHtml(DB, 'w', logIdx, log, entry.date, { focusedSeriesIdx: focused });
 
     html += `<div class="card-footer">
       <button class="swap-btn" data-action="swapExercise" data-logidx="${logIdx}">Cambiar por otro</button>
@@ -317,25 +297,12 @@ function renderActiveWorkout(container, entry) {
     },
     onSuccess: (el, _log, idx) => { persistDB(); patchWorkoutCard(idx, el.dataset.param !== 'weight'); },
     onToggleSkip: (_el, log, idx) => { persistDB(); patchSkipState(idx, log); },
-    onFocusSeries: (_el, logIdx, seriesIdx) => {
-      const prevLogIdx = focusedSeries?.logIdx;
-      if (focusedSeries?.logIdx === logIdx && focusedSeries?.seriesIdx === seriesIdx) {
-        focusedSeries = null;
-      } else {
-        focusedSeries = { logIdx, seriesIdx };
-      }
-      if (prevLogIdx != null && prevLogIdx !== logIdx) {
-        const en = getTodayEntry();
-        const oldLog = en?.logs[prevLogIdx];
-        if (oldLog) patchSeriesSection('w', prevLogIdx, oldLog, null, null);
-      }
-      const en = getTodayEntry();
-      const log = en?.logs[logIdx];
-      if (log) {
-        const fi = focusedSeries?.logIdx === logIdx ? focusedSeries.seriesIdx : null;
-        patchSeriesSection('w', logIdx, log, null, fi);
-      }
-    },
+    onFocusSeries: (_el, logIdx, seriesIdx) => handleFocusSeries({
+      prefix: 'w',
+      current: focusedSeries,
+      setCurrent: v => { focusedSeries = v; },
+      getLogAt: i => getTodayEntry()?.logs[i] ?? null,
+    }, logIdx, seriesIdx),
     extraActions: (el, action) => {
       if (action === 'removeExercise') {
         removeExerciseFromRoutine(el.dataset.daytype, el.dataset.exerciseid);
@@ -424,10 +391,7 @@ function renderCompletedToday(container, entry) {
 
   container.innerHTML = html;
 
-  document.getElementById('back-to-selector-btn').onclick = () => {
-    document.getElementById('hoy-title').textContent = 'Rutinas';
-    renderDaySelector(container);
-  };
+  document.getElementById('back-to-selector-btn').onclick = () => goToDaySelector(container);
 }
 
 function addExerciseToRoutineAndActiveWorkout(id, dayType) {

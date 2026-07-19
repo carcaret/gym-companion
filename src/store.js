@@ -122,6 +122,11 @@ export function saveDBLocal() {
   }
 }
 
+/** Un DB remoto es aplicable solo si trae las claves mínimas (exercises + history). */
+export function isValidRemoteDB(remote) {
+  return !!(remote && remote.exercises && remote.history);
+}
+
 export function applyRemoteDB(remote) {
   DB = remote;
   ensureHistorySorted(DB);

@@ -102,6 +102,20 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
   </div>`;
 }
 
+/**
+ * Cuerpo compartido de una card de ejercicio: history strip + params + series.
+ * readOnly=true (preview de rutina / completado) omite los wrappers con id que
+ * solo necesita el patch incremental del entreno activo.
+ */
+export function buildExerciseCardBodyHtml(db, prefix, idx, log, anchorDate, { readOnly = false, focusedSeriesIdx = null, date = null } = {}) {
+  const strip = buildHistoryStripHtml(db, log.exercise_id, log, anchorDate);
+  const stripHtml = readOnly ? strip : `<div id="${prefix}-histstrip-${idx}">${strip}</div>`;
+  const seriesRows = buildAllSeriesRowsHtml(prefix, idx, log, date, readOnly, focusedSeriesIdx);
+  const seriesHtml = readOnly ? seriesRows : `<div id="${prefix}-seriesrows-${idx}">${seriesRows}</div>`;
+  return `${stripHtml}<div class="params-section">${buildParamRowsHtml(prefix, idx, log, date, readOnly)}</div><div class="divider"></div><div class="series-section">
+      <div class="series-section-label">Reps por serie</div>${seriesHtml}</div>`;
+}
+
 export function buildParamRowsHtml(prefix, logIdx, log, date = null, readOnly = false) {
   if (readOnly) {
     return `<div class="param-row">

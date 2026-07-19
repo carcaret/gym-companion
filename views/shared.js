@@ -89,6 +89,30 @@ export function patchSeriesSection(prefix, logIdx, log, date, focusedSeriesIdx) 
   if (el) el.innerHTML = buildAllSeriesRowsHtml(prefix, logIdx, log, date, false, focusedSeriesIdx);
 }
 
+/**
+ * Lógica compartida del toggle de "serie enfocada" (chips de reps).
+ * `current` es el estado enfocado actual (pre-mutación); `setCurrent` lo reasigna.
+ * `getLogAt(idx)` resuelve el log vivo. Todo se lee/pasa por invocación para que
+ * funcione con la delegación que se ata una sola vez al contenedor.
+ */
+export function handleFocusSeries({ prefix, current, setCurrent, getLogAt, date = null }, logIdx, seriesIdx) {
+  const prevLogIdx = current?.logIdx;
+  const isSame = current?.logIdx === logIdx && current?.seriesIdx === seriesIdx;
+  const next = isSame ? null : { logIdx, seriesIdx };
+  setCurrent(next);
+
+  if (prevLogIdx != null && prevLogIdx !== logIdx) {
+    const oldLog = getLogAt(prevLogIdx);
+    if (oldLog) patchSeriesSection(prefix, prevLogIdx, oldLog, date, null);
+  }
+
+  const log = getLogAt(logIdx);
+  if (log) {
+    const fi = next?.logIdx === logIdx ? next.seriesIdx : null;
+    patchSeriesSection(prefix, logIdx, log, date, fi);
+  }
+}
+
 export function patchParamInputs(prefix, logIdx, log) {
   const weightEl = document.getElementById(`${prefix}-weight-${logIdx}`);
   if (weightEl) weightEl.value = log.weight;

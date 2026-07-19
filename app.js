@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '2.7.1';
+const APP_VERSION = '2.7.2';
 
 import { NEEDS_UPLOAD_KEY } from './src/constants.js';
 import { toast, showModal, setupBarTooltips } from './src/ui.js';
@@ -15,7 +15,7 @@ import {
   setSyncState, getGithubConfig, isSyncConfigured,
   loadDBFromGitHub, saveDBToGitHub,
   applyRemoteDB, pullFromGitHubIfClean, loadDB, initDB, flushPendingSave,
-  isWorkoutActive, setConflict,
+  isWorkoutActive, setConflict, isValidRemoteDB,
 } from './src/store.js';
 
 function showConflictModal() {
@@ -36,7 +36,7 @@ function showConflictModal() {
       {
         label: 'Bajar GitHub → local', className: 'btn-primary btn-sm', action: async () => {
           const remote = await loadDBFromGitHub();
-          if (!remote || !remote.exercises || !remote.history) {
+          if (!isValidRemoteDB(remote)) {
             toast('No se pudo descargar desde GitHub', 'error'); return false;
           }
           applyRemoteDB(remote);
@@ -127,6 +127,13 @@ function _moveIndicator(toTab) {
 }
 
 // ── Navigation ──
+const VIEW_INITIALIZERS = {
+  hoy: renderHoy,
+  historial: renderHistorial,
+  graficas: initCharts,
+  ajustes: initSettings,
+};
+
 function navigateToTab(view) {
   const toTab = document.querySelector(`#tab-bar .tab[data-view="${view}"]`);
   if (toTab && !toTab.classList.contains('active')) _moveIndicator(toTab);
@@ -137,12 +144,7 @@ function navigateToTab(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(`view-${view}`)?.classList.add('active');
 
-  setTimeout(() => {
-    if (view === 'hoy') renderHoy();
-    else if (view === 'historial') renderHistorial();
-    else if (view === 'graficas') initCharts();
-    else if (view === 'ajustes') initSettings();
-  }, 0);
+  setTimeout(() => VIEW_INITIALIZERS[view]?.(), 0);
 }
 
 function setupTabs() {

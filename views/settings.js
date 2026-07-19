@@ -1,4 +1,4 @@
-import { getGithubConfig, getPat, isSyncConfigured, loadDBFromGitHub, saveDBToGitHub, persistDB, setSyncState, conflict, fetchGithubDb, githubSha } from '../src/store.js';
+import { getGithubConfig, getPat, isSyncConfigured, loadDBFromGitHub, saveDBToGitHub, persistDB, setSyncState, conflict, fetchGithubDb, githubSha, isValidRemoteDB } from '../src/store.js';
 import { safeSetLocal, toast, showModal } from '../src/ui.js';
 import { GITHUB_KEY, PAT_KEY } from '../src/constants.js';
 
@@ -75,7 +75,7 @@ export function setupSettings({ onConflict, onRemoteApplied }) {
           label: 'Sobreescribir local', className: 'btn-primary btn-sm', action: async () => {
             toast('Descargando de GitHub...', null, 8000);
             const remote = await loadDBFromGitHub();
-            if (!remote || !remote.exercises || !remote.history) {
+            if (!isValidRemoteDB(remote)) {
               toast('No se pudo descargar o formato inválido', 'error');
               return false;
             }
