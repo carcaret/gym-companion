@@ -23028,6 +23028,108 @@
           "weight": 59
         }
       ]
+    },
+    {
+      "date": "2026-07-20",
+      "type": "DIA1",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "prensa_de_piernas",
+          "name": "Prensa de Piernas",
+          "series": 4,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 220
+        },
+        {
+          "exercise_id": "press_banca_mancuernas",
+          "name": "Press de Banca con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              10,
+              8
+            ]
+          },
+          "weight": 28
+        },
+        {
+          "exercise_id": "jalon_al_pecho",
+          "name": "Jalón al Pecho",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              8
+            ]
+          },
+          "weight": 68,
+          "swappedFrom": "hammer_row_prono"
+        },
+        {
+          "exercise_id": "elevaciones_laterales_con_mancuernas",
+          "name": "Elevaciones Laterales con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 15,
+            "actual": [
+              15,
+              15,
+              15
+            ]
+          },
+          "weight": 12
+        },
+        {
+          "exercise_id": "curl_femoral_sentado",
+          "name": "Curl Femoral Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9,
+              9
+            ]
+          },
+          "weight": 97
+        },
+        {
+          "exercise_id": "hammer_curl_mancuernas",
+          "name": "Hammer curl mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 14
+        }
+      ]
     }
-  ]
+  ],
+  "pendingSwaps": {
+    "DIA2": {
+      "fromExerciseId": "jalon_al_pecho",
+      "toExerciseId": "hammer_row_prono",
+      "weekStart": "2026-07-20"
+    }
+  }
 }
