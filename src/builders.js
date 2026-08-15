@@ -42,15 +42,15 @@ export function formatActualReps(log) {
   return actual.map(r => (r !== null && r !== undefined) ? r : '-').join('-');
 }
 
+// Tooltip en 2 líneas: e1RM arriba, peso · reps abajo (evita recortes por ancho).
+// El '\n' se renderiza con white-space:pre en el ::after de .bar-wrap.
 export function buildBarTooltip(log) {
   const repsStr = formatActualReps(log);
   const weightPart = log.weight > 0 ? `${log.weight}kg` : '';
   const e1rm = computeE1RM(log);
-  const parts = [];
-  if (e1rm > 0) parts.push(`e1RM ${Math.round(e1rm * 10) / 10}kg`);
-  if (weightPart) parts.push(weightPart);
-  if (repsStr) parts.push(repsStr);
-  return parts.join(' · ');
+  const l1 = e1rm > 0 ? `e1RM ${Math.round(e1rm * 10) / 10}kg` : '';
+  const l2 = [weightPart, repsStr].filter(Boolean).join(' · ');
+  return [l1, l2].filter(Boolean).join('\n');
 }
 
 export function getPrimaryMetric(log) {
@@ -112,7 +112,8 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
     const barClass = session.isCurrent ? 'current' : 'prev';
     const barStyle = `height:${height}%; background:${computeBarColor(session.log, minMetric, maxMetric)}`;
     const tooltip = buildBarTooltip(session.log);
-    const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}" tabindex="0" aria-label="${tooltip}"` : '';
+    const ariaLabel = tooltip.replace(/\n/g, ' · ');
+    const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}" tabindex="0" aria-label="${ariaLabel}"` : '';
     return `<div class="history-bar-col">
       <div class="bar-wrap"${tooltipAttr}><div class="bar ${barClass}" style="${barStyle}"></div></div>
       <div class="bar-date">${label}</div>

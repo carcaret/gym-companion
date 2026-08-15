@@ -91,8 +91,9 @@ export function setupBarTooltips() {
 
 /**
  * Desplaza el tooltip de una barra lo mínimo para que no lo recorte el borde
- * del viewport. El tooltip es un ::after centrado (translateX(-50%)); aquí se
- * calcula --tt-shift (px) que se suma a esa traslación en CSS.
+ * de lo que lo contiene. El clip real es el ancestro con overflow != visible
+ * (el .card), no el viewport. El tooltip es un ::after centrado
+ * (translateX(-50%)); aquí se calcula --tt-shift (px) que se suma en CSS.
  */
 export function positionBarTooltip(wrap) {
   const MARGIN = 8;
@@ -102,12 +103,26 @@ export function positionBarTooltip(wrap) {
   const px = v => parseFloat(v) || 0;
   const ttWidth = px(after.width) + px(after.paddingLeft) + px(after.paddingRight)
     + px(after.borderLeftWidth) + px(after.borderRightWidth);
+
+  // Límites del recorte: primer ancestro con overflow horizontal oculto; si no,
+  // el viewport. Se acota además al viewport por si el ancestro fuese más ancho.
+  let lo = 0, hi = window.innerWidth;
+  for (let node = wrap.parentElement; node; node = node.parentElement) {
+    if (getComputedStyle(node).overflowX !== 'visible') {
+      const r = node.getBoundingClientRect();
+      lo = Math.max(lo, r.left);
+      hi = Math.min(hi, r.right);
+      break;
+    }
+  }
+  lo += MARGIN;
+  hi -= MARGIN;
+
   const left = centerX - ttWidth / 2;
   const right = centerX + ttWidth / 2;
-  const vw = window.innerWidth;
   let shift = 0;
-  if (left < MARGIN) shift = MARGIN - left;
-  else if (right > vw - MARGIN) shift = (vw - MARGIN) - right;
+  if (left < lo) shift = lo - left;
+  else if (right > hi) shift = hi - right;
   wrap.style.setProperty('--tt-shift', `${Math.round(shift)}px`);
 }
 

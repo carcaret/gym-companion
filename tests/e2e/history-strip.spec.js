@@ -95,7 +95,7 @@ test.describe('History strip (franja de últimas sesiones)', () => {
     expect(w5Tooltip).toBeNull();
   });
 
-  test('tooltip tiene formato "e1RM Xkg · <peso>kg · <reps>"', async ({ page }) => {
+  test('tooltip en 2 líneas: "e1RM Xkg\\n<peso>kg · <reps>"', async ({ page }) => {
     await injectDb(page, buildDbWithRecentHistory());
     await page.goto('/');
     await startDia1(page);
@@ -104,12 +104,14 @@ test.describe('History strip (franja de últimas sesiones)', () => {
     // Bar W-1 (nth(4)) → 60kg, reps [12, 11, 10]
     // e1RM = 60*(1+12/30) = 84 kg
     const barW1 = page.locator('#body-0 .history-bar-col').nth(4).locator('.bar-wrap');
-    await expect(barW1).toHaveAttribute('data-tooltip', 'e1RM 84kg · 60kg · 12-11-10');
+    await expect(barW1).toHaveAttribute('data-tooltip', 'e1RM 84kg\n60kg · 12-11-10');
+    // aria-label se mantiene en una línea para lectores de pantalla
+    await expect(barW1).toHaveAttribute('aria-label', 'e1RM 84kg · 60kg · 12-11-10');
 
     // Bar W-2 (nth(3)) → 55kg, reps [10, 10, 8]
     // e1RM = max(55*(1+10/30), 55*(1+10/30), 55*(1+8/30)) = 55*(1+10/30) ≈ 73.3 kg
     const barW2 = page.locator('#body-0 .history-bar-col').nth(3).locator('.bar-wrap');
-    await expect(barW2).toHaveAttribute('data-tooltip', 'e1RM 73.3kg · 55kg · 10-10-8');
+    await expect(barW2).toHaveAttribute('data-tooltip', 'e1RM 73.3kg\n55kg · 10-10-8');
   });
 
   test('barra más alta corresponde a la sesión con mayor e1RM', async ({ page }) => {

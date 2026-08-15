@@ -1260,7 +1260,9 @@ body {
   left: 50%;
   /* --tt-shift lo fija JS (positionBarTooltip) para no recortar en los bordes */
   transform: translateX(calc(-50% + var(--tt-shift, 0px)));
-  white-space: nowrap;
+  white-space: pre;
+  text-align: center;
+  line-height: 1.35;
   background: var(--bg-tooltip);
   color: var(--text-primary);
   padding: 4px 8px;
