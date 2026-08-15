@@ -82,8 +82,33 @@ export function setupBarTooltips() {
     document.querySelectorAll('.bar-wrap.tooltip-active').forEach(el => {
       if (el !== wrap) el.classList.remove('tooltip-active');
     });
-    if (wrap) wrap.classList.toggle('tooltip-active');
+    if (!wrap) return;
+    const nowActive = wrap.classList.toggle('tooltip-active');
+    if (nowActive) positionBarTooltip(wrap);
+    else wrap.style.removeProperty('--tt-shift');
   });
+}
+
+/**
+ * Desplaza el tooltip de una barra lo mínimo para que no lo recorte el borde
+ * del viewport. El tooltip es un ::after centrado (translateX(-50%)); aquí se
+ * calcula --tt-shift (px) que se suma a esa traslación en CSS.
+ */
+export function positionBarTooltip(wrap) {
+  const MARGIN = 8;
+  const rect = wrap.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const after = getComputedStyle(wrap, '::after');
+  const px = v => parseFloat(v) || 0;
+  const ttWidth = px(after.width) + px(after.paddingLeft) + px(after.paddingRight)
+    + px(after.borderLeftWidth) + px(after.borderRightWidth);
+  const left = centerX - ttWidth / 2;
+  const right = centerX + ttWidth / 2;
+  const vw = window.innerWidth;
+  let shift = 0;
+  if (left < MARGIN) shift = MARGIN - left;
+  else if (right > vw - MARGIN) shift = (vw - MARGIN) - right;
+  wrap.style.setProperty('--tt-shift', `${Math.round(shift)}px`);
 }
 
 const SYNC_SVGS = {
