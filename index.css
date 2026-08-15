@@ -519,17 +519,18 @@ body {
   justify-content: center;
   box-sizing: border-box;
 }
+/* filled = por debajo del objetivo → verde; done = en/por encima → azul */
 .series-cell-static.filled,
 .series-cell-input.filled {
-  background: var(--accent-tint);
-  border-color: rgba(86, 156, 214, 0.5);
-  color: var(--accent-soft);
-}
-.series-cell-static.done,
-.series-cell-input.done {
   background: var(--green-tint);
   border-color: rgba(93, 202, 165, 0.5);
   color: var(--green-soft);
+}
+.series-cell-static.done,
+.series-cell-input.done {
+  background: var(--accent-tint);
+  border-color: rgba(86, 156, 214, 0.5);
+  color: var(--accent-soft);
 }
 
 /* ── Day Selector (non-training day) ── */
@@ -1275,12 +1276,7 @@ body {
   border-radius: 2px 2px 0 0;
   min-height: 3px;
 }
-.bar.current { background: var(--accent); }
-.bar.prev1   { background: #4b88bb; }
-.bar.prev2   { background: #4075a0; }
-.bar.prev3   { background: #346185; }
-.bar.prev4   { background: #294e6b; }
-.bar.prev5   { background: #1e3a50; }
+/* color inline vía computeBarColor (azul=cumplido por e1RM, verde=déficit) */
 .bar.empty {
   background: var(--border);
   opacity: 0.4;
@@ -1365,15 +1361,16 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .series-cell-chip:active { transform: scale(0.97); }
+/* done = en/por encima del objetivo → azul; filled = por debajo → verde */
 .series-cell-chip.done {
-  background: var(--green-tint);
-  border-color: rgba(93, 202, 165, 0.5);
-  color: var(--green-soft);
-}
-.series-cell-chip.filled {
   background: var(--accent-tint);
   border-color: rgba(86, 156, 214, 0.5);
   color: var(--accent-soft);
+}
+.series-cell-chip.filled {
+  background: var(--green-tint);
+  border-color: rgba(93, 202, 165, 0.5);
+  color: var(--green-soft);
 }
 .series-cell-chip.focused {
   border-color: #e8b84b;
@@ -1418,27 +1415,28 @@ body {
   transition: background-color 0.12s, border-color 0.12s, color 0.12s;
 }
 .chip-strip .chip:active { transform: scale(0.97); }
+/* below = por debajo objetivo → verde; at-target → azul; above → rojo */
 .chip-strip .chip.below {
-  color: var(--accent-soft);
-  border-color: rgba(86, 156, 214, 0.3);
-}
-.chip-strip .chip.at-target {
   color: var(--green-soft);
   border-color: rgba(93, 202, 165, 0.3);
+}
+.chip-strip .chip.at-target {
+  color: var(--accent-soft);
+  border-color: rgba(86, 156, 214, 0.3);
 }
 .chip-strip .chip.above {
   color: var(--danger);
   border-color: rgba(217, 112, 112, 0.3);
 }
 .chip-strip .chip.current.below {
-  background: var(--accent-tint);
-  border-color: var(--accent-soft);
-  color: var(--accent-soft);
-}
-.chip-strip .chip.current.at-target {
   background: var(--green-tint);
   border-color: var(--green-soft);
   color: var(--green-soft);
+}
+.chip-strip .chip.current.at-target {
+  background: var(--accent-tint);
+  border-color: var(--accent-soft);
+  color: var(--accent-soft);
 }
 .chip-strip .chip.current.above {
   background: var(--danger-tint);

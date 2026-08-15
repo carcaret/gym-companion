@@ -23,6 +23,23 @@ export function computeE1RM(log) {
   return maxE1RM;
 }
 
+/**
+ * Reps que faltaron para el objetivo, sumadas sobre todas las series.
+ * Solo cuenta series rellenadas (actual != null); las vacías se ignoran
+ * (entreno en curso). Series que igualan o superan el objetivo no suman.
+ * 0 = objetivo cumplido (o superado) en todas las series rellenadas.
+ */
+export function computeRepShortfall(log) {
+  const expected = log.reps.expected;
+  const actual = log.reps.actual || [];
+  let shortfall = 0;
+  for (const r of actual) {
+    if (r == null) continue;
+    if (r < expected) shortfall += expected - r;
+  }
+  return shortfall;
+}
+
 export function computeSessionDeltaPct(currentMetric, prevMetric) {
   if (prevMetric <= 0) return null;
   const pct = Math.round(((currentMetric - prevMetric) / prevMetric) * 100);

@@ -1,6 +1,38 @@
 import { getRecentSessionsForExercise as _getRecentSessionsForExercise } from './data.js';
-import { computeVolume, computeE1RM, computeSessionDeltaPct } from './metrics.js';
+import { computeVolume, computeE1RM, computeSessionDeltaPct, computeRepShortfall } from './metrics.js';
 import { formatDateShort } from './dates.js';
+
+// Endpoints del gradiente de barra. Azul = objetivo cumplido, tono por e1RM
+// (magnitud): oscuro→claro. Verde = no cumplido, tono por reps faltantes:
+// vivo (falta 1) → apagado (falta mucho). Suelo a GREEN_STEP*(n-1) >= 1.
+const BLUE_DARK = [0x1e, 0x3a, 0x50];   // rgb(30,58,80)   — e1RM mínimo
+const BLUE_LIGHT = [0x56, 0x9c, 0xd6];  // rgb(86,156,214) — e1RM máximo (--accent)
+const GREEN_VIVID = [93, 202, 165];     // --green-soft #5dcaa5 — falta 1 rep
+const GREEN_FLOOR = [36, 86, 70];       // verde apagado — falta mucho
+const GREEN_STEP = 0.2;                 // 1 rep = 20% hacia el suelo (suelo a 6 faltantes)
+
+function lerpRgb(a, b, t) {
+  const r = Math.round(a[0] + (b[0] - a[0]) * t);
+  const g = Math.round(a[1] + (b[1] - a[1]) * t);
+  const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+  return `rgb(${r},${g},${bl})`;
+}
+
+/**
+ * Color de una barra del history strip.
+ * Objetivo cumplido (shortfall 0) → azul degradado por e1RM entre min y max.
+ * No cumplido → verde degradado por reps faltantes (paso fijo por rep).
+ */
+export function computeBarColor(log, minMetric, maxMetric) {
+  const shortfall = computeRepShortfall(log);
+  if (shortfall === 0) {
+    const metric = getPrimaryMetric(log);
+    const t = maxMetric === minMetric ? 1 : (metric - minMetric) / (maxMetric - minMetric);
+    return lerpRgb(BLUE_DARK, BLUE_LIGHT, t);
+  }
+  const t = Math.min(1, (shortfall - 1) * GREEN_STEP);
+  return lerpRgb(GREEN_VIVID, GREEN_FLOOR, t);
+}
 
 export function formatActualReps(log) {
   const actual = log.reps && log.reps.actual;
@@ -41,14 +73,6 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
   const maxMetric = sessionMetrics.length ? Math.max(...sessionMetrics) : 0;
   const minMetric = sessionMetrics.length ? Math.min(...sessionMetrics) : 0;
 
-  const barColor = metric => {
-    const t = maxMetric === minMetric ? 1 : (metric - minMetric) / (maxMetric - minMetric);
-    const r = Math.round(0x1e + (0x56 - 0x1e) * t);
-    const g = Math.round(0x3a + (0x9c - 0x3a) * t);
-    const b = Math.round(0x50 + (0xd6 - 0x50) * t);
-    return `rgb(${r},${g},${b})`;
-  };
-
   let deltaHtml = '';
   if (hasCurrent) {
     const prev = [...allSessions].slice(0, -1).reverse().find(s => !s.isCurrent && !s.log.skipped);
@@ -86,7 +110,7 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
     const metric = getPrimaryMetric(session.log);
     const height = maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 6;
     const barClass = session.isCurrent ? 'current' : 'prev';
-    const barStyle = `height:${height}%; background:${barColor(metric)}`;
+    const barStyle = `height:${height}%; background:${computeBarColor(session.log, minMetric, maxMetric)}`;
     const tooltip = buildBarTooltip(session.log);
     const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}" tabindex="0" aria-label="${tooltip}"` : '';
     return `<div class="history-bar-col">
