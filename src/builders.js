@@ -2,9 +2,11 @@ import { getRecentSessionsForExercise as _getRecentSessionsForExercise } from '.
 import { computeVolume, computeE1RM, computeSessionDeltaPct, computeRepShortfall } from './metrics.js';
 import { formatDateShort } from './dates.js';
 
-// Endpoints del gradiente de barra. Azul = objetivo cumplido, tono por e1RM
-// (magnitud): oscuro→claro. Verde = no cumplido, tono por reps faltantes:
-// vivo (falta 1) → apagado (falta mucho). Suelo a GREEN_STEP*(n-1) >= 1.
+// Endpoints del gradiente de barra. Verde = mismo peso que la sesión de
+// referencia y objetivo no cumplido, tono por reps faltantes: vivo (falta 1) →
+// apagado (falta mucho); suelo a GREEN_STEP*(n-1) >= 1. Cualquier otro caso
+// (objetivo cumplido, o peso distinto al de la sesión actual) = azul, tono por
+// e1RM (magnitud): oscuro→claro.
 const BLUE_DARK = [0x1e, 0x3a, 0x50];   // rgb(30,58,80)   — e1RM mínimo
 const BLUE_LIGHT = [0x56, 0x9c, 0xd6];  // rgb(86,156,214) — e1RM máximo (--accent)
 const GREEN_VIVID = [93, 202, 165];     // --green-soft #5dcaa5 — falta 1 rep
@@ -20,12 +22,17 @@ function lerpRgb(a, b, t) {
 
 /**
  * Color de una barra del history strip.
- * Objetivo cumplido (shortfall 0) → azul degradado por e1RM entre min y max.
- * No cumplido → verde degradado por reps faltantes (paso fijo por rep).
+ * Verde (degradado por reps faltantes) solo si la sesión comparte peso con la
+ * sesión de referencia y no cumplió el objetivo — es la única comparación de
+ * reps que tiene sentido a igualdad de carga.
+ * Resto de casos (objetivo cumplido, o peso distinto) → azul degradado por e1RM
+ * entre min y max. `referenceWeight` nulo = sin referencia: solo manda el
+ * objetivo.
  */
-export function computeBarColor(log, minMetric, maxMetric) {
+export function computeBarColor(log, minMetric, maxMetric, referenceWeight = null) {
   const shortfall = computeRepShortfall(log);
-  if (shortfall === 0) {
+  const sameWeight = referenceWeight == null || (log.weight || 0) === (referenceWeight || 0);
+  if (shortfall === 0 || !sameWeight) {
     const metric = getPrimaryMetric(log);
     const t = maxMetric === minMetric ? 1 : (metric - minMetric) / (maxMetric - minMetric);
     return lerpRgb(BLUE_DARK, BLUE_LIGHT, t);
@@ -110,7 +117,7 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
     const metric = getPrimaryMetric(session.log);
     const height = maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 6;
     const barClass = session.isCurrent ? 'current' : 'prev';
-    const barStyle = `height:${height}%; background:${computeBarColor(session.log, minMetric, maxMetric)}`;
+    const barStyle = `height:${height}%; background:${computeBarColor(session.log, minMetric, maxMetric, currentLog.weight)}`;
     const tooltip = buildBarTooltip(session.log);
     const ariaLabel = tooltip.replace(/\n/g, ' · ');
     const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}" tabindex="0" aria-label="${ariaLabel}"` : '';
