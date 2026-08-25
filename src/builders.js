@@ -3,15 +3,17 @@ import { computeVolume, computeE1RM, computeSessionDeltaPct, computeRepShortfall
 import { formatDateShort } from './dates.js';
 
 // Endpoints del gradiente de barra. Verde = mismo peso que la sesión de
-// referencia y objetivo no cumplido, tono por reps faltantes: vivo (falta 1) →
-// apagado (falta mucho); suelo a GREEN_STEP*(n-1) >= 1. Cualquier otro caso
-// (objetivo cumplido, o peso distinto al de la sesión actual) = azul, tono por
-// e1RM (magnitud): oscuro→claro.
-const BLUE_DARK = [0x1e, 0x3a, 0x50];   // rgb(30,58,80)   — e1RM mínimo
-const BLUE_LIGHT = [0x56, 0x9c, 0xd6];  // rgb(86,156,214) — e1RM máximo (--accent)
-const GREEN_VIVID = [93, 202, 165];     // --green-soft #5dcaa5 — falta 1 rep
-const GREEN_FLOOR = [36, 86, 70];       // verde apagado — falta mucho
-const GREEN_STEP = 0.2;                 // 1 rep = 20% hacia el suelo (suelo a 6 faltantes)
+// referencia y objetivo no cumplido, tono por reps faltantes relativo al
+// grupo de barras verdes visibles (menos faltante = VIVID). Cualquier otro
+// caso (objetivo cumplido, o peso distinto al de la sesión actual) = azul,
+// tono por e1RM relativo al grupo de barras azules visibles (más e1RM =
+// VIVID). Cada grupo se normaliza contra su propio min/max, nunca contra el
+// del otro color — así la mejor barra de cada grupo sale sólida (VIVID)
+// aunque sea la única, y una barra "mala" no ensucia el rango de la otra.
+const BLUE_FLOOR = [0x1e, 0x3a, 0x50];   // rgb(30,58,80)   — e1RM mínimo del grupo azul
+const BLUE_VIVID = [0x56, 0x9c, 0xd6];   // rgb(86,156,214) — e1RM máximo del grupo azul (--accent)
+const GREEN_VIVID = [93, 202, 165];      // --green-soft #5dcaa5 — shortfall mínimo del grupo verde
+const GREEN_FLOOR = [36, 86, 70];        // shortfall máximo del grupo verde
 
 function lerpRgb(a, b, t) {
   const r = Math.round(a[0] + (b[0] - a[0]) * t);
@@ -21,23 +23,32 @@ function lerpRgb(a, b, t) {
 }
 
 /**
- * Color de una barra del history strip.
- * Verde (degradado por reps faltantes) solo si la sesión comparte peso con la
- * sesión de referencia y no cumplió el objetivo — es la única comparación de
- * reps que tiene sentido a igualdad de carga.
- * Resto de casos (objetivo cumplido, o peso distinto) → azul degradado por e1RM
- * entre min y max. `referenceWeight` nulo = sin referencia: solo manda el
+ * Una barra es verde si comparte peso con la sesión de referencia y no
+ * cumplió el objetivo — es la única comparación de reps que tiene sentido a
+ * igualdad de carga. `referenceWeight` nulo = sin referencia: solo manda el
  * objetivo.
  */
-export function computeBarColor(log, minMetric, maxMetric, referenceWeight = null) {
+export function isGreenBar(log, referenceWeight = null) {
   const shortfall = computeRepShortfall(log);
   const sameWeight = referenceWeight == null || (log.weight || 0) === (referenceWeight || 0);
-  if (shortfall === 0 || !sameWeight) {
+  return shortfall > 0 && sameWeight;
+}
+
+/**
+ * Color de una barra del history strip. `blueRange`/`greenRange` son
+ * `[min, max]` calculados solo entre las barras visibles de ese mismo color
+ * (ver `isGreenBar`) — nunca mezclando métricas de un grupo con el otro.
+ */
+export function computeBarColor(log, blueRange, greenRange, referenceWeight = null) {
+  if (!isGreenBar(log, referenceWeight)) {
     const metric = getPrimaryMetric(log);
-    const t = maxMetric === minMetric ? 1 : (metric - minMetric) / (maxMetric - minMetric);
-    return lerpRgb(BLUE_DARK, BLUE_LIGHT, t);
+    const [min, max] = blueRange;
+    const t = max === min ? 1 : (metric - min) / (max - min);
+    return lerpRgb(BLUE_FLOOR, BLUE_VIVID, t);
   }
-  const t = Math.min(1, (shortfall - 1) * GREEN_STEP);
+  const shortfall = computeRepShortfall(log);
+  const [gMin, gMax] = greenRange;
+  const t = gMax === gMin ? 0 : (shortfall - gMin) / (gMax - gMin);
   return lerpRgb(GREEN_VIVID, GREEN_FLOOR, t);
 }
 
@@ -75,11 +86,6 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
 
   if (allSessions.length === 0) return '';
 
-  const realSessions = allSessions.filter(s => !s.log.skipped);
-  const sessionMetrics = realSessions.map(s => getPrimaryMetric(s.log));
-  const maxMetric = sessionMetrics.length ? Math.max(...sessionMetrics) : 0;
-  const minMetric = sessionMetrics.length ? Math.min(...sessionMetrics) : 0;
-
   let deltaHtml = '';
   if (hasCurrent) {
     const prev = [...allSessions].slice(0, -1).reverse().find(s => !s.isCurrent && !s.log.skipped);
@@ -99,6 +105,28 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
   const displaySessions = allSessions.slice(-MAX_COLS);
   const emptyCols = MAX_COLS - displaySessions.length;
 
+  // Normalizar altura/color solo sobre las sesiones que se pintan — si se
+  // calcula sobre todo lo traído (hasta 12 + actual), una sesión fuera del
+  // rango visible puede inflar el máximo y ninguna barra visible llega a
+  // iluminación total.
+  const visibleReal = displaySessions.filter(s => !s.log.skipped);
+  const visibleMetrics = visibleReal.map(s => getPrimaryMetric(s.log));
+  const maxMetric = visibleMetrics.length ? Math.max(...visibleMetrics) : 0;
+
+  // Rangos de color por grupo (azul/verde), calculados por separado — ver
+  // isGreenBar/computeBarColor.
+  const blueMetrics = [];
+  const greenShortfalls = [];
+  for (const s of visibleReal) {
+    if (isGreenBar(s.log, currentLog.weight)) {
+      greenShortfalls.push(computeRepShortfall(s.log));
+    } else {
+      blueMetrics.push(getPrimaryMetric(s.log));
+    }
+  }
+  const blueRange = blueMetrics.length ? [Math.min(...blueMetrics), Math.max(...blueMetrics)] : [0, 0];
+  const greenRange = greenShortfalls.length ? [Math.min(...greenShortfalls), Math.max(...greenShortfalls)] : [0, 0];
+
   const emptyColsHtml = Array.from({ length: emptyCols }, () =>
     `<div class="history-bar-col empty">
       <div class="bar-wrap"><div class="bar empty" style="height:0%"></div></div>
@@ -117,7 +145,7 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
     const metric = getPrimaryMetric(session.log);
     const height = maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 6;
     const barClass = session.isCurrent ? 'current' : 'prev';
-    const barStyle = `height:${height}%; background:${computeBarColor(session.log, minMetric, maxMetric, currentLog.weight)}`;
+    const barStyle = `height:${height}%; background:${computeBarColor(session.log, blueRange, greenRange, currentLog.weight)}`;
     const tooltip = buildBarTooltip(session.log);
     const ariaLabel = tooltip.replace(/\n/g, ' · ');
     const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}" tabindex="0" aria-label="${ariaLabel}"` : '';
