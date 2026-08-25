@@ -63,6 +63,9 @@
           </button>
         </div>
       </header>
+      <div id="graficas-back-wrap">
+        <button class="btn-back" id="graficas-back-btn" hidden>← Volver a Estadísticas</button>
+      </div>
       <div id="graficas-controls" class="graficas-controls">
         <div class="date-range">
           <div class="input-group small">
@@ -97,6 +100,19 @@
           <p>Se usa la mejor serie de cada sesión (la que da mayor e1RM). Válido para 1–30 repeticiones; ejercicios de peso corporal no aplica.</p>
         </div>
       </div>
+    </div>
+
+    <!-- ESTADISTICAS -->
+    <div id="view-estadisticas" class="view">
+      <header class="view-header">
+        <h2>Estadísticas</h2>
+        <div class="header-right">
+          <button class="sync-status-btn sync-indicator" title="Estado de sincronización" aria-label="Estado de sincronización">
+            <span class="sync-status-icon"></span>
+          </button>
+        </div>
+      </header>
+      <div id="estadisticas-content" class="view-body"></div>
     </div>
 
     <!-- AJUSTES -->
@@ -159,6 +175,12 @@
         <span class="tab-pill">
           <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
           <span class="tab-label">Gráficas</span>
+        </span>
+      </button>
+      <button class="tab" data-view="estadisticas">
+        <span class="tab-pill">
+          <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span>
+          <span class="tab-label">Progreso</span>
         </span>
       </button>
       <button class="tab" data-view="ajustes">

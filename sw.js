@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gym-companion-v16';
+const CACHE_NAME = 'gym-companion-v17';
 const ASSETS = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const ASSETS = [
   './src/workout.js',
   './src/github.js',
   './src/charts.js',
+  './src/stats.js',
   './db.json',
   './manifest.json',
   'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js'

@@ -6,7 +6,7 @@ let currentChart = null;
 let currentWeightChart = null;
 let chartExerciseIds = [];
 
-export function initCharts() {
+export function initCharts(opts = {}) {
   const fromEl = document.getElementById('chart-from');
   const toEl = document.getElementById('chart-to');
   if (!fromEl.value || !toEl.value) {
@@ -16,7 +16,26 @@ export function initCharts() {
     fromEl.value = sixMonthsAgo.toISOString().split('T')[0];
     toEl.value = todayStr();
   }
+
+  // El botón de volver solo aparece cuando se ha llegado desde otra vista.
+  const backBtn = document.getElementById('graficas-back-btn');
+  if (backBtn) {
+    backBtn.hidden = !opts.from;
+    backBtn.onclick = () => document.dispatchEvent(new CustomEvent('gym:navigate-back'));
+  }
+
+  // La preselección va ANTES de updateChartExercises: esa función conserva el
+  // valor del select si el ejercicio cae dentro del rango de fechas.
+  if (opts.exerciseId) {
+    document.getElementById('chart-exercise-select').value = opts.exerciseId;
+    document.getElementById('chart-exercise-search').value = getExerciseName(opts.exerciseId);
+  }
+
   updateChartExercises();
+
+  // Solo se pinta al llegar con un ejercicio ya elegido. Entrar por la pestaña
+  // se comporta igual que siempre: sin selección no hay nada que dibujar.
+  if (opts.exerciseId) renderChart();
 }
 
 function updateChartExercises() {

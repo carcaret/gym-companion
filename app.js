@@ -9,6 +9,7 @@ import { toast, showModal, setupBarTooltips } from './src/ui.js';
 import { initSettings, setupSettings } from './views/settings.js';
 import { initCharts, setupFilters } from './views/charts.js';
 import { renderHistorial } from './views/historial.js';
+import { renderEstadisticas } from './views/estadisticas.js';
 import { renderHoy } from './views/hoy.js';
 import {
   syncState, conflict,
@@ -131,27 +132,46 @@ const VIEW_INITIALIZERS = {
   hoy: renderHoy,
   historial: renderHistorial,
   graficas: initCharts,
+  estadisticas: renderEstadisticas,
   ajustes: initSettings,
 };
 
-function navigateToTab(view) {
+// Origen del salto actual, si se llegó desde otra vista (Estadísticas → Gráficas).
+// Tocar una pestaña a mano lo borra: el botón de volver solo tiene sentido
+// dentro del salto que lo creó.
+let returnTo = null;
+
+function navigateToTab(view, opts = {}) {
   const toTab = document.querySelector(`#tab-bar .tab[data-view="${view}"]`);
   if (toTab && !toTab.classList.contains('active')) _moveIndicator(toTab);
 
-  window.scrollTo(0, 0);
+  if (opts.from) returnTo = { view: opts.from, scrollY: opts.scrollY || 0 };
+  else if (!opts.restoring) returnTo = null;
+
   document.querySelectorAll('#tab-bar .tab').forEach(t => t.classList.remove('active'));
   if (toTab) toTab.classList.add('active');
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(`view-${view}`)?.classList.add('active');
 
-  setTimeout(() => VIEW_INITIALIZERS[view]?.(), 0);
+  // El scroll se restaura DESPUÉS de pintar: antes, el contenido aún no tiene
+  // altura y el navegador ignora el salto.
+  setTimeout(() => {
+    VIEW_INITIALIZERS[view]?.(opts);
+    window.scrollTo(0, opts.restoring ? (opts.scrollY || 0) : 0);
+  }, 0);
 }
 
 function setupTabs() {
   document.querySelectorAll('#tab-bar .tab').forEach(tab => {
     tab.onclick = () => navigateToTab(tab.dataset.view);
   });
-  document.addEventListener('gym:navigate', e => navigateToTab(e.detail.view));
+  document.addEventListener('gym:navigate', e => navigateToTab(e.detail.view, e.detail));
+  document.addEventListener('gym:navigate-back', () => {
+    if (!returnTo) return;
+    const target = returnTo;
+    returnTo = null;
+    navigateToTab(target.view, { restoring: true, scrollY: target.scrollY });
+  });
 }
 
 function setupScrollHeader() {
