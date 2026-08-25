@@ -2,18 +2,22 @@ import { getRecentSessionsForExercise as _getRecentSessionsForExercise } from '.
 import { computeVolume, computeE1RM, computeSessionDeltaPct, computeRepShortfall } from './metrics.js';
 import { formatDateShort } from './dates.js';
 
-// Endpoints del gradiente de barra. Verde = mismo peso que la sesión de
-// referencia y objetivo no cumplido, tono por reps faltantes relativo al
-// grupo de barras verdes visibles (menos faltante = VIVID). Cualquier otro
-// caso (objetivo cumplido, o peso distinto al de la sesión actual) = azul,
-// tono por e1RM relativo al grupo de barras azules visibles (más e1RM =
-// VIVID). Cada grupo se normaliza contra su propio min/max, nunca contra el
-// del otro color — así la mejor barra de cada grupo sale sólida (VIVID)
-// aunque sea la única, y una barra "mala" no ensucia el rango de la otra.
+// Endpoints del gradiente de barra. El HUE dice si cumpliste el objetivo
+// (verde = mismo peso y objetivo no cumplido; azul = el resto), y la
+// INTENSIDAD dice cuánto rendiste respecto a las demás barras de ese mismo
+// color: más rendimiento = VIVID, menos = FLOOR. Los dos grupos se normalizan
+// por separado contra su propio min/max — así la mejor barra de cada grupo
+// sale sólida aunque sea la única, y una barra "mala" no ensucia el rango del
+// otro color.
+//
+// La intensidad NUNCA se mide contra `reps.expected`: el objetivo es un número
+// que el usuario teclea con los botones −/+, no algo que ejecuta. Medir el
+// déficit contra un objetivo que sube con la progresión hacía que una sesión
+// mejor (más reps, más e1RM) saliera más apagada que una peor.
 const BLUE_FLOOR = [0x1e, 0x3a, 0x50];   // rgb(30,58,80)   — e1RM mínimo del grupo azul
 const BLUE_VIVID = [0x56, 0x9c, 0xd6];   // rgb(86,156,214) — e1RM máximo del grupo azul (--accent)
-const GREEN_VIVID = [93, 202, 165];      // --green-soft #5dcaa5 — shortfall mínimo del grupo verde
-const GREEN_FLOOR = [36, 86, 70];        // shortfall máximo del grupo verde
+const GREEN_VIVID = [93, 202, 165];      // --green-soft #5dcaa5 — volumen máximo del grupo verde
+const GREEN_FLOOR = [36, 86, 70];        // volumen mínimo del grupo verde
 
 function lerpRgb(a, b, t) {
   const r = Math.round(a[0] + (b[0] - a[0]) * t);
@@ -35,21 +39,37 @@ export function isGreenBar(log, referenceWeight = null) {
 }
 
 /**
- * Color de una barra del history strip. `blueRange`/`greenRange` son
- * `[min, max]` calculados solo entre las barras visibles de ese mismo color
- * (ver `isGreenBar`) — nunca mezclando métricas de un grupo con el otro.
+ * Escala de intensidad del grupo verde. A igual peso (lo garantiza
+ * `isGreenBar`) el volumen es el trabajo total hecho, así que ordena las
+ * sesiones por lo ejecutado, no por lo aspirado. Si TODAS empatan en volumen
+ * —mismo total de reps repartido distinto, p.ej. 12-10-10 vs 11-11-10— el
+ * volumen no distingue nada y desempata `getPrimaryMetric` (e1RM: el pico de
+ * la mejor serie), la otra métrica que la app ya trata como récord.
  */
-export function computeBarColor(log, blueRange, greenRange, referenceWeight = null) {
+export function buildGreenScale(logs) {
+  if (logs.length === 0) return { useE1RM: false, range: [0, 0] };
+  const volumes = logs.map(computeVolume);
+  const useE1RM = volumes.every(v => v === volumes[0]);
+  const values = useE1RM ? logs.map(getPrimaryMetric) : volumes;
+  return { useE1RM, range: [Math.min(...values), Math.max(...values)] };
+}
+
+/**
+ * Color de una barra del history strip. `blueRange` es `[min, max]` de e1RM
+ * entre las barras azules visibles; `greenScale` viene de `buildGreenScale`
+ * sobre las verdes. Nunca se mezclan métricas de un grupo con las del otro.
+ * Ambos colores usan la misma forma: más métrica = más VIVID.
+ */
+export function computeBarColor(log, blueRange, greenScale, referenceWeight = null) {
   if (!isGreenBar(log, referenceWeight)) {
-    const metric = getPrimaryMetric(log);
     const [min, max] = blueRange;
-    const t = max === min ? 1 : (metric - min) / (max - min);
+    const t = max === min ? 1 : (getPrimaryMetric(log) - min) / (max - min);
     return lerpRgb(BLUE_FLOOR, BLUE_VIVID, t);
   }
-  const shortfall = computeRepShortfall(log);
-  const [gMin, gMax] = greenRange;
-  const t = gMax === gMin ? 0 : (shortfall - gMin) / (gMax - gMin);
-  return lerpRgb(GREEN_VIVID, GREEN_FLOOR, t);
+  const metric = greenScale.useE1RM ? getPrimaryMetric(log) : computeVolume(log);
+  const [min, max] = greenScale.range;
+  const t = max === min ? 1 : (metric - min) / (max - min);
+  return lerpRgb(GREEN_FLOOR, GREEN_VIVID, t);
 }
 
 export function formatActualReps(log) {
@@ -116,16 +136,13 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
   // Rangos de color por grupo (azul/verde), calculados por separado — ver
   // isGreenBar/computeBarColor.
   const blueMetrics = [];
-  const greenShortfalls = [];
+  const greenLogs = [];
   for (const s of visibleReal) {
-    if (isGreenBar(s.log, currentLog.weight)) {
-      greenShortfalls.push(computeRepShortfall(s.log));
-    } else {
-      blueMetrics.push(getPrimaryMetric(s.log));
-    }
+    if (isGreenBar(s.log, currentLog.weight)) greenLogs.push(s.log);
+    else blueMetrics.push(getPrimaryMetric(s.log));
   }
   const blueRange = blueMetrics.length ? [Math.min(...blueMetrics), Math.max(...blueMetrics)] : [0, 0];
-  const greenRange = greenShortfalls.length ? [Math.min(...greenShortfalls), Math.max(...greenShortfalls)] : [0, 0];
+  const greenScale = buildGreenScale(greenLogs);
 
   const emptyColsHtml = Array.from({ length: emptyCols }, () =>
     `<div class="history-bar-col empty">
@@ -145,7 +162,7 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
     const metric = getPrimaryMetric(session.log);
     const height = maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 6;
     const barClass = session.isCurrent ? 'current' : 'prev';
-    const barStyle = `height:${height}%; background:${computeBarColor(session.log, blueRange, greenRange, currentLog.weight)}`;
+    const barStyle = `height:${height}%; background:${computeBarColor(session.log, blueRange, greenScale, currentLog.weight)}`;
     const tooltip = buildBarTooltip(session.log);
     const ariaLabel = tooltip.replace(/\n/g, ' · ');
     const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}" tabindex="0" aria-label="${ariaLabel}"` : '';

@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { computeRepShortfall } from '../../src/metrics.js';
-import { computeBarColor, isGreenBar, getPrimaryMetric } from '../../src/builders.js';
+import { computeBarColor, isGreenBar, getPrimaryMetric, buildGreenScale } from '../../src/builders.js';
 
 function makeLog({ weight = 100, series = 3, expected = 10, actual }) {
   return {
@@ -75,78 +75,139 @@ describe('isGreenBar', () => {
   });
 });
 
+const NO_GREEN = { useE1RM: false, range: [0, 0] };
+
 describe('computeBarColor — objetivo cumplido (o peso distinto) → AZUL, relativo al grupo azul', () => {
   test('única barra azul del grupo → azul vívido (tope), sea cual sea su e1RM', () => {
     const log = makeLog({ expected: 10, actual: [10, 10, 10] });
     const m = getPrimaryMetric(log);
-    expect(computeBarColor(log, [m, m], [0, 0])).toBe(BLUE_VIVID);
+    expect(computeBarColor(log, [m, m], NO_GREEN)).toBe(BLUE_VIVID);
   });
   test('mínimo e1RM del grupo azul → suelo', () => {
     const log = makeLog({ expected: 10, actual: [10, 10, 10] });
     const m = getPrimaryMetric(log);
-    expect(computeBarColor(log, [m, m + 100], [0, 0])).toBe(BLUE_FLOOR);
+    expect(computeBarColor(log, [m, m + 100], NO_GREEN)).toBe(BLUE_FLOOR);
   });
   test('máximo e1RM del grupo azul → vívido', () => {
     const log = makeLog({ expected: 10, actual: [10, 10, 10] });
     const m = getPrimaryMetric(log);
-    expect(computeBarColor(log, [m - 100, m], [0, 0])).toBe(BLUE_VIVID);
+    expect(computeBarColor(log, [m - 100, m], NO_GREEN)).toBe(BLUE_VIVID);
   });
   test('e1RM intermedio → azul entre suelo y vívido', () => {
     const log = makeLog({ expected: 10, actual: [10, 10, 10] });
     const m = getPrimaryMetric(log);
-    const c = channels(computeBarColor(log, [m - 50, m + 50], [0, 0])); // t=0.5
+    const c = channels(computeBarColor(log, [m - 50, m + 50], NO_GREEN)); // t=0.5
     expect(c).toEqual({ r: 58, g: 107, b: 147 });
   });
   test('más e1RM relativo al grupo → azul más claro (canal G sube)', () => {
     const log = makeLog({ expected: 10, actual: [10, 10, 10] });
     const m = getPrimaryMetric(log);
-    const bajo = channels(computeBarColor(log, [m, m + 100], [0, 0]));   // t=0
-    const alto = channels(computeBarColor(log, [m - 100, m], [0, 0]));   // t=1
+    const bajo = channels(computeBarColor(log, [m, m + 100], NO_GREEN));   // t=0
+    const alto = channels(computeBarColor(log, [m - 100, m], NO_GREEN));   // t=1
     expect(alto.g).toBeGreaterThan(bajo.g);
   });
   test('peso distinto de la referencia (aunque no cumpla objetivo) → grupo azul', () => {
     const log = makeLog({ weight: 60, expected: 10, actual: [10, 10, 8] });
     const m = getPrimaryMetric(log);
-    expect(computeBarColor(log, [m, m], [0, 0], 80)).toBe(BLUE_VIVID);
-    expect(computeBarColor(log, [m, m + 100], [0, 0], 80)).toBe(BLUE_FLOOR);
+    expect(computeBarColor(log, [m, m], NO_GREEN, 80)).toBe(BLUE_VIVID);
+    expect(computeBarColor(log, [m, m + 100], NO_GREEN, 80)).toBe(BLUE_FLOOR);
+  });
+});
+
+describe('buildGreenScale — la intensidad del verde sale del volumen, no del objetivo', () => {
+  test('grupo vacío → rango neutro', () => {
+    expect(buildGreenScale([])).toEqual({ useE1RM: false, range: [0, 0] });
+  });
+  test('volúmenes distintos → escala por volumen', () => {
+    const a = makeLog({ weight: 68, series: 4, expected: 10, actual: [10, 10, 10, 9] });  // 39 reps
+    const b = makeLog({ weight: 68, series: 4, expected: 11, actual: [11, 10, 10, 10] }); // 41 reps
+    const { useE1RM, range } = buildGreenScale([a, b]);
+    expect(useE1RM).toBe(false);
+    expect(range).toEqual([68 * 39, 68 * 41]);
+  });
+  test('todas empatan en volumen → desempata por e1RM', () => {
+    const a = makeLog({ weight: 68, series: 3, expected: 13, actual: [12, 10, 10] });
+    const b = makeLog({ weight: 68, series: 3, expected: 13, actual: [11, 11, 10] });
+    const { useE1RM, range } = buildGreenScale([a, b]);
+    expect(useE1RM).toBe(true);
+    expect(range).toEqual([getPrimaryMetric(b), getPrimaryMetric(a)]); // 92.93 .. 95.2
   });
 });
 
 describe('computeBarColor — mismo peso y objetivo NO cumplido → VERDE, relativo al grupo verde', () => {
-  test('única barra verde del grupo → vívida (tope), sea cual sea el shortfall', () => {
-    expect(computeBarColor(makeLog({ expected: 10, actual: [10, 6, 8] }), [0, 0], [6, 6])).toBe(GREEN_VIVID);
+  const scale = logs => buildGreenScale(logs);
+
+  test('única barra verde del grupo → vívida (tope), por mal que fuera la sesión', () => {
+    const solo = makeLog({ expected: 10, actual: [10, 6, 8] });
+    expect(computeBarColor(solo, [0, 0], scale([solo]))).toBe(GREEN_VIVID);
   });
-  test('shortfall mínimo del grupo verde → vívido', () => {
-    expect(computeBarColor(makeLog({ expected: 10, actual: [10, 10, 9] }), [0, 0], [1, 6])).toBe(GREEN_VIVID);
+
+  test('caso real del jalón: más reps con objetivo más alto → la más vívida', () => {
+    // 24/7 y 14/8: objetivo 10, 39 reps. 21/8: objetivo 11, 41 reps.
+    // Con la escala vieja (shortfall) 21/8 salía la más apagada pese a ser mejor.
+    const jul24 = makeLog({ weight: 68, series: 4, expected: 10, actual: [10, 10, 10, 9] });
+    const ago14 = makeLog({ weight: 68, series: 4, expected: 10, actual: [10, 10, 10, 9] });
+    const ago21 = makeLog({ weight: 68, series: 4, expected: 11, actual: [11, 10, 10, 10] });
+    const s = scale([jul24, ago14, ago21]);
+    expect(computeBarColor(ago21, [0, 0], s, 68)).toBe(GREEN_VIVID);
+    expect(computeBarColor(jul24, [0, 0], s, 68)).toBe(GREEN_FLOOR);
+    expect(computeBarColor(ago14, [0, 0], s, 68)).toBe(GREEN_FLOOR);
   });
-  test('shortfall máximo del grupo verde → suelo', () => {
-    expect(computeBarColor(makeLog({ expected: 10, actual: [10, 6, 8] }), [0, 0], [1, 6])).toBe(GREEN_FLOOR);
+
+  test('un objetivo inflado no da color: manda lo ejecutado', () => {
+    // Objetivo 20 con 30 reps vs objetivo 10 con 29 reps → gana por 1 rep, no por el objetivo.
+    const inflado = makeLog({ weight: 68, series: 3, expected: 20, actual: [10, 10, 10] });
+    const sano = makeLog({ weight: 68, series: 3, expected: 10, actual: [10, 10, 9] });
+    const s = scale([inflado, sano]);
+    expect(computeBarColor(inflado, [0, 0], s, 68)).toBe(GREEN_VIVID);
+    expect(computeBarColor(sano, [0, 0], s, 68)).toBe(GREEN_FLOOR);
   });
-  test('shortfall intermedio → verde entre vívido y suelo', () => {
-    // shortfall=3 sobre rango [1,6] → t=0.4
-    const c = computeBarColor(makeLog({ expected: 10, actual: [10, 10, 7] }), [0, 0], [1, 6]);
-    expect(c).toBe('rgb(70,156,127)');
+
+  test('más series = más trabajo = más vívida', () => {
+    const tres = makeLog({ weight: 68, series: 3, expected: 10, actual: [10, 10, 9] });
+    const cinco = makeLog({ weight: 68, series: 5, expected: 10, actual: [10, 10, 10, 10, 9] });
+    const s = scale([tres, cinco]);
+    expect(computeBarColor(cinco, [0, 0], s, 68)).toBe(GREEN_VIVID);
+    expect(computeBarColor(tres, [0, 0], s, 68)).toBe(GREEN_FLOOR);
   });
-  test('monótono: a más shortfall relativo, verde más apagado (G baja, nunca sube)', () => {
-    const g = s => channels(computeBarColor(makeLog({ expected: 20, actual: [20 - s, 20, 20] }), [0, 0], [1, 8])).g;
-    let prev = Infinity;
-    for (let s = 1; s <= 8; s++) {
-      const cur = g(s);
-      expect(cur).toBeLessThanOrEqual(prev);
+
+  test('empate de volumen → desempata el pico de la mejor serie (e1RM)', () => {
+    // 12-10-10 y 11-11-10: 32 reps ambas, mismo volumen. 12 > 11 en la mejor serie.
+    const pico12 = makeLog({ weight: 68, series: 3, expected: 13, actual: [12, 10, 10] });
+    const pico11 = makeLog({ weight: 68, series: 3, expected: 13, actual: [11, 11, 10] });
+    const s = scale([pico12, pico11]);
+    expect(computeBarColor(pico12, [0, 0], s, 68)).toBe(GREEN_VIVID);
+    expect(computeBarColor(pico11, [0, 0], s, 68)).toBe(GREEN_FLOOR);
+  });
+
+  test('mismo trabajo y mismo pico → mismo color (empate real)', () => {
+    const a = makeLog({ weight: 68, series: 3, expected: 13, actual: [12, 10, 10] });
+    const b = makeLog({ weight: 68, series: 3, expected: 13, actual: [10, 12, 10] });
+    const s = scale([a, b]);
+    expect(computeBarColor(a, [0, 0], s, 68)).toBe(computeBarColor(b, [0, 0], s, 68));
+  });
+
+  test('monótono: a más volumen relativo, verde más vívido (G sube, nunca baja)', () => {
+    const logs = [];
+    for (let r = 4; r <= 10; r++) logs.push(makeLog({ weight: 68, series: 3, expected: 12, actual: [r, r, r] }));
+    const s = scale(logs);
+    let prev = -Infinity;
+    for (const log of logs) {
+      const cur = channels(computeBarColor(log, [0, 0], s, 68)).g;
+      expect(cur).toBeGreaterThanOrEqual(prev);
       prev = cur;
     }
   });
-  test('déficit en curso (con null) → cuenta solo las series rellenadas', () => {
-    expect(computeBarColor(makeLog({ expected: 10, actual: [10, 9, null] }), [0, 0], [1, 1])).toBe(GREEN_VIVID);
-  });
+
   test('mismo peso pero objetivo cumplido → grupo azul (el peso no fuerza verde)', () => {
     const met = makeLog({ weight: 60, expected: 10, actual: [10, 10, 10] });
     const m = getPrimaryMetric(met);
-    expect(computeBarColor(met, [m, m], [0, 0], 60)).toBe(BLUE_VIVID);
+    expect(computeBarColor(met, [m, m], NO_GREEN, 60)).toBe(BLUE_VIVID);
   });
+
   test('peso 0 en ambos (corporal) → cuenta como mismo peso → verde', () => {
     const bw = makeLog({ weight: 0, expected: 10, actual: [10, 10, 9] });
-    expect(computeBarColor(bw, [0, 0], [1, 1], 0)).toBe(GREEN_VIVID);
+    expect(computeBarColor(bw, [0, 0], scale([bw]), 0)).toBe(GREEN_VIVID);
   });
 });
 
@@ -155,8 +216,8 @@ describe('computeBarColor — azul vs verde son distinguibles', () => {
     const met = makeLog({ expected: 10, actual: [10, 10, 10] });
     const short = makeLog({ expected: 10, actual: [10, 10, 8] });
     const mm = getPrimaryMetric(met);
-    const azul = channels(computeBarColor(met, [mm, mm], [0, 0]));
-    const verde = channels(computeBarColor(short, [0, 0], [2, 2]));
+    const azul = channels(computeBarColor(met, [mm, mm], NO_GREEN));
+    const verde = channels(computeBarColor(short, [0, 0], buildGreenScale([short])));
     expect(azul.b).toBeGreaterThan(azul.g);   // azul: B > G
     expect(verde.g).toBeGreaterThan(verde.b); // verde: G > B
   });
