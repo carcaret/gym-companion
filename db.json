@@ -23805,7 +23805,7 @@
     {
       "date": "2026-08-24",
       "type": "DIA1",
-      "completed": false,
+      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
