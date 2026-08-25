@@ -6,4 +6,3 @@ test-results/
 .aiplans/**.*
 .aiplans/*
 !.aiplans/.gitkeep.superpowers/
-docs/

@@ -292,19 +292,23 @@
     },
     "jalon_al_pecho_neutro": {
       "id": "jalon_al_pecho_neutro",
-      "name": "Jalón al pecho neutro"
+      "name": "Jalón al pecho neutro",
+      "grupo": "espalda"
     },
     "curl_biceps_polea": {
       "id": "curl_biceps_polea",
-      "name": "Curl bíceps polea"
+      "name": "Curl bíceps polea",
+      "grupo": "brazos"
     },
     "trapecio_polea": {
       "id": "trapecio_polea",
-      "name": "Trapecio polea"
+      "name": "Trapecio polea",
+      "grupo": "espalda"
     },
     "doninadas": {
       "id": "doninadas",
-      "name": "Doninadas"
+      "name": "Doninadas",
+      "grupo": "espalda"
     }
   },
   "routines": {
