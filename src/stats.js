@@ -229,6 +229,18 @@ export const SECUNDARIOS = {
 };
 
 /**
+ * Secundarios efectivos de un ejercicio: los de la DB si el catálogo los ha
+ * escrito alguna vez, y si no los del mapa de arriba.
+ *
+ * La distinción importa: una lista vacía guardada es una decisión del usuario
+ * ("este ejercicio no aporta a nada") y debe ganar al mapa; la ausencia del
+ * campo solo significa que nadie lo ha tocado todavía.
+ */
+export function resolveSecundarios(ex, exerciseId) {
+  return Array.isArray(ex?.secundarios) ? ex.secundarios : (SECUNDARIOS[exerciseId] || []);
+}
+
+/**
  * Cuánto cuenta una serie para un músculo secundario. 0,5 es la convención
  * de "fractional sets" con la que se cuentan los volúmenes en la literatura:
  * el trabajo indirecto cuenta como media serie.
@@ -269,7 +281,7 @@ export function computeGroupSets(db, { anchorDate, weeks = 8 }) {
       e.sets += log.series;
       e.sessions += 1;
 
-      for (const secundario of SECUNDARIOS[log.exercise_id] || []) {
+      for (const secundario of resolveSecundarios(ex, log.exercise_id)) {
         if (!porGrupo.has(secundario)) porGrupo.set(secundario, nuevoGrupo());
         const s = porGrupo.get(secundario);
         const aporte = log.series * FRACCION_INDIRECTA;
