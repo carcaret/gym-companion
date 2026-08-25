@@ -1557,30 +1557,45 @@ body {
   color: var(--text-secondary);
 }
 
-.stats-rows { display: flex; flex-direction: column; }
+.stats-rows { display: flex; flex-direction: column; gap: 2px; }
 
+/* La franja de la izquierda es el código de color: azul progresa, dorado
+   estancado, gris sin recorrido. Deliberadamente NO se usa verde — en el
+   history strip el verde ya significa "fallaste el objetivo de reps". */
 .stats-row {
+  border-left: 3px solid var(--text-muted);
+  padding-left: 10px;
+}
+.stats-row--progresa { border-left-color: var(--accent); }
+.stats-row--estancado { border-left-color: var(--gold); }
+.stats-row--sin-recorrido { border-left-color: var(--border-strong); }
+
+.stats-row--sin-recorrido .stats-row-name,
+.stats-row--sin-recorrido .stats-row-reps { color: var(--text-secondary); }
+.stats-row--sin-recorrido .stats-row-phrase { color: var(--text-muted); }
+
+.stats-row-head {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   padding: 12px 0;
   border: none;
-  border-bottom: 1px solid var(--border-light);
   background: none;
   color: inherit;
   text-align: left;
   font: inherit;
   cursor: pointer;
 }
-.stats-row:last-child { border-bottom: none; }
-.stats-row:active { opacity: 0.6; }
-.stats-row-muted { cursor: default; }
-.stats-row-muted .stats-row-name,
-.stats-row-muted .stats-row-reps { color: var(--text-secondary); }
-.stats-row-muted .stats-row-phrase { color: var(--text-muted); }
-
-.stats-row-head {
+.stats-row-head:active { opacity: 0.6; }
+.stats-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+  min-width: 0;
+}
+.stats-row-title {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -1593,17 +1608,40 @@ body {
   color: var(--accent-light);
   white-space: nowrap;
 }
-.stats-row-reps {
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-}
-.stats-reps-sep { color: var(--text-muted); margin: 0 4px; }
 .stats-row-phrase {
   font-size: 12px;
   color: var(--text-secondary);
   line-height: 1.35;
 }
+
+.stats-row-body {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.35s var(--ease), opacity 0.25s, padding 0.25s;
+  padding-bottom: 0;
+}
+.stats-row-body.open {
+  max-height: 260px;
+  opacity: 1;
+  padding-bottom: 14px;
+}
+.stats-row-reps-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.stats-row-reps {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+.stats-reps-sep { color: var(--text-muted); margin: 0 4px; }
+.stats-row-chart { display: inline-block; }
 
 .stats-groups { display: flex; flex-direction: column; gap: 12px; }
 

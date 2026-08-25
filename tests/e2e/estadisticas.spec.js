@@ -77,12 +77,41 @@ test.describe('Estadísticas', () => {
     await expect(page.locator('.stats-card-title').nth(1)).toHaveText('Grupos musculares');
   });
 
-  test('cada fila trae nombre, reps y frase', async ({ page }) => {
+  test('cada fila trae nombre y frase; las reps van colapsadas', async ({ page }) => {
     await page.click('[data-view="estadisticas"]');
     const fila = page.locator('.stats-row').first();
     await expect(fila.locator('.stats-row-name')).not.toBeEmpty();
-    await expect(fila.locator('.stats-row-reps')).not.toBeEmpty();
     await expect(fila.locator('.stats-row-phrase')).not.toBeEmpty();
+    // El cuerpo colapsado clipa por overflow, así que se comprueba la altura
+    // renderizada, no la visibilidad del hijo.
+    await expect(fila.locator('.stats-row-body')).not.toHaveClass(/open/);
+    const alto = await fila.locator('.stats-row-body').evaluate(el => el.getBoundingClientRect().height);
+    expect(alto).toBe(0);
+  });
+
+  test('tocar la cabecera despliega y pliega las reps', async ({ page }) => {
+    await page.click('[data-view="estadisticas"]');
+    const fila = page.locator('.stats-row').first();
+    const body = fila.locator('.stats-row-body');
+
+    await fila.locator('.stats-row-head').click();
+    await expect(body).toHaveClass(/open/);
+    await expect(fila.locator('.stats-row-head')).toHaveAttribute('aria-expanded', 'true');
+    await expect.poll(() => body.evaluate(el => el.getBoundingClientRect().height))
+      .toBeGreaterThan(0);
+
+    await fila.locator('.stats-row-head').click();
+    await expect(body).not.toHaveClass(/open/);
+    await expect(fila.locator('.stats-row-head')).toHaveAttribute('aria-expanded', 'false');
+    await expect.poll(() => body.evaluate(el => el.getBoundingClientRect().height))
+      .toBe(0);
+  });
+
+  test('cada fila lleva su clase de color según el estado', async ({ page }) => {
+    await page.click('[data-view="estadisticas"]');
+    await expect(page.locator('.stats-row').first()).toHaveClass(/stats-row--estancado/);
+    await expect(page.locator('.stats-row').last()).toHaveClass(/stats-row--sin-recorrido/);
+    await expect(page.locator('.stats-row--progresa')).not.toHaveCount(0);
   });
 
   test('el estancado va primero y el ejercicio sin recorrido al final', async ({ page }) => {
@@ -91,7 +120,7 @@ test.describe('Estadísticas', () => {
     const nombres = await page.locator('.stats-row-name').allTextContents();
     expect(nombres[0]).toBe('Press de Hombros');
     expect(nombres[nombres.length - 1]).toBe('Ejercicio Nuevo');
-    await expect(page.locator('.stats-row').last()).toHaveClass(/stats-row-muted/);
+    await expect(page.locator('.stats-row').last()).toHaveClass(/stats-row--sin-recorrido/);
     await expect(page.locator('.stats-row').last().locator('.stats-row-phrase'))
       .toHaveText('2 sesiones, aún sin recorrido');
   });
@@ -102,11 +131,18 @@ test.describe('Estadísticas', () => {
     await expect(page.locator('.stats-row').first().locator('.stats-row-weight')).toHaveText('18 kg');
   });
 
-  test('tocar una fila abre Gráficas con el ejercicio ya seleccionado', async ({ page }) => {
+  test('el ejercicio sin recorrido no ofrece botón de Gráficas', async ({ page }) => {
     await page.click('[data-view="estadisticas"]');
-    const fila = page.locator('.stats-row:not(.stats-row-muted)').first();
+    await expect(page.locator('.stats-row').last().locator('.stats-row-chart')).toHaveCount(0);
+    await expect(page.locator('.stats-row').first().locator('.stats-row-chart')).toHaveCount(1);
+  });
+
+  test('el botón de dentro abre Gráficas con el ejercicio ya seleccionado', async ({ page }) => {
+    await page.click('[data-view="estadisticas"]');
+    const fila = page.locator('.stats-row').first();
     const nombre = (await fila.locator('.stats-row-name').textContent()).trim();
-    await fila.click();
+    await fila.locator('.stats-row-head').click();
+    await fila.locator('.stats-row-chart').click();
     await expect(page.locator('#view-graficas')).toHaveClass(/active/);
     await expect(page.locator('#chart-exercise-search')).toHaveValue(nombre);
     await expect(page.locator('#graficas-back-btn')).toBeVisible();
@@ -114,7 +150,9 @@ test.describe('Estadísticas', () => {
 
   test('volver devuelve a Estadísticas', async ({ page }) => {
     await page.click('[data-view="estadisticas"]');
-    await page.locator('.stats-row:not(.stats-row-muted)').first().click();
+    const fila = page.locator('.stats-row').first();
+    await fila.locator('.stats-row-head').click();
+    await fila.locator('.stats-row-chart').click();
     await page.click('#graficas-back-btn');
     await expect(page.locator('#view-estadisticas')).toHaveClass(/active/);
   });

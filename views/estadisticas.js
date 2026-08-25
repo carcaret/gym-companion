@@ -1,26 +1,40 @@
 import { DB } from '../src/store.js';
 import { todayStr } from '../src/dates.js';
 import { buildExerciseRows, computeGroupSets } from '../src/stats.js';
+import { chevronIcon } from '../src/ui.js';
 
 const WEEKS = 8;
 
 function buildExercisesCardHtml(rows) {
-  const filas = rows.map(row => {
+  const filas = rows.map((row, idx) => {
     const peso = row.weight > 0
       ? `<div class="stats-row-weight">${row.weight} kg</div>`
       : '';
     const series = row.recentReps
       .map(r => `<span class="stats-reps-set">${r.join('-')}</span>`)
       .join('<span class="stats-reps-sep">·</span>');
-    const sinRecorrido = row.status === 'sin-recorrido' ? ' stats-row-muted' : '';
-    return `<button class="stats-row${sinRecorrido}" data-exercise-id="${row.exerciseId}">
-      <div class="stats-row-head">
-        <div class="stats-row-name">${row.name}</div>
-        ${peso}
+
+    // El botón a Gráficas solo tiene sentido con histórico que dibujar.
+    const verGrafica = row.status === 'sin-recorrido' ? '' :
+      `<button class="btn-secondary btn-sm stats-row-chart" data-exercise-id="${row.exerciseId}">Ver en Gráficas</button>`;
+
+    return `<div class="stats-row stats-row--${row.status}" data-exercise-id="${row.exerciseId}">
+      <button class="stats-row-head" data-idx="${idx}" aria-expanded="false">
+        <div class="stats-row-main">
+          <div class="stats-row-title">
+            <div class="stats-row-name">${row.name}</div>
+            ${peso}
+          </div>
+          <div class="stats-row-phrase">${row.phrase}</div>
+        </div>
+        ${chevronIcon(`stats-chevron-${idx}`)}
+      </button>
+      <div class="stats-row-body" id="stats-body-${idx}">
+        <div class="stats-row-reps-label">Últimas sesiones</div>
+        <div class="stats-row-reps">${series}</div>
+        ${verGrafica}
       </div>
-      <div class="stats-row-reps">${series}</div>
-      <div class="stats-row-phrase">${row.phrase}</div>
-    </button>`;
+    </div>`;
   }).join('');
 
   return `<div class="card stats-card">
@@ -70,8 +84,20 @@ export function renderEstadisticas() {
 
   cont.innerHTML = buildExercisesCardHtml(rows) + buildGroupsCardHtml(grupos);
 
-  // Una fila sin recorrido no lleva a ningún sitio: no hay nada que graficar.
-  cont.querySelectorAll('.stats-row:not(.stats-row-muted)').forEach(el => {
+  // Tocar la cabecera despliega las reps; a Gráficas se va con el botón de
+  // dentro. Mismo acordeón que las cards de Rutinas.
+  cont.querySelectorAll('.stats-row-head').forEach(el => {
+    el.onclick = () => {
+      const idx = el.dataset.idx;
+      const body = document.getElementById(`stats-body-${idx}`);
+      const chevron = document.getElementById(`stats-chevron-${idx}`);
+      const abierto = body.classList.toggle('open');
+      chevron.classList.toggle('open', abierto);
+      el.setAttribute('aria-expanded', String(abierto));
+    };
+  });
+
+  cont.querySelectorAll('.stats-row-chart').forEach(el => {
     el.onclick = () => {
       document.dispatchEvent(new CustomEvent('gym:navigate', {
         detail: {
