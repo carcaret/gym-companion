@@ -38,12 +38,12 @@
     "curl_de_biceps_con_barra": {
       "id": "curl_de_biceps_con_barra",
       "name": "Curl de Bíceps con Barra",
-      "grupo": "brazos"
+      "grupo": "biceps"
     },
     "curl_de_biceps_mancuerna": {
       "id": "curl_de_biceps_mancuerna",
       "name": "Curl de Bíceps con Mancuerna",
-      "grupo": "brazos"
+      "grupo": "biceps"
     },
     "curl_femoral_sentado": {
       "id": "curl_femoral_sentado",
@@ -128,7 +128,7 @@
     "overhead_extension_triceps": {
       "id": "overhead_extension_triceps",
       "name": "Overhead Extension Tríceps",
-      "grupo": "brazos"
+      "grupo": "triceps"
     },
     "peso_muerto_barra": {
       "id": "peso_muerto_barra",
@@ -253,7 +253,7 @@
     "skullcrusher_con_barra": {
       "id": "skullcrusher_con_barra",
       "name": "Skullcrusher con Barra",
-      "grupo": "brazos"
+      "grupo": "triceps"
     },
     "t_bar_row": {
       "id": "t_bar_row",
@@ -263,7 +263,7 @@
     "triceps_polea": {
       "id": "triceps_polea",
       "name": "Tríceps en Polea",
-      "grupo": "brazos"
+      "grupo": "triceps"
     },
     "zancadas_con_mancuernas": {
       "id": "zancadas_con_mancuernas",
@@ -283,7 +283,7 @@
     "hammer_curl_mancuernas": {
       "id": "hammer_curl_mancuernas",
       "name": "Hammer curl mancuernas",
-      "grupo": "brazos"
+      "grupo": "biceps"
     },
     "press_maquina": {
       "id": "press_maquina",
@@ -298,7 +298,7 @@
     "curl_biceps_polea": {
       "id": "curl_biceps_polea",
       "name": "Curl bíceps polea",
-      "grupo": "brazos"
+      "grupo": "biceps"
     },
     "trapecio_polea": {
       "id": "trapecio_polea",

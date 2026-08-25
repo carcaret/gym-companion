@@ -1684,17 +1684,47 @@ body {
   color: var(--text-secondary);
 }
 .stats-group-track {
+  position: relative;
   flex-grow: 1;
-  height: 10px;
+  height: 14px;
   background: var(--bg-input);
   border-radius: 3px;
   overflow: hidden;
 }
+/* Franja de referencia: va detrás de las barras, nunca las tapa. */
+.stats-group-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.10);
+}
+/* Los límites del rango van ENCIMA de la barra: si no, una barra larga los
+   tapa y deja de verse si te has pasado o te has quedado corto. */
+.stats-group-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.45);
+}
+.stats-group-bars {
+  position: relative;
+  display: flex;
+  height: 100%;
+}
 .stats-group-fill {
   height: 100%;
   background: var(--accent);
-  border-radius: 3px;
+  border-radius: 3px 0 0 3px;
 }
+/* Indirecto: mismo azul, mucho menos intenso — se lee como continuación de la
+   barra, no como otra métrica. */
+.stats-group-fill-ind {
+  height: 100%;
+  background: rgba(86, 156, 214, 0.32);
+  border-radius: 0 3px 3px 0;
+}
+.stats-group-fill:only-child { border-radius: 3px; }
 .stats-group-value {
   width: 26px;
   flex-shrink: 0;
@@ -1742,7 +1772,25 @@ body {
   font-size: 11px;
   color: var(--text-muted);
   line-height: 1.4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
 }
+.stats-legend { display: flex; align-items: center; gap: 5px; }
+.stats-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.stats-legend-dot.dir { background: var(--accent); }
+.stats-legend-dot.ind { background: rgba(86, 156, 214, 0.32); }
+.stats-legend-dot.band {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.stats-group-detail-head-ind { justify-content: flex-start; margin-top: 8px; }
+.stats-group-detail-row-ind { opacity: 0.75; }
 
 #graficas-back-wrap { padding: 0 var(--pad); }
 .btn-back {

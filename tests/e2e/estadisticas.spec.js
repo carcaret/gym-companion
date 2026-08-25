@@ -183,6 +183,13 @@ test.describe('Estadísticas', () => {
     await expect(page.locator('#graficas-back-btn')).toBeHidden();
   });
 
+  test('cada grupo pinta la franja de referencia con sus dos límites', async ({ page }) => {
+    await page.click('[data-view="estadisticas"]');
+    const grupo = page.locator('.stats-group').first();
+    await expect(grupo.locator('.stats-group-band')).toHaveCount(1);
+    await expect(grupo.locator('.stats-group-tick')).toHaveCount(2);
+  });
+
   test('tocar un grupo despliega y pliega sus ejercicios', async ({ page }) => {
     await page.click('[data-view="estadisticas"]');
     const grupo = page.locator('.stats-group').first();

@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import {
   computeTotalReps, getExerciseSessions, analyzeExercise,
-  formatSpan, buildExercisePhrase, buildExerciseRows, computeGroupSets,
+  formatSpan, buildExercisePhrase, buildExerciseRows, computeGroupSets, rangoDeVentana,
 } from '../../src/stats.js';
 
 function log({ id = 'press', weight = 20, series = 3, expected = 10, actual = [] }) {
@@ -318,6 +318,55 @@ describe('computeGroupSets', () => {
   test('los ejercicios sin grupo caen en (sin grupo)', () => {
     const g = computeGroupSets(d, { anchorDate: '2026-06-19', weeks: 4 });
     expect(g.find(x => x.grupo === '(sin grupo)').sets).toBe(2);
+  });
+
+  test('los tirones suman media serie a bíceps sin tocar su grupo directo', () => {
+    const d2 = {
+      exercises: {
+        jalon_al_pecho_neutro: { id: 'jalon_al_pecho_neutro', name: 'Jalón neutro', grupo: 'espalda' },
+        curl_biceps_polea: { id: 'curl_biceps_polea', name: 'Curl polea', grupo: 'biceps' },
+      },
+      routines: { DIA1: ['jalon_al_pecho_neutro'] },
+      history: [
+        { date: '2026-06-19', type: 'DIA1', completed: true, logs: [
+          { exercise_id: 'jalon_al_pecho_neutro', name: 'Jalón neutro', weight: 60, series: 4, reps: { expected: 10, actual: [10] } },
+          { exercise_id: 'curl_biceps_polea', name: 'Curl polea', weight: 20, series: 3, reps: { expected: 10, actual: [10] } },
+        ] },
+      ],
+    };
+    const g = computeGroupSets(d2, { anchorDate: '2026-06-19', weeks: 8 });
+    const espalda = g.find(x => x.grupo === 'espalda');
+    const biceps = g.find(x => x.grupo === 'biceps');
+    expect(espalda.sets).toBe(4);
+    expect(espalda.indirectSets).toBe(0);
+    expect(biceps.sets).toBe(3);
+    expect(biceps.indirectSets).toBe(2);      // 4 series × 0,5
+    expect(biceps.totalSets).toBe(5);
+    expect(biceps.indirect).toEqual([{ name: 'Jalón neutro', sets: 2 }]);
+  });
+
+  test('un grupo que solo recibe trabajo indirecto también aparece', () => {
+    const d2 = {
+      exercises: {
+        press_banca_mancuernas: { id: 'press_banca_mancuernas', name: 'Press banca', grupo: 'pecho' },
+      },
+      routines: { DIA1: ['press_banca_mancuernas'] },
+      history: [
+        { date: '2026-06-19', type: 'DIA1', completed: true, logs: [
+          { exercise_id: 'press_banca_mancuernas', name: 'Press banca', weight: 30, series: 4, reps: { expected: 10, actual: [10] } },
+        ] },
+      ],
+    };
+    const g = computeGroupSets(d2, { anchorDate: '2026-06-19', weeks: 8 });
+    const triceps = g.find(x => x.grupo === 'triceps');
+    expect(triceps.sets).toBe(0);
+    expect(triceps.indirectSets).toBe(2);
+    expect(triceps.totalSets).toBe(2);
+  });
+
+  test('rangoDeVentana escala la franja semanal a la ventana', () => {
+    expect(rangoDeVentana(8)).toEqual([32, 80]);
+    expect(rangoDeVentana(4)).toEqual([16, 40]);
   });
 
   test('cada ejercicio trae sus series y sus sesiones', () => {

@@ -1,6 +1,6 @@
 import { DB } from '../src/store.js';
 import { todayStr } from '../src/dates.js';
-import { buildExerciseRows, computeGroupSets } from '../src/stats.js';
+import { buildExerciseRows, computeGroupSets, rangoDeVentana } from '../src/stats.js';
 import { chevronIcon } from '../src/ui.js';
 
 const WEEKS = 8;
@@ -75,30 +75,57 @@ function buildExercisesCardHtml(rows) {
   </div>`;
 }
 
-const capitalizar = s => s.charAt(0).toUpperCase() + s.slice(1);
+// Los grupos se guardan sin tilde para poder compararlos como claves; aquí se
+// les devuelve la ortografía correcta para mostrarlos.
+const NOMBRE_GRUPO = { biceps: 'Bíceps', triceps: 'Tríceps' };
+const capitalizar = s => NOMBRE_GRUPO[s] || s.charAt(0).toUpperCase() + s.slice(1);
 
-function buildGroupsCardHtml(grupos) {
-  // Series absolutas, sin dividir: cualquier media esconde dentro de un decimal
-  // las semanas en que no se entrenó (un parón de 18 días baja el número un 25%
-  // sin que cambie cómo entrenas).
-  const max = grupos.length > 0 ? grupos[0].sets : 1;
+const redondea = n => Math.round(n * 10) / 10;
+
+function buildGroupsCardHtml(grupos, [bandaMin, bandaMax]) {
+  // Escala absoluta COMPARTIDA por todas las barras. Normalizar cada fila
+  // contra el grupo mayor haría que la franja de referencia cayera en un sitio
+  // distinto en cada una, y entonces no significaría nada.
+  const mayor = grupos.reduce((m, g) => Math.max(m, g.totalSets), 0);
+  const escala = Math.max(Math.ceil(Math.max(mayor, bandaMax) / 10) * 10, 10);
+  const pct = n => (n / escala) * 100;
+
   const filas = grupos.map(g => {
-    const pct = max > 0 ? Math.round((g.sets / max) * 100) : 0;
     const detalle = g.exercises
       .map(e => `<div class="stats-group-detail-row">
         <span class="stats-group-detail-name">${e.name}</span>
         <span class="stats-group-detail-val">${e.sets} · ${e.sessions}</span>
       </div>`)
       .join('');
+    const indirecto = g.indirect.length === 0 ? '' :
+      `<div class="stats-group-detail-head stats-group-detail-head-ind"><span>indirecto</span></div>` +
+      g.indirect.map(e => `<div class="stats-group-detail-row stats-group-detail-row-ind">
+        <span class="stats-group-detail-name">${e.name}</span>
+        <span class="stats-group-detail-val">${redondea(e.sets)}</span>
+      </div>`).join('');
+
+    const barraIndirecta = g.indirectSets > 0
+      ? `<div class="stats-group-fill-ind" style="width:${pct(g.indirectSets)}%"></div>`
+      : '';
+
     return `<div class="stats-group" data-grupo="${g.grupo}">
       <div class="stats-group-bar-row">
         <div class="stats-group-label">${capitalizar(g.grupo)}</div>
-        <div class="stats-group-track"><div class="stats-group-fill" style="width:${pct}%"></div></div>
-        <div class="stats-group-value">${g.sets}</div>
+        <div class="stats-group-track">
+          <div class="stats-group-band" style="left:${pct(bandaMin)}%; width:${pct(bandaMax - bandaMin)}%"></div>
+          <div class="stats-group-bars">
+            <div class="stats-group-fill" style="width:${pct(g.sets)}%"></div>
+            ${barraIndirecta}
+          </div>
+          <div class="stats-group-tick" style="left:${pct(bandaMin)}%"></div>
+          <div class="stats-group-tick" style="left:${pct(bandaMax)}%"></div>
+        </div>
+        <div class="stats-group-value">${Math.round(g.totalSets)}</div>
       </div>
       <div class="stats-group-detail" hidden>
         <div class="stats-group-detail-head"><span>series</span><span>· sesiones</span></div>
         ${detalle}
+        ${indirecto}
       </div>
     </div>`;
   }).join('');
@@ -109,7 +136,11 @@ function buildGroupsCardHtml(grupos) {
       <div class="stats-card-window">últimas ${WEEKS} semanas</div>
     </div>
     <div class="stats-groups">${filas}</div>
-    <div class="stats-card-foot">series totales · solo trabajo directo</div>
+    <div class="stats-card-foot">
+      <span class="stats-legend"><i class="stats-legend-dot dir"></i>directo</span>
+      <span class="stats-legend"><i class="stats-legend-dot ind"></i>indirecto</span>
+      <span class="stats-legend"><i class="stats-legend-dot band"></i>${bandaMin}–${bandaMax} series</span>
+    </div>
   </div>`;
 }
 
@@ -122,7 +153,7 @@ export function renderEstadisticas() {
   const rows = buildExerciseRows(DB, routineIds, { anchorDate, weeks: WEEKS });
   const grupos = computeGroupSets(DB, { anchorDate, weeks: WEEKS });
 
-  cont.innerHTML = buildExercisesCardHtml(rows) + buildGroupsCardHtml(grupos);
+  cont.innerHTML = buildExercisesCardHtml(rows) + buildGroupsCardHtml(grupos, rangoDeVentana(WEEKS));
 
   // Cabecera de la tarjeta: muestra u oculta todo lo que no está estancado.
   const cabecera = document.getElementById('stats-cabecera');

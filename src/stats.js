@@ -204,6 +204,41 @@ export function buildExerciseRows(db, exerciseIds, { anchorDate, weeks = 8 }) {
 export const SIN_GRUPO = '(sin grupo)';
 
 /**
+ * Músculos secundarios por ejercicio. La DB solo guarda un grupo por
+ * ejercicio, así que este mapa es la única forma de saber que un jalón
+ * alimenta bíceps. Está escrito a mano y solo cubre lo que se entrena de
+ * hecho: un ejercicio que no aparezca aquí no aporta trabajo indirecto.
+ */
+export const SECUNDARIOS = {
+  // Tirones: bíceps
+  jalon_al_pecho: ['biceps'],
+  jalon_al_pecho_neutro: ['biceps'],
+  hammer_row_prono: ['biceps'],
+  doninadas: ['biceps'],
+  remo_con_barra: ['biceps'],
+  remo_en_maquina: ['biceps'],
+  // Empujes: tríceps
+  press_banca_mancuernas: ['triceps'],
+  press_inclinado_mancuernas: ['triceps'],
+  press_inclinado_maquina: ['triceps'],
+  press_maquina: ['triceps'],
+  press_de_hombros_mancuernas_sentado: ['triceps'],
+  press_de_hombros_maquina: ['triceps'],
+  press_banca: ['triceps'],
+  landmine_press: ['triceps'],
+};
+
+/**
+ * Cuánto cuenta una serie para un músculo secundario. 0,5 es la convención
+ * de "fractional sets" con la que se cuentan los volúmenes en la literatura:
+ * el trabajo indirecto cuenta como media serie.
+ */
+export const FRACCION_INDIRECTA = 0.5;
+
+/** Franja de referencia de la literatura, en series por músculo y semana. */
+export const RANGO_SEMANAL = [4, 10];
+
+/**
  * Series por semana y grupo muscular en la ventana
  * [anchorDate - weeks, anchorDate].
  *
@@ -215,6 +250,7 @@ export const SIN_GRUPO = '(sin grupo)';
 export function computeGroupSets(db, { anchorDate, weeks = 8 }) {
   const from = addDaysStr(anchorDate, -weeks * 7);
   const porGrupo = new Map();
+  const nuevoGrupo = () => ({ sets: 0, indirectSets: 0, sessions: 0, exercises: new Map(), indirect: new Map() });
 
   for (const entry of db.history) {
     if (entry.date < from || entry.date > anchorDate) continue;
@@ -223,7 +259,8 @@ export function computeGroupSets(db, { anchorDate, weeks = 8 }) {
       const ex = db.exercises[log.exercise_id];
       const grupo = (ex && ex.grupo) || SIN_GRUPO;
       const nombre = (ex && ex.name) || log.name || log.exercise_id;
-      if (!porGrupo.has(grupo)) porGrupo.set(grupo, { sets: 0, sessions: 0, exercises: new Map() });
+
+      if (!porGrupo.has(grupo)) porGrupo.set(grupo, nuevoGrupo());
       const g = porGrupo.get(grupo);
       g.sets += log.series;
       g.sessions += 1;
@@ -231,6 +268,14 @@ export function computeGroupSets(db, { anchorDate, weeks = 8 }) {
       const e = g.exercises.get(nombre);
       e.sets += log.series;
       e.sessions += 1;
+
+      for (const secundario of SECUNDARIOS[log.exercise_id] || []) {
+        if (!porGrupo.has(secundario)) porGrupo.set(secundario, nuevoGrupo());
+        const s = porGrupo.get(secundario);
+        const aporte = log.series * FRACCION_INDIRECTA;
+        s.indirectSets += aporte;
+        s.indirect.set(nombre, (s.indirect.get(nombre) || 0) + aporte);
+      }
     }
   }
 
@@ -239,8 +284,25 @@ export function computeGroupSets(db, { anchorDate, weeks = 8 }) {
     const exercises = [...g.exercises]
       .map(([name, e]) => ({ name, sets: e.sets, sessions: e.sessions, setsPerWeek: e.sets / weeks }))
       .sort((a, b) => b.sets - a.sets || a.name.localeCompare(b.name, 'es'));
-    out.push({ grupo, sets: g.sets, sessions: g.sessions, setsPerWeek: g.sets / weeks, exercises });
+    const indirect = [...g.indirect]
+      .map(([name, sets]) => ({ name, sets }))
+      .sort((a, b) => b.sets - a.sets || a.name.localeCompare(b.name, 'es'));
+    out.push({
+      grupo,
+      sets: g.sets,
+      indirectSets: g.indirectSets,
+      totalSets: g.sets + g.indirectSets,
+      sessions: g.sessions,
+      setsPerWeek: g.sets / weeks,
+      exercises,
+      indirect,
+    });
   }
-  out.sort((a, b) => b.sets - a.sets || a.grupo.localeCompare(b.grupo, 'es'));
+  out.sort((a, b) => b.totalSets - a.totalSets || a.grupo.localeCompare(b.grupo, 'es'));
   return out;
+}
+
+/** Franja de referencia trasladada a la ventana: [min, max] series totales. */
+export function rangoDeVentana(weeks = 8) {
+  return [RANGO_SEMANAL[0] * weeks, RANGO_SEMANAL[1] * weeks];
 }
