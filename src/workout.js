@@ -88,6 +88,17 @@ export function finishWorkoutEntry(entry) {
   return entry;
 }
 
+/**
+ * Escalón de peso según la carga actual: cargas ligeras piden ajustes finos,
+ * las pesadas saltos grandes. Usado por los botones −/+ de peso.
+ *   <20kg → 1kg | 20–49.9kg → 2kg | >=50kg → 5kg
+ */
+export function weightStep(weight) {
+  if (weight < 20) return 1;
+  if (weight < 50) return 2;
+  return 5;
+}
+
 export function adjustParam(log, param, delta) {
   if (param === 'weight') {
     log.weight = Math.max(0, Math.round((log.weight + delta) * 10) / 10);

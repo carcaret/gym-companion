@@ -221,9 +221,10 @@ test.describe('Historial completo', () => {
     const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
     const initialValue = parseFloat(await weightInput.inputValue());
 
-    await page.locator('[data-action="adjustParam"][data-param="weight"][data-delta="2.5"]').first().click();
+    await page.locator('[data-action="adjustParam"][data-param="weight"][data-delta="1"]').first().click();
 
-    await expect(weightInput).toHaveValue(String(initialValue + 2.5));
+    // sentadilla del fixture pesa 100kg → escalon 5kg
+    await expect(weightInput).toHaveValue(String(initialValue + 5));
   });
 
   test('boton - de peso actualiza el input de peso', async ({ page }) => {
@@ -234,9 +235,10 @@ test.describe('Historial completo', () => {
     const weightInput = page.locator('.card-body.open [id^="h-weight-"]').first();
     const initialValue = parseFloat(await weightInput.inputValue());
 
-    await page.locator('[data-action="adjustParam"][data-param="weight"][data-delta="-2.5"]').first().click();
+    await page.locator('[data-action="adjustParam"][data-param="weight"][data-delta="-1"]').first().click();
 
-    await expect(weightInput).toHaveValue(String(Math.max(0, initialValue - 2.5)));
+    // sentadilla del fixture pesa 100kg → escalon 5kg
+    await expect(weightInput).toHaveValue(String(Math.max(0, initialValue - 5)));
   });
 
   test('boton + de series actualiza el input de series', async ({ page }) => {

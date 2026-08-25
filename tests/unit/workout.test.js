@@ -4,6 +4,7 @@ import {
   buildLog,
   finishWorkoutEntry,
   adjustParam,
+  weightStep,
   setParam,
   adjustRep,
   setRep,
@@ -294,6 +295,25 @@ describe('adjustParam — weight', () => {
     const log2 = makeLog({ weight: 0.1 });
     adjustParam(log2, 'weight', 0.2);
     expect(log2.weight).toBe(0.3);
+  });
+});
+
+describe('weightStep', () => {
+  test('peso < 20 → escalon de 1kg', () => {
+    expect(weightStep(0)).toBe(1);
+    expect(weightStep(10)).toBe(1);
+    expect(weightStep(19.5)).toBe(1);
+  });
+
+  test('20 <= peso < 50 → escalon de 2kg', () => {
+    expect(weightStep(20)).toBe(2);
+    expect(weightStep(35)).toBe(2);
+    expect(weightStep(49.5)).toBe(2);
+  });
+
+  test('peso >= 50 → escalon de 5kg', () => {
+    expect(weightStep(50)).toBe(5);
+    expect(weightStep(100)).toBe(5);
   });
 });
 

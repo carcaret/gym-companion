@@ -167,9 +167,9 @@ export function buildParamRowsHtml(prefix, logIdx, log, date = null, readOnly = 
   return `<div class="param-row">
     <label>Peso (kg)</label>
     <div class="flex-center gap-sm">
-      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="weight" data-delta="-2.5">−</button>
+      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="weight" data-delta="-1">−</button>
       <input id="${prefix}-weight-${logIdx}" class="input-compact param-input" type="number" inputmode="decimal" step="0.5" value="${log.weight}" data-action="setParam" data-logidx="${logIdx}"${d} data-param="weight">
-      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="weight" data-delta="2.5">+</button>
+      <button class="btn-icon" data-action="adjustParam" data-logidx="${logIdx}"${d} data-param="weight" data-delta="1">+</button>
     </div>
   </div>
   <div class="param-row">

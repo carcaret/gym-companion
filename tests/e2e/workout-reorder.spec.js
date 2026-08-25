@@ -206,12 +206,12 @@ test.describe('drag-reorder workout exercises', () => {
     await assertDomMatchesData(page);
 
     await page.locator('.card-header').first().click(); // abrir card 0 (sinhist)
-    await page.locator('#body-0 [data-action="adjustParam"][data-param="weight"][data-delta="2.5"]').click();
+    await page.locator('#body-0 [data-action="adjustParam"][data-param="weight"][data-delta="1"]').click();
 
     const after = await readPersistedLogs(page);
     const sinhistBefore = before.find(l => l.exercise_id === 'ejercicio_sin_historial').weight;
     expect(after.find(l => l.exercise_id === 'ejercicio_sin_historial').weight)
-      .toBe(Math.round((sinhistBefore + 2.5) * 10) / 10);
+      .toBe(Math.round((sinhistBefore + 1) * 10) / 10); // sin historial → peso 0 → escalon 1kg
     expect(after.find(l => l.exercise_id === 'press_banca').weight)
       .toBe(before.find(l => l.exercise_id === 'press_banca').weight);
     expect(after.find(l => l.exercise_id === 'curl_biceps').weight)
