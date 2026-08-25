@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { computeTotalReps, getExerciseSessions } from '../../src/stats.js';
+import { computeTotalReps, getExerciseSessions, analyzeExercise } from '../../src/stats.js';
 
 function log({ id = 'press', weight = 20, series = 3, expected = 10, actual = [] }) {
   return { exercise_id: id, name: id, weight, series, reps: { expected, actual } };
@@ -48,5 +48,137 @@ describe('getExerciseSessions', () => {
   test('respeta el rango de fechas', () => {
     const s = getExerciseSessions(historia, 'press', { from: '2026-06-15', to: '2026-12-31' });
     expect(s.map(x => x.date)).toEqual(['2026-07-01']);
+  });
+});
+
+function dbWith(sessions) {
+  return {
+    exercises: { press: { id: 'press', name: 'Press de prueba', grupo: 'hombros' } },
+    routines: { DIA1: ['press'] },
+    history: sessions,
+  };
+}
+
+describe('analyzeExercise', () => {
+  test('estancado: mismo peso y sin superar el mejor total', () => {
+    const d = dbWith([
+      entry('2026-06-05', log({ weight: 18, actual: [11, 11, 10] })),
+      entry('2026-06-12', log({ weight: 18, actual: [11, 11, 10] })),
+      entry('2026-06-19', log({ weight: 18, actual: [11, 10, 9] })),
+      entry('2026-06-26', log({ weight: 18, actual: [11, 11, 10] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-06-26', weeks: 8 });
+    expect(r.status).toBe('estancado');
+    expect(r.stallSessions).toBe(4);
+    expect(r.bestReps).toBe(32);
+    expect(r.weight).toBe(18);
+  });
+
+  test('progresa por peso aunque las reps bajen', () => {
+    const d = dbWith([
+      entry('2026-06-05', log({ weight: 220, actual: [12, 12, 12, 12] })),
+      entry('2026-06-12', log({ weight: 230, actual: [10, 10, 10, 10] })),
+      entry('2026-06-19', log({ weight: 240, actual: [8, 9, 9, 9] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-06-19', weeks: 8 });
+    expect(r.status).toBe('progresa');
+    expect(r.stallSessions).toBe(0);
+    expect(r.weightFrom).toBe(220);
+    expect(r.weightTo).toBe(240);
+  });
+
+  test('progresa por reps al mismo peso', () => {
+    const d = dbWith([
+      entry('2026-06-05', log({ weight: 68, actual: [10, 10, 9, 9] })),
+      entry('2026-06-12', log({ weight: 68, actual: [10, 10, 10, 9] })),
+      entry('2026-06-19', log({ weight: 68, actual: [11, 10, 10, 10] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-06-19', weeks: 8 });
+    expect(r.status).toBe('progresa');
+    expect(r.repsFrom).toBe(38);
+    expect(r.repsTo).toBe(41);
+  });
+
+  test('no usa reps.expected: fallar el objetivo mientras suben las reps es progreso', () => {
+    const d = dbWith([
+      entry('2026-06-05', log({ weight: 68, expected: 10, actual: [10, 10, 9, 9] })),
+      entry('2026-06-12', log({ weight: 68, expected: 10, actual: [10, 10, 10, 9] })),
+      entry('2026-06-19', log({ weight: 68, expected: 11, actual: [11, 10, 10, 10] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-06-19', weeks: 8 });
+    expect(r.status).toBe('progresa');
+  });
+
+  test('sin recorrido con menos de 3 sesiones', () => {
+    const d = dbWith([
+      entry('2026-06-12', log({ weight: 0, actual: [9, 9, 9, 7] })),
+      entry('2026-06-19', log({ weight: 0, actual: [9, 9, 9, 8] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-06-19', weeks: 8 });
+    expect(r.status).toBe('sin-recorrido');
+    expect(r.stallSessions).toBe(0);
+  });
+
+  test('recentReps trae las 3 últimas sesiones, la más antigua primero', () => {
+    const d = dbWith([
+      entry('2026-06-05', log({ weight: 18, actual: [1] })),
+      entry('2026-06-12', log({ weight: 18, actual: [2] })),
+      entry('2026-06-19', log({ weight: 18, actual: [3] })),
+      entry('2026-06-26', log({ weight: 18, actual: [4] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-06-26', weeks: 8 });
+    expect(r.recentReps).toEqual([[2], [3], [4]]);
+  });
+
+  test('la racha arranca en la última sesión que batió el récord, no antes', () => {
+    const d = dbWith([
+      entry('2026-05-01', log({ weight: 18, actual: [10, 10, 10] })),
+      entry('2026-05-08', log({ weight: 18, actual: [11, 11, 10] })),
+      entry('2026-05-15', log({ weight: 18, actual: [11, 11, 10] })),
+      entry('2026-05-22', log({ weight: 18, actual: [11, 10, 10] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-05-22', weeks: 8 });
+    expect(r.stallSessions).toBe(3);
+    expect(r.stallSince).toBe('2026-05-08');
+    expect(r.bestReps).toBe(32);
+  });
+
+  test('empatar el récord seis veces cuenta las seis sesiones', () => {
+    const d = dbWith([
+      entry('2026-05-01', log({ weight: 97, actual: [9, 9, 9] })),
+      entry('2026-05-08', log({ weight: 97, actual: [9, 9, 9] })),
+      entry('2026-05-15', log({ weight: 97, actual: [9, 9, 9] })),
+      entry('2026-05-22', log({ weight: 97, actual: [9, 9, 9] })),
+      entry('2026-05-29', log({ weight: 97, actual: [9, 9, 9] })),
+      entry('2026-06-05', log({ weight: 97, actual: [9, 9, 9] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-06-05', weeks: 8 });
+    expect(r.status).toBe('estancado');
+    expect(r.stallSessions).toBe(6);
+  });
+
+  test('la racha solo cuenta sesiones al peso actual', () => {
+    // La sesión a 16 kg queda fuera de la ventana, así que no cuenta como
+    // subida de peso; lo que se comprueba es que tampoco entra en la racha.
+    const d = dbWith([
+      entry('2026-01-10', log({ weight: 16, actual: [12, 12, 12] })),
+      entry('2026-06-05', log({ weight: 18, actual: [10, 10, 10] })),
+      entry('2026-06-12', log({ weight: 18, actual: [10, 10, 10] })),
+      entry('2026-06-19', log({ weight: 18, actual: [10, 10, 10] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-06-19', weeks: 8 });
+    expect(r.status).toBe('estancado');
+    expect(r.stallSessions).toBe(3);
+  });
+
+  test('subir de peso es progreso, aunque a la carga nueva aún no se mejore', () => {
+    const d = dbWith([
+      entry('2026-06-05', log({ weight: 16, actual: [12, 12, 12] })),
+      entry('2026-06-12', log({ weight: 18, actual: [10, 10, 10] })),
+      entry('2026-06-19', log({ weight: 18, actual: [10, 10, 10] })),
+    ]);
+    const r = analyzeExercise(d, 'press', { anchorDate: '2026-06-19', weeks: 8 });
+    expect(r.status).toBe('progresa');
+    expect(r.stallSessions).toBe(0);
   });
 });
