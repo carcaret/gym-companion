@@ -224,7 +224,7 @@ export const SECUNDARIOS = {
   press_maquina: ['triceps'],
   press_de_hombros_mancuernas_sentado: ['triceps'],
   press_de_hombros_maquina: ['triceps'],
-  press_banca: ['triceps'],
+  press_banca_barra: ['triceps'],
   landmine_press: ['triceps'],
 };
 
