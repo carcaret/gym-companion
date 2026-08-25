@@ -128,3 +128,37 @@ describe('computeBarColor — azul vs verde son distinguibles', () => {
     expect(verde.g).toBeGreaterThan(verde.b); // verde: G > B
   });
 });
+
+describe('computeBarColor — el verde exige mismo peso que la sesión de referencia', () => {
+  const short = makeLog({ weight: 60, expected: 10, actual: [10, 10, 8] });
+
+  test('mismo peso y objetivo no cumplido → verde por reps faltantes', () => {
+    expect(computeBarColor(short, 0, 999, 60)).toBe('rgb(82,179,146)');
+  });
+  test('menos peso que la actual, aunque no cumpla → azul por e1RM', () => {
+    const c = channels(computeBarColor(short, 0, 999, 80));
+    expect(c.b).toBeGreaterThan(c.g);
+  });
+  test('más peso que la actual, aunque no cumpla → azul por e1RM', () => {
+    const c = channels(computeBarColor(short, 0, 999, 40));
+    expect(c.b).toBeGreaterThan(c.g);
+  });
+  test('peso distinto → mismo azul que sin referencia con objetivo cumplido', () => {
+    const m = getPrimaryMetric(short);
+    expect(computeBarColor(short, m, m, 80)).toBe(BLUE_LIGHT);
+    expect(computeBarColor(short, m, m + 100, 80)).toBe(BLUE_DARK);
+  });
+  test('mismo peso pero objetivo cumplido → azul (el peso no fuerza verde)', () => {
+    const met = makeLog({ weight: 60, expected: 10, actual: [10, 10, 10] });
+    const m = getPrimaryMetric(met);
+    expect(computeBarColor(met, m, m, 60)).toBe(BLUE_LIGHT);
+  });
+  test('sin referencia de peso (null/undefined) → comportamiento anterior', () => {
+    expect(computeBarColor(short, 0, 999)).toBe('rgb(82,179,146)');
+    expect(computeBarColor(short, 0, 999, null)).toBe('rgb(82,179,146)');
+  });
+  test('peso 0 en ambos (corporal) → cuenta como mismo peso', () => {
+    const bw = makeLog({ weight: 0, expected: 10, actual: [10, 10, 9] });
+    expect(computeBarColor(bw, 0, 999, 0)).toBe(GREEN_VIVID);
+  });
+});
