@@ -892,10 +892,9 @@ body {
 
 .app-version {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-align: center;
   margin-top: 20px;
-  opacity: 0.5;
 }
 
 /* ════════════════════════════════════════════════════════════════
