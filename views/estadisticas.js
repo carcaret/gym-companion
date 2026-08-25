@@ -5,8 +5,8 @@ import { chevronIcon } from '../src/ui.js';
 
 const WEEKS = 8;
 
-function buildExercisesCardHtml(rows) {
-  const filas = rows.map((row, idx) => {
+function buildExerciseRowHtml(row, idx) {
+  {
     const peso = row.weight > 0
       ? `<div class="stats-row-weight">${row.weight} kg</div>`
       : '';
@@ -35,14 +35,43 @@ function buildExercisesCardHtml(rows) {
         ${verGrafica}
       </div>
     </div>`;
-  }).join('');
+  }
+}
+
+/**
+ * La tarjeta arranca plegada mostrando solo los estancados, que responden
+ * "¿qué toco?". Como buildExerciseRows ya ordena con los estancados delante,
+ * son un bloque contiguo: basta con partir la lista, sin filtrar ni reordenar.
+ */
+function buildExercisesCardHtml(rows) {
+  const estancados = rows.filter(r => r.status === 'estancado');
+  const resto = rows.filter(r => r.status !== 'estancado');
+  const progresando = rows.filter(r => r.status === 'progresa').length;
+
+  // Sin nada estancado la lista visible quedaría vacía — y eso es la buena
+  // noticia, así que se dice con palabras en vez de dejar un hueco.
+  const subtitulo = estancados.length > 0
+    ? `${estancados.length} de ${rows.length} estancados`
+    : `Nada estancado · ${progresando} progresando`;
+
+  const htmlEstancados = estancados
+    .map((row, i) => buildExerciseRowHtml(row, i)).join('');
+  const htmlResto = resto
+    .map((row, i) => buildExerciseRowHtml(row, estancados.length + i)).join('');
 
   return `<div class="card stats-card">
-    <div class="stats-card-head">
-      <div class="stats-card-title">Ejercicios</div>
-      <div class="stats-card-window">últimas ${WEEKS} semanas</div>
-    </div>
-    <div class="stats-rows">${filas}</div>
+    <button class="stats-card-head stats-card-toggle" id="stats-cabecera" aria-expanded="false">
+      <div class="stats-card-head-main">
+        <div class="stats-card-titlerow">
+          <div class="stats-card-title">Ejercicios</div>
+          <div class="stats-card-window">últimas ${WEEKS} semanas</div>
+        </div>
+        <div class="stats-card-sub">${subtitulo}</div>
+      </div>
+      ${chevronIcon('stats-card-chevron')}
+    </button>
+    <div class="stats-rows">${htmlEstancados}</div>
+    <div class="stats-rows stats-rows-resto" id="stats-resto" hidden>${htmlResto}</div>
   </div>`;
 }
 
@@ -84,8 +113,21 @@ export function renderEstadisticas() {
 
   cont.innerHTML = buildExercisesCardHtml(rows) + buildGroupsCardHtml(grupos);
 
-  // Tocar la cabecera despliega las reps; a Gráficas se va con el botón de
-  // dentro. Mismo acordeón que las cards de Rutinas.
+  // Cabecera de la tarjeta: muestra u oculta todo lo que no está estancado.
+  const cabecera = document.getElementById('stats-cabecera');
+  if (cabecera) {
+    cabecera.onclick = () => {
+      const resto = document.getElementById('stats-resto');
+      const chevron = document.getElementById('stats-card-chevron');
+      const abierto = resto.hidden;
+      resto.hidden = !abierto;
+      chevron.classList.toggle('open', abierto);
+      cabecera.setAttribute('aria-expanded', String(abierto));
+    };
+  }
+
+  // Tocar la cabecera de una fila despliega sus reps; a Gráficas se va con el
+  // botón de dentro. Mismo acordeón que las cards de Rutinas.
   cont.querySelectorAll('.stats-row-head').forEach(el => {
     el.onclick = () => {
       const idx = el.dataset.idx;

@@ -77,6 +77,27 @@ test.describe('Estadísticas', () => {
     await expect(page.locator('.stats-card-title').nth(1)).toHaveText('Grupos musculares');
   });
 
+  test('la tarjeta arranca plegada y solo muestra los estancados', async ({ page }) => {
+    await page.click('[data-view="estadisticas"]');
+    await expect(page.locator('#stats-resto')).toBeHidden();
+    await expect(page.locator('.stats-card-sub')).toHaveText('1 de 3 estancados');
+    // Solo la fila estancada queda a la vista
+    await expect(page.locator('.stats-row:visible')).toHaveCount(1);
+    await expect(page.locator('.stats-row:visible .stats-row-name')).toHaveText('Press de Hombros');
+  });
+
+  test('tocar la cabecera de la tarjeta despliega y pliega el resto', async ({ page }) => {
+    await page.click('[data-view="estadisticas"]');
+    await page.click('#stats-cabecera');
+    await expect(page.locator('#stats-resto')).toBeVisible();
+    await expect(page.locator('#stats-cabecera')).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('.stats-row:visible')).toHaveCount(3);
+
+    await page.click('#stats-cabecera');
+    await expect(page.locator('#stats-resto')).toBeHidden();
+    await expect(page.locator('.stats-row:visible')).toHaveCount(1);
+  });
+
   test('cada fila trae nombre y frase; las reps van colapsadas', async ({ page }) => {
     await page.click('[data-view="estadisticas"]');
     const fila = page.locator('.stats-row').first();

@@ -1548,6 +1548,32 @@ body {
   align-items: baseline;
   margin-bottom: 14px;
 }
+.stats-card-toggle {
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+.stats-card-toggle:active { opacity: 0.6; }
+.stats-card-head-main { flex-grow: 1; min-width: 0; }
+.stats-card-titlerow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.stats-card-sub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.stats-rows-resto[hidden] { display: none; }
 .stats-card-title { font-size: 15px; font-weight: 600; }
 .stats-card-window {
   font-size: 10px;
