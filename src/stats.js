@@ -7,6 +7,12 @@ import { addDaysStr } from './dates.js';
 const RECENT_SESSIONS = 3;
 const MIN_SESSIONS = 3;
 
+function daysBetween(fromStr, toStr) {
+  const a = new Date(fromStr + 'T12:00:00Z');
+  const b = new Date(toStr + 'T12:00:00Z');
+  return Math.round((b - a) / 86400000);
+}
+
 /** Reps realmente ejecutadas en una sesión, sumando las series rellenadas. */
 export function computeTotalReps(log) {
   const actual = (log.reps && log.reps.actual) || [];
@@ -113,6 +119,25 @@ export function analyzeExercise(db, exerciseId, { anchorDate, weeks = 8 }) {
   const stallSessions = progresa ? 0 : rachaCruda;
   const stallSince = progresa ? null : sameWeight[lastImprovementIdx].date;
 
+  // Cuánto tiempo describe la frase. Estancado: desde el último récord. Subida
+  // de peso: desde la última sesión que aún iba con la carga vieja — medirlo
+  // desde el principio de la ventana contaría semanas en las que no pasó nada.
+  let spanFrom = anchorDate;
+  if (!progresa) {
+    spanFrom = stallSince;
+  } else if (subioPeso) {
+    const ultimaVieja = [...scope].reverse().find(s => (s.log.weight || 0) === weightFrom);
+    if (ultimaVieja) spanFrom = ultimaVieja.date;
+  }
+  const spanDays = daysBetween(spanFrom, anchorDate);
+
+  // ¿Cumplió el objetivo en todas las series de la racha? Solo sirve para
+  // elegir la redacción; nunca para decidir si progresa (el objetivo lo teclea
+  // el usuario).
+  const rachaLogs = sameWeight.slice(lastImprovementIdx);
+  const allHit = rachaLogs.every(s =>
+    (s.log.reps.actual || []).every(r => r == null || r >= s.log.reps.expected));
+
   return {
     ...base,
     weight,
@@ -123,5 +148,55 @@ export function analyzeExercise(db, exerciseId, { anchorDate, weeks = 8 }) {
     bestReps,
     weightFrom, weightTo,
     repsFrom, repsTo,
+    spanDays,
+    allHit,
   };
+}
+
+/** Duración en palabras: días hasta 2 semanas, semanas hasta 2 meses, luego meses. */
+export function formatSpan(days) {
+  if (days < 14) return `${days} días`;
+  if (days < 60) return `${Math.round(days / 7)} semanas`;
+  return `${Math.round(days / 30)} meses`;
+}
+
+/**
+ * Frase descriptiva de una fila. Describe lo que ha pasado; nunca recomienda
+ * nada — la app no ve descanso, comida, estrés ni esfuerzo real, que es lo
+ * primero que habría que mirar ante un estancamiento (ver spec).
+ */
+export function buildExercisePhrase(row) {
+  if (row.status === 'sin-recorrido') {
+    return `${row.sessionCount} sesiones, aún sin recorrido`;
+  }
+  if (row.status === 'progresa') {
+    if (row.weightTo > row.weightFrom) {
+      return `${row.weightFrom} → ${row.weightTo} kg en ${formatSpan(row.spanDays)}`;
+    }
+    return `${row.repsFrom} → ${row.repsTo} reps al mismo peso`;
+  }
+  if (row.allHit) {
+    return `${row.stallSessions} sesiones idénticas, ninguna rep fallada`;
+  }
+  return `${formatSpan(row.spanDays)} sin superar ${row.bestReps} reps`;
+}
+
+/**
+ * Filas de la tarjeta Ejercicios, ordenadas y con su frase: primero los que
+ * llevan más tiempo sin moverse, al final los que progresan, y los que aún no
+ * tienen recorrido al final del todo.
+ */
+export function buildExerciseRows(db, exerciseIds, { anchorDate, weeks = 8 }) {
+  const rows = exerciseIds.map(id => {
+    const row = analyzeExercise(db, id, { anchorDate, weeks });
+    return { ...row, phrase: buildExercisePhrase(row) };
+  });
+
+  const rank = r => (r.status === 'sin-recorrido' ? 2 : r.status === 'progresa' ? 1 : 0);
+  rows.sort((a, b) => {
+    if (rank(a) !== rank(b)) return rank(a) - rank(b);
+    if (b.stallSessions !== a.stallSessions) return b.stallSessions - a.stallSessions;
+    return a.name.localeCompare(b.name, 'es');
+  });
+  return rows;
 }
