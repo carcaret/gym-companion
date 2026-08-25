@@ -223,19 +223,23 @@ export function computeGroupSets(db, { anchorDate, weeks = 8 }) {
       const ex = db.exercises[log.exercise_id];
       const grupo = (ex && ex.grupo) || SIN_GRUPO;
       const nombre = (ex && ex.name) || log.name || log.exercise_id;
-      if (!porGrupo.has(grupo)) porGrupo.set(grupo, { sets: 0, exercises: new Map() });
+      if (!porGrupo.has(grupo)) porGrupo.set(grupo, { sets: 0, sessions: 0, exercises: new Map() });
       const g = porGrupo.get(grupo);
       g.sets += log.series;
-      g.exercises.set(nombre, (g.exercises.get(nombre) || 0) + log.series);
+      g.sessions += 1;
+      if (!g.exercises.has(nombre)) g.exercises.set(nombre, { sets: 0, sessions: 0 });
+      const e = g.exercises.get(nombre);
+      e.sets += log.series;
+      e.sessions += 1;
     }
   }
 
   const out = [];
   for (const [grupo, g] of porGrupo) {
     const exercises = [...g.exercises]
-      .map(([name, sets]) => ({ name, setsPerWeek: sets / weeks }))
-      .sort((a, b) => b.setsPerWeek - a.setsPerWeek || a.name.localeCompare(b.name, 'es'));
-    out.push({ grupo, sets: g.sets, setsPerWeek: g.sets / weeks, exercises });
+      .map(([name, e]) => ({ name, sets: e.sets, sessions: e.sessions, setsPerWeek: e.sets / weeks }))
+      .sort((a, b) => b.sets - a.sets || a.name.localeCompare(b.name, 'es'));
+    out.push({ grupo, sets: g.sets, sessions: g.sessions, setsPerWeek: g.sets / weeks, exercises });
   }
   out.sort((a, b) => b.sets - a.sets || a.grupo.localeCompare(b.grupo, 'es'));
   return out;

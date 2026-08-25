@@ -320,6 +320,15 @@ describe('computeGroupSets', () => {
     expect(g.find(x => x.grupo === '(sin grupo)').sets).toBe(2);
   });
 
+  test('cada ejercicio trae sus series y sus sesiones', () => {
+    const g = computeGroupSets(d, { anchorDate: '2026-06-19', weeks: 4 });
+    const espalda = g.find(x => x.grupo === 'espalda');
+    const remo = espalda.exercises.find(e => e.name === 'Remo');
+    expect(remo.sets).toBe(4);
+    expect(remo.sessions).toBe(1);
+    expect(espalda.sessions).toBe(2);
+  });
+
   test('desglosa los ejercicios de cada grupo, de más a menos', () => {
     const g = computeGroupSets(d, { anchorDate: '2026-06-19', weeks: 4 });
     const espalda = g.find(x => x.grupo === 'espalda');

@@ -75,20 +75,31 @@ function buildExercisesCardHtml(rows) {
   </div>`;
 }
 
+const capitalizar = s => s.charAt(0).toUpperCase() + s.slice(1);
+
 function buildGroupsCardHtml(grupos) {
-  const max = grupos.length > 0 ? grupos[0].setsPerWeek : 1;
+  // Series absolutas, sin dividir: cualquier media esconde dentro de un decimal
+  // las semanas en que no se entrenó (un parón de 18 días baja el número un 25%
+  // sin que cambie cómo entrenas).
+  const max = grupos.length > 0 ? grupos[0].sets : 1;
   const filas = grupos.map(g => {
-    const pct = max > 0 ? Math.round((g.setsPerWeek / max) * 100) : 0;
+    const pct = max > 0 ? Math.round((g.sets / max) * 100) : 0;
     const detalle = g.exercises
-      .map(e => `<div class="stats-group-detail-row"><span>${e.name}</span><span>${e.setsPerWeek.toFixed(1)}</span></div>`)
+      .map(e => `<div class="stats-group-detail-row">
+        <span class="stats-group-detail-name">${e.name}</span>
+        <span class="stats-group-detail-val">${e.sets} · ${e.sessions}</span>
+      </div>`)
       .join('');
     return `<div class="stats-group" data-grupo="${g.grupo}">
       <div class="stats-group-bar-row">
-        <div class="stats-group-label">${g.grupo}</div>
+        <div class="stats-group-label">${capitalizar(g.grupo)}</div>
         <div class="stats-group-track"><div class="stats-group-fill" style="width:${pct}%"></div></div>
-        <div class="stats-group-value">${g.setsPerWeek.toFixed(1)}</div>
+        <div class="stats-group-value">${g.sets}</div>
       </div>
-      <div class="stats-group-detail" hidden>${detalle}</div>
+      <div class="stats-group-detail" hidden>
+        <div class="stats-group-detail-head"><span>series</span><span>· sesiones</span></div>
+        ${detalle}
+      </div>
     </div>`;
   }).join('');
 
@@ -98,7 +109,7 @@ function buildGroupsCardHtml(grupos) {
       <div class="stats-card-window">últimas ${WEEKS} semanas</div>
     </div>
     <div class="stats-groups">${filas}</div>
-    <div class="stats-card-foot">series por semana · solo trabajo directo</div>
+    <div class="stats-card-foot">series totales · solo trabajo directo</div>
   </div>`;
 }
 
