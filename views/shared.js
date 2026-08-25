@@ -1,4 +1,4 @@
-import { adjustParam, adjustRep, setParam, setRep, validateLog, toggleSkip } from '../src/workout.js';
+import { adjustParam, adjustRep, setParam, setRep, validateLog, toggleSkip, weightStep } from '../src/workout.js';
 import { formatLogSummary } from '../src/formatting.js';
 import { buildHistoryStripHtml, buildAllSeriesRowsHtml } from '../src/builders.js';
 
@@ -16,7 +16,10 @@ export function setupLogActionDelegation(container, config) {
     const log = config.getLog(el, idx);
 
     if (action === 'adjustParam' && log) {
-      adjustParam(log, el.dataset.param, parseFloat(el.dataset.delta));
+      // data-delta es la direccion (-1/1); en peso el escalon depende de la carga actual
+      const dir = parseFloat(el.dataset.delta);
+      const delta = el.dataset.param === 'weight' ? dir * weightStep(log.weight) : dir;
+      adjustParam(log, el.dataset.param, delta);
       config.onSuccess(el, log, idx);
     } else if (action === 'adjustRep' && log) {
       adjustRep(log, parseInt(el.dataset.seriesidx), parseFloat(el.dataset.delta));
