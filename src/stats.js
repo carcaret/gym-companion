@@ -200,3 +200,43 @@ export function buildExerciseRows(db, exerciseIds, { anchorDate, weeks = 8 }) {
   });
   return rows;
 }
+
+export const SIN_GRUPO = '(sin grupo)';
+
+/**
+ * Series por semana y grupo muscular en la ventana
+ * [anchorDate - weeks, anchorDate].
+ *
+ * Se cuentan SERIES, no volumen en kg·rep: el volumen premia lo que se carga
+ * pesado y deja incomparables los grupos entre sí (piernas 42.866 frente a
+ * pecho 6.474 en las mismas 4 semanas). Aviso conocido: brazos y core salen
+ * infracontados, porque solo se cuenta trabajo directo.
+ */
+export function computeGroupSets(db, { anchorDate, weeks = 8 }) {
+  const from = addDaysStr(anchorDate, -weeks * 7);
+  const porGrupo = new Map();
+
+  for (const entry of db.history) {
+    if (entry.date < from || entry.date > anchorDate) continue;
+    for (const log of entry.logs) {
+      if (log.skipped) continue;
+      const ex = db.exercises[log.exercise_id];
+      const grupo = (ex && ex.grupo) || SIN_GRUPO;
+      const nombre = (ex && ex.name) || log.name || log.exercise_id;
+      if (!porGrupo.has(grupo)) porGrupo.set(grupo, { sets: 0, exercises: new Map() });
+      const g = porGrupo.get(grupo);
+      g.sets += log.series;
+      g.exercises.set(nombre, (g.exercises.get(nombre) || 0) + log.series);
+    }
+  }
+
+  const out = [];
+  for (const [grupo, g] of porGrupo) {
+    const exercises = [...g.exercises]
+      .map(([name, sets]) => ({ name, setsPerWeek: sets / weeks }))
+      .sort((a, b) => b.setsPerWeek - a.setsPerWeek || a.name.localeCompare(b.name, 'es'));
+    out.push({ grupo, sets: g.sets, setsPerWeek: g.sets / weeks, exercises });
+  }
+  out.sort((a, b) => b.sets - a.sets || a.grupo.localeCompare(b.grupo, 'es'));
+  return out;
+}

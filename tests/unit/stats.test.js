@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import {
   computeTotalReps, getExerciseSessions, analyzeExercise,
-  formatSpan, buildExercisePhrase, buildExerciseRows,
+  formatSpan, buildExercisePhrase, buildExerciseRows, computeGroupSets,
 } from '../../src/stats.js';
 
 function log({ id = 'press', weight = 20, series = 3, expected = 10, actual = [] }) {
@@ -273,5 +273,74 @@ describe('buildExerciseRows', () => {
     const rows = buildExerciseRows(tres, ['a'], { anchorDate: '2026-06-19', weeks: 8 });
     expect(typeof rows[0].phrase).toBe('string');
     expect(rows[0].phrase.length).toBeGreaterThan(0);
+  });
+});
+
+describe('computeGroupSets', () => {
+  const d = {
+    exercises: {
+      remo: { id: 'remo', name: 'Remo', grupo: 'espalda' },
+      jalon: { id: 'jalon', name: 'Jalón', grupo: 'espalda' },
+      curl: { id: 'curl', name: 'Curl', grupo: 'brazos' },
+      raro: { id: 'raro', name: 'Raro' },
+    },
+    routines: { DIA1: ['remo'] },
+    history: [
+      { date: '2026-06-12', type: 'DIA1', completed: true, logs: [
+        { exercise_id: 'remo', name: 'Remo', weight: 30, series: 4, reps: { expected: 10, actual: [10] } },
+        { exercise_id: 'curl', name: 'Curl', weight: 10, series: 3, reps: { expected: 10, actual: [10] } },
+      ] },
+      { date: '2026-06-19', type: 'DIA1', completed: true, logs: [
+        { exercise_id: 'jalon', name: 'Jalón', weight: 60, series: 4, reps: { expected: 10, actual: [10] } },
+        { exercise_id: 'raro', name: 'Raro', weight: 0, series: 2, reps: { expected: 10, actual: [10] } },
+        { exercise_id: 'remo', name: 'Remo', weight: 30, series: 4, reps: { expected: 10, actual: [10] }, skipped: true },
+      ] },
+    ],
+  };
+
+  test('agrupa series por grupo y las divide entre las semanas', () => {
+    const g = computeGroupSets(d, { anchorDate: '2026-06-19', weeks: 4 });
+    const espalda = g.find(x => x.grupo === 'espalda');
+    expect(espalda.sets).toBe(8);
+    expect(espalda.setsPerWeek).toBeCloseTo(2, 5);
+  });
+
+  test('ordena de más a menos series', () => {
+    const g = computeGroupSets(d, { anchorDate: '2026-06-19', weeks: 4 });
+    expect(g[0].grupo).toBe('espalda');
+  });
+
+  test('ignora las sesiones saltadas', () => {
+    const g = computeGroupSets(d, { anchorDate: '2026-06-19', weeks: 4 });
+    expect(g.find(x => x.grupo === 'espalda').sets).toBe(8);
+  });
+
+  test('los ejercicios sin grupo caen en (sin grupo)', () => {
+    const g = computeGroupSets(d, { anchorDate: '2026-06-19', weeks: 4 });
+    expect(g.find(x => x.grupo === '(sin grupo)').sets).toBe(2);
+  });
+
+  test('desglosa los ejercicios de cada grupo, de más a menos', () => {
+    const g = computeGroupSets(d, { anchorDate: '2026-06-19', weeks: 4 });
+    const espalda = g.find(x => x.grupo === 'espalda');
+    expect(espalda.exercises.map(e => e.name)).toEqual(['Jalón', 'Remo']);
+  });
+
+  test('deja fuera lo anterior a la ventana; el límite es inclusivo', () => {
+    const conViejo = {
+      ...d,
+      exercises: { ...d.exercises, sentadilla: { id: 'sentadilla', name: 'Sentadilla', grupo: 'piernas' } },
+      history: [
+        { date: '2026-01-05', type: 'DIA1', completed: true, logs: [
+          { exercise_id: 'sentadilla', name: 'Sentadilla', weight: 80, series: 5, reps: { expected: 8, actual: [8] } },
+        ] },
+        ...d.history,
+      ],
+    };
+    const g = computeGroupSets(conViejo, { anchorDate: '2026-06-19', weeks: 4 });
+    expect(g.find(x => x.grupo === 'piernas')).toBeUndefined();
+    // la sesión del 12/06 cae justo en el borde de una ventana de 1 semana
+    const borde = computeGroupSets(conViejo, { anchorDate: '2026-06-19', weeks: 1 });
+    expect(borde.find(x => x.grupo === 'brazos').sets).toBe(3);
   });
 });
