@@ -58,8 +58,10 @@ test.describe('Ajustes — GitHub y PAT en claro', () => {
     await page.click('[data-view="ajustes"]');
     await expect(page.locator('#save-github-btn')).toBeVisible();
 
-    const val = await page.locator('#set-pat').inputValue();
-    expect(val).toBe('ghp_visibletesttoken');
+    // #save-github-btn es estatico en index.html: estar visible no implica que
+    // initSettings() ya haya rellenado los campos. toHaveValue reintenta hasta
+    // que el valor llega, en vez de leerlo una sola vez y fallar bajo carga.
+    await expect(page.locator('#set-pat')).toHaveValue('ghp_visibletesttoken');
   });
 
   test('no hay sección "Cambiar contraseña" en ajustes', async ({ page }) => {

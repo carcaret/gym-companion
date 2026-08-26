@@ -7,6 +7,13 @@ test.describe('Graficas completo', () => {
     await page.goto('/');
     await expect(page.locator('#app-shell')).toBeVisible();
     await page.click('[data-view="graficas"]');
+    // navigateToTab lanza initCharts en un setTimeout(0): hasta que corre, los
+    // campos de fecha estan vacios. Si el test rellena #chart-from y initCharts
+    // salta antes del fill de #chart-to, ve el "to" vacio y pisa el "from" con
+    // el rango por defecto (ultimos 6 meses) -> rango invertido y "Sin
+    // resultados". Esperar al valor por defecto sincroniza con ese ciclo.
+    await expect(page.locator('#chart-from')).not.toHaveValue('');
+    await expect(page.locator('#chart-to')).not.toHaveValue('');
   });
 
   test.afterEach(async ({ page }) => {

@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { injectTestSession, clearStorage, fillAllWorkoutReps } = require('./helpers.js');
+const { injectTestSession, clearStorage, fillAllWorkoutReps, getWeightStep } = require('./helpers.js');
 
 test.describe('Workout flow completo', () => {
   test.beforeEach(async ({ page }) => {
@@ -33,7 +33,7 @@ test.describe('Workout flow completo', () => {
     await expect(page.locator('.card')).toHaveCount(3);
   });
 
-  test('ajustar peso (+2.5) se refleja en el input', async ({ page }) => {
+  test('ajustar peso (+1 escalon) se refleja en el input', async ({ page }) => {
     await selectRoutineAndStart(page);
     // Expand first card
     await page.locator('.card-header').first().click();
@@ -41,10 +41,11 @@ test.describe('Workout flow completo', () => {
 
     const weightInput = page.locator('#w-weight-0');
     const initialWeight = parseFloat(await weightInput.inputValue());
+    const step = await getWeightStep(page, initialWeight);
 
     // Click the + button for weight (second btn-icon after label "Peso")
     await page.locator('#exercise-card-0 .param-row').first().locator('.btn-icon:last-child').click();
-    await expect(weightInput).toHaveValue(String(initialWeight + 2.5));
+    await expect(weightInput).toHaveValue(String(initialWeight + step));
   });
 
   test('ajustar series (+1) añade nueva fila de rep', async ({ page }) => {

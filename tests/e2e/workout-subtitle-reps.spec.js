@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { injectTestSession, clearStorage } = require('./helpers.js');
+const { injectTestSession, clearStorage, getWeightStep } = require('./helpers.js');
 
 test.describe('Subtítulo de card muestra reps reales cuando difieren', () => {
   test.beforeEach(async ({ page }) => {
@@ -73,12 +73,15 @@ test.describe('Subtítulo de card muestra reps reales cuando difieren', () => {
     // press_banca: weight=60
     await page.locator('.card-header').first().click();
 
-    // Adjust weight up (+2.5)
+    const initialWeight = parseFloat(await page.locator('#w-weight-0').inputValue());
+    const step = await getWeightStep(page, initialWeight);
+
+    // Adjust weight up (+1 escalon)
     await page.locator('#exercise-card-0 .param-row').first().locator('.btn-icon:last-child').click();
 
     const subtitle0 = page.locator('#w-subtitle-0');
     const text = await subtitle0.textContent();
-    expect(text).toContain('62.5 kg');
+    expect(text).toContain(`${initialWeight + step} kg`);
     // Reps still differ (10-10-8)
     expect(text).toContain('10-10-8');
   });

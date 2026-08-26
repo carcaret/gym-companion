@@ -34,4 +34,13 @@ async function fillAllWorkoutReps(page) {
   }
 }
 
-module.exports = { getTestDB, injectTestDB, injectTestSession, clearStorage, fillAllWorkoutReps };
+// Escalon real de los botones -/+ de peso: se lee del modulo de produccion
+// (src/workout.js) para que los tests no dupliquen los tramos de weightStep.
+async function getWeightStep(page, weight) {
+  return page.evaluate(
+    w => import('/src/workout.js').then(m => m.weightStep(w)),
+    weight
+  );
+}
+
+module.exports = { getTestDB, injectTestDB, injectTestSession, clearStorage, fillAllWorkoutReps, getWeightStep };

@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { injectTestDB, injectTestSession, clearStorage, fillAllWorkoutReps } = require('./helpers.js');
+const { injectTestDB, injectTestSession, clearStorage, fillAllWorkoutReps, getWeightStep } = require('./helpers.js');
 
 test.describe('Persistencia y datos', () => {
   test.afterEach(async ({ page }) => {
@@ -32,8 +32,9 @@ test.describe('Persistencia y datos', () => {
     await page.locator('.card-header').first().click();
     const weightInput = page.locator('#w-weight-0');
     const initialWeight = parseFloat(await weightInput.inputValue());
+    const step = await getWeightStep(page, initialWeight);
     await page.locator('#exercise-card-0 .param-row').first().locator('.btn-icon:last-child').click();
-    const newWeight = initialWeight + 2.5;
+    const newWeight = initialWeight + step;
     await expect(weightInput).toHaveValue(String(newWeight));
 
     const savedWeight = await page.evaluate(() => {
