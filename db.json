@@ -335,7 +335,8 @@
       "jalon_al_pecho_neutro",
       "trapecio_polea",
       "curl_biceps_polea",
-      "press_de_hombros_mancuernas_sentado"
+      "press_de_hombros_mancuernas_sentado",
+      "triceps_polea"
     ]
   },
   "history": [
@@ -23742,7 +23743,7 @@
               11,
               11,
               7,
-              10
+              7
             ]
           },
           "weight": 32.5
@@ -24006,6 +24007,113 @@
             ]
           },
           "weight": 15
+        }
+      ]
+    },
+    {
+      "date": "2026-08-28",
+      "type": "DIA3",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "extension_de_cuadriceps",
+          "name": "Extensión de Cuádriceps",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11,
+              11
+            ]
+          },
+          "weight": 104
+        },
+        {
+          "exercise_id": "press_inclinado_maquina",
+          "name": "Press Inclinado en Máquina",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              7,
+              8
+            ]
+          },
+          "weight": 32.5
+        },
+        {
+          "exercise_id": "jalon_al_pecho_neutro",
+          "name": "Jalón al pecho neutro",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              10,
+              10
+            ]
+          },
+          "weight": 68
+        },
+        {
+          "exercise_id": "trapecio_polea",
+          "name": "Trapecio polea",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              14
+            ]
+          },
+          "weight": 86
+        },
+        {
+          "exercise_id": "curl_biceps_polea",
+          "name": "Curl bíceps polea",
+          "series": 3,
+          "reps": {
+            "expected": 13,
+            "actual": [
+              13,
+              13,
+              11
+            ]
+          },
+          "weight": 59
+        },
+        {
+          "exercise_id": "press_de_hombros_mancuernas_sentado",
+          "name": "Press de Hombros con Mancuernas Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              11,
+              11
+            ]
+          },
+          "weight": 18
+        },
+        {
+          "exercise_id": "triceps_polea",
+          "name": "Tríceps en Polea",
+          "series": 2,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10
+            ]
+          },
+          "weight": 23
         }
       ]
     }
