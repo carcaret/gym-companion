@@ -24116,7 +24116,122 @@
           "weight": 23
         }
       ]
+    },
+    {
+      "date": "2026-08-31",
+      "type": "DIA1",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "prensa_de_piernas",
+          "name": "Prensa de Piernas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              9,
+              9
+            ]
+          },
+          "weight": 240
+        },
+        {
+          "exercise_id": "press_banca_mancuernas",
+          "name": "Press de Banca con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              9,
+              8
+            ]
+          },
+          "weight": 30
+        },
+        {
+          "exercise_id": "hammer_row_prono",
+          "name": "Hammer Row Prono",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11,
+              10
+            ]
+          },
+          "weight": 30
+        },
+        {
+          "exercise_id": "extensiones_de_espalda",
+          "name": "Extensiones de Espalda",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              14
+            ]
+          },
+          "weight": 38,
+          "swappedFrom": "curl_femoral_sentado"
+        },
+        {
+          "exercise_id": "elevaciones_laterales_con_mancuernas",
+          "name": "Elevaciones Laterales con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 16,
+            "actual": [
+              16,
+              16,
+              16
+            ]
+          },
+          "weight": 12
+        },
+        {
+          "exercise_id": "hammer_curl_mancuernas",
+          "name": "Hammer curl mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              14
+            ]
+          },
+          "weight": 14
+        },
+        {
+          "exercise_id": "triceps_polea",
+          "name": "Tríceps en Polea",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              14
+            ]
+          },
+          "weight": 23
+        }
+      ]
     }
   ],
-  "pendingSwaps": {}
+  "pendingSwaps": {
+    "DIA2": {
+      "fromExerciseId": "extensiones_de_espalda",
+      "toExerciseId": "curl_femoral_sentado",
+      "weekStart": "2026-08-31"
+    }
+  }
 }
