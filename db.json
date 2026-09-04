@@ -24225,13 +24225,102 @@
           "weight": 23
         }
       ]
+    },
+    {
+      "date": "2026-09-02",
+      "type": "DIA2",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "zancadas_con_mancuernas",
+          "name": "Zancadas con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 20
+        },
+        {
+          "exercise_id": "press_inclinado_mancuernas",
+          "name": "Press Inclinado con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9,
+              9,
+              8
+            ]
+          },
+          "weight": 28
+        },
+        {
+          "exercise_id": "doninadas",
+          "name": "Doninadas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              8
+            ]
+          },
+          "weight": 0
+        },
+        {
+          "exercise_id": "reverse_delt_con_mancuernas",
+          "name": "Reverse Delt con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 16,
+            "actual": [
+              16,
+              16,
+              16
+            ]
+          },
+          "weight": 16
+        },
+        {
+          "exercise_id": "curl_femoral_sentado",
+          "name": "Curl Femoral Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9,
+              9
+            ]
+          },
+          "weight": 97,
+          "skipped": true
+        },
+        {
+          "exercise_id": "press_de_hombros_maquina",
+          "name": "Press de Hombros en Máquina",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              11
+            ]
+          },
+          "weight": 15
+        }
+      ]
     }
   ],
-  "pendingSwaps": {
-    "DIA2": {
-      "fromExerciseId": "extensiones_de_espalda",
-      "toExerciseId": "curl_femoral_sentado",
-      "weekStart": "2026-08-31"
-    }
-  }
+  "pendingSwaps": {}
 }
