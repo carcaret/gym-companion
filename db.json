@@ -24853,13 +24853,102 @@
           "weight": 24.25
         }
       ]
+    },
+    {
+      "date": "2026-09-16",
+      "type": "DIA2",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "zancadas_con_mancuernas",
+          "name": "Zancadas con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 20,
+          "skipped": true
+        },
+        {
+          "exercise_id": "press_inclinado_mancuernas",
+          "name": "Press Inclinado con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              6,
+              8
+            ]
+          },
+          "weight": 28
+        },
+        {
+          "exercise_id": "hammer_row_prono",
+          "name": "Hammer Row Prono",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 32.5
+        },
+        {
+          "exercise_id": "reverse_delt_con_mancuernas",
+          "name": "Reverse Delt con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 18
+        },
+        {
+          "exercise_id": "extensiones_de_espalda",
+          "name": "Extensiones de Espalda",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              14
+            ]
+          },
+          "weight": 42
+        },
+        {
+          "exercise_id": "press_de_hombros_maquina",
+          "name": "Press de Hombros en Máquina",
+          "series": 3,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              8
+            ]
+          },
+          "weight": 16.25
+        }
+      ]
     }
   ],
-  "pendingSwaps": {
-    "DIA2": {
-      "fromExerciseId": "doninadas",
-      "toExerciseId": "hammer_row_prono",
-      "weekStart": "2026-09-14"
-    }
-  }
+  "pendingSwaps": {}
 }
