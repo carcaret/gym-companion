@@ -145,7 +145,8 @@ PUT /repos/{repo}/contents/{path} → buildGitHubPayload(DB, githubSha) → actu
       series: number,
       reps: { expected: number, actual: number[] },
       weight: number,
-      swappedFrom?: string   // presente si el ejercicio fue intercambiado durante el entreno
+      swappedFrom?: string,  // presente si el ejercicio fue intercambiado durante el entreno
+      oneOff?: boolean       // añadido solo para esa sesión — no entra en routines
     }]
   }]
 }

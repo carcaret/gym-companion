@@ -1052,6 +1052,19 @@ describe('swapLogExercise', () => {
     swapLogExercise(entry, 0, 'sentadilla', lastB, 'Sentadilla barbell');
     expect(entry.logs[0].name).toBe('Sentadilla barbell');
   });
+
+  test('11 — swap de un log puntual: el nuevo log sigue siendo puntual', () => {
+    const entry = makeSwapEntry();
+    entry.logs[0].oneOff = true;
+    swapLogExercise(entry, 0, 'sentadilla', lastB, 'Sentadilla');
+    expect(entry.logs[0].oneOff).toBe(true);
+  });
+
+  test('12 — swap de un log normal no inventa oneOff', () => {
+    const entry = makeSwapEntry();
+    swapLogExercise(entry, 0, 'sentadilla', lastB, 'Sentadilla');
+    expect(entry.logs[0].oneOff).toBeUndefined();
+  });
 });
 
 describe('toggleSkip', () => {

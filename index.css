@@ -1922,6 +1922,8 @@ body {
 }
 
 .catalog-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Fila del chip "Solo esta sesión" en el modal de añadir ejercicio */
+.picker-toggle-row { margin-bottom: 12px; }
 .catalog-chip-toggle {
   font-family: var(--font);
   font-size: 13px;

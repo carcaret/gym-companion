@@ -115,9 +115,6 @@ function renderRoutinePreview(container, dayType, showStartBtn) {
   const startBtn = document.getElementById('start-workout-btn');
   if (startBtn) startBtn.onclick = () => startWorkout(dayType);
 
-  const addBtn = document.getElementById('add-exercise-btn');
-  if (addBtn) addBtn.onclick = () => showAddExerciseModal(dayType);
-
   const backBtn = document.getElementById('back-to-selector-btn');
   if (backBtn) {
     backBtn.onclick = () => goToDaySelector(container);
@@ -232,7 +229,7 @@ function renderActiveWorkout(container, entry) {
     html += `<div class="card-footer">
       <button class="swap-btn" data-action="swapExercise" data-logidx="${logIdx}">Cambiar por otro</button>
       <button class="skip-btn" data-action="toggleSkip" data-logidx="${logIdx}">${log.skipped ? 'Reactivar' : 'Saltar'}</button>
-      <button class="remove-btn" data-action="removeExercise" data-daytype="${entry.type}" data-exerciseid="${log.exercise_id}">Quitar de rutina</button>
+      <button class="remove-btn" data-action="removeExercise" data-daytype="${entry.type}" data-exerciseid="${log.exercise_id}"${log.oneOff ? ' data-oneoff="1"' : ''}>${log.oneOff ? 'Quitar' : 'Quitar de rutina'}</button>
     </div>`;
 
     html += '</div></div>';
@@ -305,7 +302,8 @@ function renderActiveWorkout(container, entry) {
     }, logIdx, seriesIdx),
     extraActions: (el, action) => {
       if (action === 'removeExercise') {
-        removeExerciseFromRoutine(el.dataset.daytype, el.dataset.exerciseid);
+        if (el.dataset.oneoff) removeOneOffExercise(el.dataset.exerciseid);
+        else removeExerciseFromRoutine(el.dataset.daytype, el.dataset.exerciseid);
       } else if (action === 'swapExercise') {
         const idx = parseInt(el.dataset.logidx);
         const en = getTodayEntry();
@@ -394,12 +392,24 @@ function renderCompletedToday(container, entry) {
   document.getElementById('back-to-selector-btn').onclick = () => goToDaySelector(container);
 }
 
-function addExerciseToRoutineAndActiveWorkout(id, dayType) {
+// oneOff = ejercicio puntual: entra en el entreno de hoy pero NO en la rutina, asi que
+// no reaparece la proxima vez que se haga este dia. Al quedar en el historial, la
+// progresion (getBestRecentValuesForExercise) lo recoge en su siguiente ocurrencia.
+function addExerciseToRoutineAndActiveWorkout(id, dayType, oneOff = false) {
+  const todayEntry = getTodayEntry();
+  const isActive = Boolean(todayEntry && !todayEntry.completed && todayEntry.type === dayType);
+
+  if (oneOff) {
+    if (!isActive) return; // el toggle solo se ofrece con entreno activo
+    const last = getBestRecentValuesForExercise(id);
+    todayEntry.logs.push({ ...buildLog(id, getExerciseName(id), last), oneOff: true });
+    return;
+  }
+
   if (!DB.routines[dayType]) DB.routines[dayType] = [];
   DB.routines[dayType].push(id);
 
-  const todayEntry = getTodayEntry();
-  if (todayEntry && !todayEntry.completed && todayEntry.type === dayType) {
+  if (isActive) {
     const last = getBestRecentValuesForExercise(id);
     todayEntry.logs.push(buildLog(id, getExerciseName(id), last));
   }
@@ -476,20 +486,23 @@ function showSwapExerciseModal(logIdx, entry) {
   });
 }
 
-function showExercisePickerModal({ title, excludeIds, sortExercises = null, onSelect, onCreateNew }) {
+function showExercisePickerModal({ title, excludeIds, sortExercises = null, onSelect, onCreateNew, oneOffToggle = false }) {
   const available = Object.values(DB.exercises).filter(e => !excludeIds.includes(e.id));
   const exercises = sortExercises
     ? sortExercises(available)
     : available.sort((a, b) => a.name.localeCompare(b.name, 'es'));
 
-  let bodyHtml = `<div class="input-group"><input type="text" class="exercise-search" id="exercise-search-input" placeholder="Buscar ejercicio..."></div>
-  <div class="exercise-list" id="exercise-modal-list">`;
+  let bodyHtml = `<div class="input-group"><input type="text" class="exercise-search" id="exercise-search-input" placeholder="Buscar ejercicio..."></div>`;
+  if (oneOffToggle) {
+    bodyHtml += `<div class="catalog-chips picker-toggle-row"><button type="button" class="catalog-chip catalog-chip-toggle" id="one-off-toggle" aria-pressed="false">Solo esta sesión</button></div>`;
+  }
+  bodyHtml += `<div class="exercise-list" id="exercise-modal-list">`;
   exercises.forEach(e => {
     bodyHtml += `<div class="exercise-list-item" data-id="${e.id}"><span>${escHtml(e.name)}</span><span class="add-icon">+</span></div>`;
   });
   bodyHtml += '</div>';
   if (onCreateNew) {
-    bodyHtml += `<div class="mt-md"><button class="btn-secondary btn-sm" id="create-exercise-btn">Crear nuevo ejercicio</button></div>`;
+    bodyHtml += `<div class="mt-md" id="create-exercise-wrap"><button class="btn-secondary btn-sm" id="create-exercise-btn">Crear nuevo ejercicio</button></div>`;
   }
 
   showModal(title, bodyHtml, [
@@ -506,8 +519,20 @@ function showExercisePickerModal({ title, excludeIds, sortExercises = null, onSe
     };
   }
 
+  // Crear un ejercicio nuevo siempre lo mete en la rutina, asi que el chip lo oculta
+  // en vez de dejar un estado que se contradice.
+  const oneOffBtn = document.getElementById('one-off-toggle');
+  if (oneOffBtn) {
+    oneOffBtn.onclick = () => {
+      const on = oneOffBtn.classList.toggle('on');
+      oneOffBtn.setAttribute('aria-pressed', String(on));
+      const createWrap = document.getElementById('create-exercise-wrap');
+      if (createWrap) createWrap.hidden = on;
+    };
+  }
+
   document.querySelectorAll('#exercise-modal-list .exercise-list-item').forEach(el => {
-    el.onclick = () => onSelect(el.dataset.id);
+    el.onclick = () => onSelect(el.dataset.id, Boolean(oneOffBtn?.classList.contains('on')));
   });
 
   const createBtn = document.getElementById('create-exercise-btn');
@@ -516,18 +541,20 @@ function showExercisePickerModal({ title, excludeIds, sortExercises = null, onSe
 
 function showAddExerciseModal(dayType) {
   const entry = getTodayEntry();
+  const isActive = Boolean(entry && !entry.completed && entry.type === dayType);
   const presentInActiveLogs = (entry?.logs ?? []).map(l => l.exercise_id);
   const excludeIds = [...(DB.routines[dayType] || []), ...presentInActiveLogs];
 
   showExercisePickerModal({
     title: `Añadir a ${DAY_LABELS[dayType]}`,
     excludeIds,
-    onSelect: (id) => {
-      addExerciseToRoutineAndActiveWorkout(id, dayType);
+    oneOffToggle: isActive,
+    onSelect: (id, oneOff) => {
+      addExerciseToRoutineAndActiveWorkout(id, dayType, oneOff);
       persistDB();
       hideModal();
       renderHoy();
-      toast(`${getExerciseName(id)} añadido`, 'ok');
+      toast(oneOff ? `${getExerciseName(id)} añadido solo para hoy` : `${getExerciseName(id)} añadido`, 'ok');
     },
     onCreateNew: () => {
       hideModal();
@@ -566,12 +593,30 @@ function showCreateExerciseModal(dayType) {
 }
 
 function reorderExercises(dayType, fromIndex, toIndex) {
-  DB.routines[dayType] = reorderByIndex(DB.routines[dayType], fromIndex, toIndex);
   const entry = getTodayEntry();
-  if (entry && !entry.completed) entry.logs = reorderByIndex(entry.logs, fromIndex, toIndex);
+  if (entry && !entry.completed) {
+    // Con entreno activo los logs mandan y la rutina se deriva de ellos: los puntuales
+    // se descartan y un swap se guarda por su ejercicio original (swappedFrom), para no
+    // colar el cambio de hoy en la rutina permanente.
+    entry.logs = reorderByIndex(entry.logs, fromIndex, toIndex);
+    DB.routines[dayType] = entry.logs.filter(l => !l.oneOff).map(l => l.swappedFrom ?? l.exercise_id);
+  } else {
+    DB.routines[dayType] = reorderByIndex(DB.routines[dayType], fromIndex, toIndex);
+  }
   persistDB();
   rerenderWorkout();
   toast('Orden actualizado');
+}
+
+// El puntual no esta en la rutina: quitarlo solo borra el log de hoy, sin confirmacion.
+function removeOneOffExercise(exerciseId) {
+  const entry = getTodayEntry();
+  if (!entry || entry.completed) return;
+  entry.logs = entry.logs.filter(l => l.exercise_id !== exerciseId);
+  if (openExerciseId === exerciseId) openExerciseId = null;
+  persistDB();
+  renderHoy();
+  toast('Ejercicio quitado');
 }
 
 function removeExerciseFromRoutine(dayType, exerciseId) {

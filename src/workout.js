@@ -197,6 +197,7 @@ export function detectRecords(log, prevHistory) {
  * Reasons: 'not_found' | 'not_active' | 'same' | 'duplicate'
  * Preserves the original template exercise id in log.swappedFrom (auditoría).
  * If swapped back to the original, swappedFrom is removed.
+ * El flag oneOff (ejercicio añadido solo para esta sesión) se hereda al log nuevo.
  */
 export function swapLogExercise(entry, logIdx, newExerciseId, last, newName) {
   if (logIdx < 0 || logIdx >= entry.logs.length) return { ok: false, reason: 'not_found' };
@@ -209,6 +210,7 @@ export function swapLogExercise(entry, logIdx, newExerciseId, last, newName) {
   const originalId = currentLog.swappedFrom ?? currentLog.exercise_id;
   const newLog = buildLog(newExerciseId, newName, last);
   if (newExerciseId !== originalId) newLog.swappedFrom = originalId;
+  if (currentLog.oneOff) newLog.oneOff = true;
 
   entry.logs[logIdx] = newLog;
   return { ok: true, log: newLog };
