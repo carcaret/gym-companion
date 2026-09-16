@@ -89,6 +89,7 @@ html {
   font-size: 16px;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -98,6 +99,7 @@ body {
   color: var(--text-primary);
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
 }
 
 /* ── Scrollbar ── */
@@ -904,7 +906,7 @@ body {
    ════════════════════════════════════════════════════════════════ */
 #tab-bar {
   position: fixed;
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
   left: 16px;
   right: 16px;
   height: 60px;
@@ -917,6 +919,22 @@ body {
   --bar-inset: 8px;
   --bar-h: 60px;
   padding: var(--bar-inset);
+  /* Capa propia: evita el lag de repintado de las capas fijas en iOS. */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  pointer-events: auto;
+  transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+
+/* Teclado arriba en iOS: los elementos `position: fixed` siguen anclados al
+   layout viewport, que Safari no repinta mientras el teclado está abierto. La
+   barra se quedaba flotando en mitad de la card interceptando los taps sobre
+   los inputs. La retiramos mientras haya un campo enfocado — con el teclado
+   ocupando media pantalla no aporta nada. */
+#tab-bar.kb-hidden {
+  transform: translateY(calc(100% + 24px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .tab {

@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '2.11.0';
+const APP_VERSION = '2.11.1';
 
 import { NEEDS_UPLOAD_KEY } from './src/constants.js';
 import { toast, showModal, setupBarTooltips } from './src/ui.js';
@@ -187,6 +187,24 @@ function setupScrollHeader() {
   }, { passive: true });
 }
 
+// iOS (PWA standalone) mantiene los elementos `position: fixed` anclados al
+// layout viewport mientras el teclado está abierto, y no los repinta: la tab bar
+// se quedaba flotando en mitad de la card, con `z-index: 100` y taps activos,
+// tapando los inputs. Mientras haya un campo enfocado la retiramos.
+function setupKeyboardAwareTabBar() {
+  const bar = document.getElementById('tab-bar');
+  if (!bar) return;
+  const isField = el => !!el?.matches?.('input, textarea, select');
+  document.addEventListener('focusin', e => {
+    if (isField(e.target)) bar.classList.add('kb-hidden');
+  });
+  document.addEventListener('focusout', e => {
+    // El foco puede saltar de un input a otro: sólo devolvemos la barra si el
+    // nuevo destino no es otro campo.
+    if (isField(e.target) && !isField(e.relatedTarget)) bar.classList.remove('kb-hidden');
+  });
+}
+
 // ── Default DB (fetch local file) ──
 async function getDefaultDB() {
   try {
@@ -206,6 +224,7 @@ async function init() {
 
   setupTabs();
   setupScrollHeader();
+  setupKeyboardAwareTabBar();
   setupFilters();
   setupSettings({
     onConflict: showConflictModal,
