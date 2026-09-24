@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '2.12.0';
+const APP_VERSION = '2.12.1';
 
 import { NEEDS_UPLOAD_KEY } from './src/constants.js';
 import { toast, showModal, setupBarTooltips } from './src/ui.js';
@@ -175,12 +175,20 @@ function setupTabs() {
 }
 
 function setupScrollHeader() {
+  // Histéresis: encoger el header le quita 14px de alto a la página. Con un solo
+  // umbral, en páginas que apenas lo superan, llegar al final hace que el navegador
+  // recorte scrollY por debajo del umbral → el header crece → vuelve a superarlo →
+  // bucle infinito. El hueco entre umbrales (28px) debe ser mayor que esos 14px.
+  const SHRINK_AT = 52;
+  const EXPAND_AT = 24;
   let ticking = false;
+  let scrolled = false;
   window.addEventListener('scroll', () => {
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(() => {
-      const scrolled = window.scrollY > 52;
+      const y = window.scrollY;
+      scrolled = scrolled ? y > EXPAND_AT : y > SHRINK_AT;
       document.querySelectorAll('.view-header').forEach(h => h.classList.toggle('scrolled', scrolled));
       ticking = false;
     });
