@@ -25276,6 +25276,129 @@
           "weight": 16.25
         }
       ]
+    },
+    {
+      "date": "2026-09-25",
+      "type": "DIA3",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "extension_de_cuadriceps",
+          "name": "Extensión de Cuádriceps",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11,
+              11
+            ]
+          },
+          "weight": 104,
+          "skipped": true
+        },
+        {
+          "exercise_id": "press_inclinado_maquina",
+          "name": "Press Inclinado en Máquina",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11,
+              11
+            ]
+          },
+          "weight": 32.5
+        },
+        {
+          "exercise_id": "jalon_al_pecho_neutro",
+          "name": "Jalón al pecho neutro",
+          "series": 4,
+          "reps": {
+            "expected": 9,
+            "actual": [
+              9,
+              9,
+              9,
+              9
+            ]
+          },
+          "weight": 73
+        },
+        {
+          "exercise_id": "trapecio_polea",
+          "name": "Trapecio polea",
+          "series": 3,
+          "reps": {
+            "expected": 15,
+            "actual": [
+              15,
+              15,
+              15
+            ]
+          },
+          "weight": 91
+        },
+        {
+          "exercise_id": "curl_biceps_polea",
+          "name": "Curl bíceps polea",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              10
+            ]
+          },
+          "weight": 64
+        },
+        {
+          "exercise_id": "press_de_hombros_mancuernas_sentado",
+          "name": "Press de Hombros con Mancuernas Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 13,
+            "actual": [
+              13,
+              13,
+              11
+            ]
+          },
+          "weight": 18
+        },
+        {
+          "exercise_id": "overhead_extension_triceps",
+          "name": "Overhead Extension Tríceps",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              10,
+              10
+            ]
+          },
+          "weight": 6.8
+        },
+        {
+          "exercise_id": "curl_femoral_sentado",
+          "name": "Curl Femoral Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 97
+        }
+      ]
     }
   ],
   "pendingSwaps": {}
