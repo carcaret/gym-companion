@@ -2,7 +2,7 @@
  Gym Companion — Main Application
  ========================================= */
 
-const APP_VERSION = '2.12.1';
+const APP_VERSION = '2.12.2';
 
 import { NEEDS_UPLOAD_KEY } from './src/constants.js';
 import { toast, showModal, setupBarTooltips } from './src/ui.js';
@@ -209,8 +209,50 @@ function setupKeyboardAwareTabBar() {
   document.addEventListener('focusout', e => {
     // El foco puede saltar de un input a otro: sólo devolvemos la barra si el
     // nuevo destino no es otro campo.
-    if (isField(e.target) && !isField(e.relatedTarget)) bar.classList.remove('kb-hidden');
+    if (isField(e.target) && !isField(e.relatedTarget)) {
+      bar.classList.remove('kb-hidden');
+      // Tras la animación de cierre del teclado.
+      setTimeout(resyncViewport, 300);
+    }
   });
+  // Al cerrarse el teclado el visual viewport recupera la altura completa.
+  window.visualViewport?.addEventListener('resize', () => {
+    if (!isField(document.activeElement)) resyncViewport();
+  });
+  anchorTabBarToVisualViewport(bar);
+}
+
+// Red de seguridad por si iOS ignora el scrollTo: `position: fixed` se ancla al
+// layout viewport, pero lo que el usuario ve es el visual viewport. Medimos cuánto
+// sobresale el fondo visible respecto al del layout y desplazamos la barra esa
+// distancia, así queda pegada abajo aunque iOS deje los dos viewports desalineados.
+function anchorTabBarToVisualViewport(bar) {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const shift = vv.offsetTop + vv.height - document.documentElement.clientHeight;
+    bar.style.setProperty('--vv-shift', `${Math.round(shift)}px`);
+  };
+  const schedule = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  };
+  vv.addEventListener('resize', schedule);
+  vv.addEventListener('scroll', schedule);
+  window.addEventListener('scroll', schedule, { passive: true });
+  update();
+}
+
+// Al cerrar el teclado, iOS deja la página desplazada más allá de su final (y
+// más aún si la card se plegó con el teclado arriba): queda una franja vacía
+// abajo y la tab bar, anclada al layout viewport, se monta sobre los botones.
+// Un scrollTo al valor válido más cercano vuelve a alinear ambos viewports.
+function resyncViewport() {
+  const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  window.scrollTo(0, Math.min(window.scrollY, max));
 }
 
 // ── Default DB (fetch local file) ──

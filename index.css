@@ -919,8 +919,9 @@ body {
   --bar-inset: 8px;
   --bar-h: 60px;
   padding: var(--bar-inset);
-  /* Capa propia: evita el lag de repintado de las capas fijas en iOS. */
-  transform: translateZ(0);
+  /* Capa propia: evita el lag de repintado de las capas fijas en iOS.
+     --vv-shift (app.js) la pega al fondo visible si iOS desalinea los viewports. */
+  transform: translate3d(0, var(--vv-shift, 0px), 0);
   backface-visibility: hidden;
   pointer-events: auto;
   transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
@@ -932,7 +933,7 @@ body {
    los inputs. La retiramos mientras haya un campo enfocado — con el teclado
    ocupando media pantalla no aporta nada. */
 #tab-bar.kb-hidden {
-  transform: translateY(calc(100% + 24px));
+  transform: translate3d(0, calc(var(--vv-shift, 0px) + 100% + 24px), 0);
   opacity: 0;
   pointer-events: none;
 }
