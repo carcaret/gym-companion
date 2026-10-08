@@ -25740,7 +25740,109 @@
           "weight": 24.25
         }
       ]
+    },
+    {
+      "date": "2026-10-07",
+      "type": "DIA2",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "prensa_pierna_unilateral_polea",
+          "name": "Prensa pierna unilateral polea",
+          "series": 4,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 86,
+          "swappedFrom": "zancadas_con_mancuernas"
+        },
+        {
+          "exercise_id": "press_inclinado_mancuernas",
+          "name": "Press Inclinado con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              7
+            ]
+          },
+          "weight": 28
+        },
+        {
+          "exercise_id": "doninadas",
+          "name": "Doninadas",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              10,
+              9,
+              8
+            ]
+          },
+          "weight": 0
+        },
+        {
+          "exercise_id": "reverse_delt_con_mancuernas",
+          "name": "Reverse Delt con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              14
+            ]
+          },
+          "weight": 18,
+          "skipped": true
+        },
+        {
+          "exercise_id": "extensiones_de_espalda",
+          "name": "Extensiones de Espalda",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              12
+            ]
+          },
+          "weight": 46
+        },
+        {
+          "exercise_id": "press_de_hombros_maquina",
+          "name": "Press de Hombros en Máquina",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              10
+            ]
+          },
+          "weight": 16.25
+        }
+      ]
     }
   ],
-  "pendingSwaps": {}
+  "pendingSwaps": {
+    "DIA3": {
+      "fromExerciseId": "prensa_pierna_unilateral_polea",
+      "toExerciseId": "zancadas_con_mancuernas",
+      "weekStart": "2026-10-05"
+    }
+  }
 }
