@@ -58,12 +58,14 @@ export function buildGreenScale(logs) {
  * Color de una barra del history strip. `blueRange` es `[min, max]` de e1RM
  * entre las barras azules visibles; `greenScale` viene de `buildGreenScale`
  * sobre las verdes. Nunca se mezclan métricas de un grupo con las del otro.
- * Ambos colores usan la misma forma: más métrica = más VIVID.
+ * Ambos colores usan la misma forma: más métrica = más VIVID. `blueMetric`
+ * permite medir el azul en otra escala (el nivel de la tira) siempre que
+ * `blueRange` venga en esa misma escala.
  */
-export function computeBarColor(log, blueRange, greenScale, referenceWeight = null) {
+export function computeBarColor(log, blueRange, greenScale, referenceWeight = null, blueMetric = getPrimaryMetric(log)) {
   if (!isGreenBar(log, referenceWeight)) {
     const [min, max] = blueRange;
-    const t = max === min ? 1 : (getPrimaryMetric(log) - min) / (max - min);
+    const t = max === min ? 1 : (blueMetric - min) / (max - min);
     return lerpRgb(BLUE_FLOOR, BLUE_VIVID, t);
   }
   const metric = greenScale.useE1RM ? getPrimaryMetric(log) : computeVolume(log);
@@ -96,6 +98,50 @@ export function getPrimaryMetric(log) {
   return e1rm > 0 ? e1rm : computeVolume(log);
 }
 
+// Sin lastre (peso 0) la métrica es volumen en reps; con lastre, e1RM en kg.
+// Son unidades distintas: no se pueden comparar entre sí.
+function isLoaded(log) {
+  return (log.weight || 0) > 0;
+}
+
+/**
+ * Delta de la sesión actual frente a la anterior, o null si no cambia.
+ * Misma unidad (las dos con lastre o las dos sin él) → % de la métrica
+ * principal. Si una va con lastre y la otra no, manda la carga: más kg es
+ * subir, sin necesidad de conocer el peso corporal.
+ */
+export function computeSessionDelta(currentLog, prevLog) {
+  if (isLoaded(currentLog) !== isLoaded(prevLog)) {
+    const kg = (currentLog.weight || 0) - (prevLog.weight || 0);
+    return { up: kg > 0, label: `${kg > 0 ? '+' : ''}${kg} kg` };
+  }
+  const pct = computeSessionDeltaPct(getPrimaryMetric(currentLog), getPrimaryMetric(prevLog));
+  if (pct === null) return null;
+  return { up: pct > 0, label: `${pct > 0 ? '+' : ''}${pct}%` };
+}
+
+// Techo de las barras sin lastre cuando la tira las mezcla con lastradas.
+const UNLOADED_CEILING = 0.5;
+
+/**
+ * Nivel 0..1 de cada barra de la tira (altura = nivel). Normalmente es la
+ * métrica principal entre el máximo. Si la tira mezcla sesiones sin lastre y
+ * con lastre, cada grupo se normaliza contra su propio máximo y las lastradas
+ * van siempre por encima: [0, techo] sin lastre, [techo, 1] con lastre.
+ */
+export function computeStripLevels(logs) {
+  const metrics = logs.map(getPrimaryMetric);
+  const ratio = (m, group) => {
+    const max = Math.max(0, ...metrics.filter((_, i) => group(logs[i])));
+    return max > 0 ? m / max : 0;
+  };
+  const mixed = logs.some(isLoaded) && !logs.every(isLoaded);
+  if (!mixed) return metrics.map(m => ratio(m, () => true));
+  return metrics.map((m, i) => isLoaded(logs[i])
+    ? UNLOADED_CEILING + (1 - UNLOADED_CEILING) * ratio(m, isLoaded)
+    : UNLOADED_CEILING * ratio(m, log => !isLoaded(log)));
+}
+
 export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
   const pastSessions = _getRecentSessionsForExercise(db, exerciseId, anchorDate, 6, 6, anchorDate);
   const currentMetric = getPrimaryMetric(currentLog);
@@ -109,15 +155,11 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
   let deltaHtml = '';
   if (hasCurrent) {
     const prev = [...allSessions].slice(0, -1).reverse().find(s => !s.isCurrent && !s.log.skipped);
-    if (prev) {
-      const prevMetric = getPrimaryMetric(prev.log);
-      const pct = computeSessionDeltaPct(currentMetric, prevMetric);
-      if (pct !== null) {
-        const cls = pct > 0 ? 'vol-delta' : 'vol-delta down';
-        const arrow = pct > 0 ? '↑' : '↓';
-        const sign = pct > 0 ? '+' : '';
-        deltaHtml = `<span class="${cls}">${arrow} ${sign}${pct}% vs última</span>`;
-      }
+    const delta = prev && computeSessionDelta(currentLog, prev.log);
+    if (delta) {
+      const cls = delta.up ? 'vol-delta' : 'vol-delta down';
+      const arrow = delta.up ? '↑' : '↓';
+      deltaHtml = `<span class="${cls}">${arrow} ${delta.label} vs última</span>`;
     }
   }
 
@@ -130,16 +172,17 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
   // rango visible puede inflar el máximo y ninguna barra visible llega a
   // iluminación total.
   const visibleReal = displaySessions.filter(s => !s.log.skipped);
-  const visibleMetrics = visibleReal.map(s => getPrimaryMetric(s.log));
-  const maxMetric = visibleMetrics.length ? Math.max(...visibleMetrics) : 0;
+  const stripLevels = computeStripLevels(visibleReal.map(s => s.log));
+  const levels = new Map(visibleReal.map((s, i) => [s, stripLevels[i]]));
 
   // Rangos de color por grupo (azul/verde), calculados por separado — ver
-  // isGreenBar/computeBarColor.
+  // isGreenBar/computeBarColor. El azul se mide en nivel de la tira, no en
+  // métrica cruda, para no mezclar reps (sin lastre) con kg (con lastre).
   const blueMetrics = [];
   const greenLogs = [];
   for (const s of visibleReal) {
     if (isGreenBar(s.log, currentLog.weight)) greenLogs.push(s.log);
-    else blueMetrics.push(getPrimaryMetric(s.log));
+    else blueMetrics.push(levels.get(s));
   }
   const blueRange = blueMetrics.length ? [Math.min(...blueMetrics), Math.max(...blueMetrics)] : [0, 0];
   const greenScale = buildGreenScale(greenLogs);
@@ -159,10 +202,10 @@ export function buildHistoryStripHtml(db, exerciseId, currentLog, anchorDate) {
       <div class="bar-date">${label}</div>
     </div>`;
     }
-    const metric = getPrimaryMetric(session.log);
-    const height = maxMetric > 0 ? Math.max(6, Math.round((metric / maxMetric) * 100)) : 6;
+    const level = levels.get(session);
+    const height = Math.max(6, Math.round(level * 100));
     const barClass = session.isCurrent ? 'current' : 'prev';
-    const barStyle = `height:${height}%; background:${computeBarColor(session.log, blueRange, greenScale, currentLog.weight)}`;
+    const barStyle = `height:${height}%; background:${computeBarColor(session.log, blueRange, greenScale, currentLog.weight, level)}`;
     const tooltip = buildBarTooltip(session.log);
     const ariaLabel = tooltip.replace(/\n/g, ' · ');
     const tooltipAttr = tooltip ? ` data-tooltip="${tooltip}" tabindex="0" aria-label="${ariaLabel}"` : '';
