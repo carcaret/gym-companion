@@ -335,14 +335,12 @@
     ],
     "DIA3": [
       "extension_de_cuadriceps",
-      "prensa_pierna_unilateral_polea",
       "press_inclinado_maquina",
       "jalon_al_pecho_neutro",
       "trapecio_polea",
       "curl_biceps_polea",
       "press_de_hombros_mancuernas_sentado",
-      "overhead_extension_triceps",
-      "curl_femoral_sentado"
+      "overhead_extension_triceps"
     ]
   },
   "history": [
@@ -25930,13 +25928,119 @@
           "weight": 16.25
         }
       ]
+    },
+    {
+      "date": "2026-10-16",
+      "type": "DIA3",
+      "completed": true,
+      "logs": [
+        {
+          "exercise_id": "prensa_de_piernas",
+          "name": "Prensa de Piernas",
+          "series": 4,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 240,
+          "swappedFrom": "extension_de_cuadriceps"
+        },
+        {
+          "exercise_id": "press_inclinado_maquina",
+          "name": "Press Inclinado en Máquina",
+          "series": 4,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              9,
+              9
+            ]
+          },
+          "weight": 32.5
+        },
+        {
+          "exercise_id": "hammer_row_prono",
+          "name": "Hammer Row Prono",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              10,
+              8
+            ]
+          },
+          "weight": 32.5,
+          "swappedFrom": "jalon_al_pecho_neutro"
+        },
+        {
+          "exercise_id": "trapecio_polea",
+          "name": "Trapecio polea",
+          "series": 3,
+          "reps": {
+            "expected": 15,
+            "actual": [
+              15,
+              15,
+              15
+            ]
+          },
+          "weight": 91,
+          "skipped": true
+        },
+        {
+          "exercise_id": "hammer_curl_mancuernas",
+          "name": "Hammer curl mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              8
+            ]
+          },
+          "weight": 12,
+          "swappedFrom": "curl_biceps_polea"
+        },
+        {
+          "exercise_id": "press_de_hombros_mancuernas_sentado",
+          "name": "Press de Hombros con Mancuernas Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 14,
+            "actual": [
+              14,
+              14,
+              12
+            ]
+          },
+          "weight": 18
+        },
+        {
+          "exercise_id": "overhead_extension_triceps",
+          "name": "Overhead Extension Tríceps",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              10,
+              10
+            ]
+          },
+          "weight": 6.8
+        }
+      ]
     }
   ],
-  "pendingSwaps": {
-    "DIA3": {
-      "fromExerciseId": "prensa_pierna_unilateral_polea",
-      "toExerciseId": "zancadas_con_mancuernas",
-      "weekStart": "2026-10-05"
-    }
-  }
+  "pendingSwaps": {}
 }
