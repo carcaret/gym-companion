@@ -57,8 +57,11 @@
     },
     "doninadas": {
       "id": "doninadas",
-      "name": "Doninadas",
-      "grupo": "espalda"
+      "name": "Dominadas",
+      "grupo": "espalda",
+      "secundarios": [
+        "biceps"
+      ]
     },
     "elevacion_rodillas": {
       "id": "elevacion_rodillas",
@@ -23365,7 +23368,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -23661,7 +23664,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -23957,7 +23960,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 9,
@@ -24268,7 +24271,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -24582,7 +24585,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -24786,7 +24789,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -25224,7 +25227,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -25439,7 +25442,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 10,
@@ -25778,7 +25781,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 11,
@@ -25873,7 +25876,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 8,
@@ -26187,7 +26190,7 @@
         },
         {
           "exercise_id": "doninadas",
-          "name": "Doninadas",
+          "name": "Dominadas",
           "series": 4,
           "reps": {
             "expected": 8,
