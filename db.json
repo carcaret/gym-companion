@@ -35,6 +35,11 @@
       "name": "Crunches",
       "grupo": "core"
     },
+    "curl_biceps_polea": {
+      "id": "curl_biceps_polea",
+      "name": "Curl bíceps polea",
+      "grupo": "biceps"
+    },
     "curl_de_biceps_con_barra": {
       "id": "curl_de_biceps_con_barra",
       "name": "Curl de Bíceps con Barra",
@@ -49,6 +54,11 @@
       "id": "curl_femoral_sentado",
       "name": "Curl Femoral Sentado",
       "grupo": "piernas"
+    },
+    "doninadas": {
+      "id": "doninadas",
+      "name": "Doninadas",
+      "grupo": "espalda"
     },
     "elevacion_rodillas": {
       "id": "elevacion_rodillas",
@@ -69,6 +79,11 @@
       "id": "elevaciones_laterales_con_mancuernas",
       "name": "Elevaciones Laterales con Mancuernas",
       "grupo": "hombros"
+    },
+    "encogimiento_trapecio_barra": {
+      "id": "encogimiento_trapecio_barra",
+      "name": "Encogimiento de Trapecios con Barra",
+      "grupo": "espalda"
     },
     "encogimiento_trapecio_mancuernas": {
       "id": "encogimiento_trapecio_mancuernas",
@@ -95,6 +110,11 @@
       "name": "Hack Squat",
       "grupo": "piernas"
     },
+    "hammer_curl_mancuernas": {
+      "id": "hammer_curl_mancuernas",
+      "name": "Hammer curl mancuernas",
+      "grupo": "biceps"
+    },
     "hammer_row_neutral": {
       "id": "hammer_row_neutral",
       "name": "Hammer Row Neutral",
@@ -113,6 +133,11 @@
     "jalon_al_pecho": {
       "id": "jalon_al_pecho",
       "name": "Jalón al Pecho",
+      "grupo": "espalda"
+    },
+    "jalon_al_pecho_neutro": {
+      "id": "jalon_al_pecho_neutro",
+      "name": "Jalón al pecho neutro",
       "grupo": "espalda"
     },
     "landmine_press": {
@@ -150,6 +175,10 @@
       "name": "Prensa de Piernas",
       "grupo": "piernas"
     },
+    "prensa_pierna_unilateral_polea": {
+      "id": "prensa_pierna_unilateral_polea",
+      "name": "Prensa pierna unilateral polea"
+    },
     "press_banca_barra": {
       "id": "press_banca_barra",
       "name": "Press de Banca con Barra",
@@ -183,6 +212,11 @@
     "press_inclinado_palanca": {
       "id": "press_inclinado_palanca",
       "name": "Press Inclinado en Palanca",
+      "grupo": "pecho"
+    },
+    "press_maquina": {
+      "id": "press_maquina",
+      "name": "Press máquina",
       "grupo": "pecho"
     },
     "press_militar_barra": {
@@ -219,6 +253,11 @@
       "id": "remo_en_maquina",
       "name": "Remo en Máquina",
       "grupo": "espalda"
+    },
+    "reverse_delt_con_mancuernas": {
+      "id": "reverse_delt_con_mancuernas",
+      "name": "Reverse Delt con Mancuernas",
+      "grupo": "hombros"
     },
     "reverse_delt_fly": {
       "id": "reverse_delt_fly",
@@ -260,6 +299,11 @@
       "name": "T-Bar Row",
       "grupo": "espalda"
     },
+    "trapecio_polea": {
+      "id": "trapecio_polea",
+      "name": "Trapecio polea",
+      "grupo": "espalda"
+    },
     "triceps_polea": {
       "id": "triceps_polea",
       "name": "Tríceps en Polea",
@@ -269,50 +313,6 @@
       "id": "zancadas_con_mancuernas",
       "name": "Zancadas con Mancuernas",
       "grupo": "piernas"
-    },
-    "encogimiento_trapecio_barra": {
-      "id": "encogimiento_trapecio_barra",
-      "name": "Encogimiento de Trapecios con Barra",
-      "grupo": "espalda"
-    },
-    "reverse_delt_con_mancuernas": {
-      "id": "reverse_delt_con_mancuernas",
-      "name": "Reverse Delt con Mancuernas",
-      "grupo": "hombros"
-    },
-    "hammer_curl_mancuernas": {
-      "id": "hammer_curl_mancuernas",
-      "name": "Hammer curl mancuernas",
-      "grupo": "biceps"
-    },
-    "press_maquina": {
-      "id": "press_maquina",
-      "name": "Press máquina",
-      "grupo": "pecho"
-    },
-    "jalon_al_pecho_neutro": {
-      "id": "jalon_al_pecho_neutro",
-      "name": "Jalón al pecho neutro",
-      "grupo": "espalda"
-    },
-    "curl_biceps_polea": {
-      "id": "curl_biceps_polea",
-      "name": "Curl bíceps polea",
-      "grupo": "biceps"
-    },
-    "trapecio_polea": {
-      "id": "trapecio_polea",
-      "name": "Trapecio polea",
-      "grupo": "espalda"
-    },
-    "doninadas": {
-      "id": "doninadas",
-      "name": "Doninadas",
-      "grupo": "espalda"
-    },
-    "prensa_pierna_unilateral_polea": {
-      "id": "prensa_pierna_unilateral_polea",
-      "name": "Prensa pierna unilateral polea"
     }
   },
   "routines": {
@@ -18287,7 +18287,6 @@
     {
       "date": "2026-03-23",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -18362,12 +18361,12 @@
           },
           "weight": 90
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-03-25",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -18469,12 +18468,12 @@
           },
           "weight": 16.5
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-03-30",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -18549,12 +18548,12 @@
           },
           "weight": 90
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-01",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -18656,12 +18655,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-06",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -18736,12 +18735,12 @@
           },
           "weight": 25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-08",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -18843,12 +18842,12 @@
           },
           "weight": 16.5
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-10",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -18937,12 +18936,12 @@
           },
           "weight": 100
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-13",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -19017,12 +19016,12 @@
           },
           "weight": 90
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-15",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -19124,12 +19123,12 @@
           },
           "weight": 16.5
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-17",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -19218,12 +19217,12 @@
           },
           "weight": 100
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-20",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -19298,12 +19297,12 @@
           },
           "weight": 10
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-22",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -19405,12 +19404,12 @@
           },
           "weight": 16.5
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-24",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -19499,12 +19498,12 @@
           },
           "weight": 100
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-27",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -19593,12 +19592,12 @@
           },
           "weight": 10
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-04-29",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -19702,12 +19701,12 @@
           "weight": 18,
           "swappedFrom": "elevaciones_laterales_con_cable"
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-01",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -19797,12 +19796,12 @@
           },
           "weight": 100
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-04",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -19891,12 +19890,12 @@
           },
           "weight": 10
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-06",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -19998,12 +19997,12 @@
           },
           "weight": 16.5
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-08",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -20092,12 +20091,12 @@
           },
           "weight": 100
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-11",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -20186,12 +20185,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-13",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -20294,12 +20293,12 @@
           "weight": 18,
           "swappedFrom": "elevaciones_laterales_con_cable"
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-16",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -20404,12 +20403,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-18",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -20498,12 +20497,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-20",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "abductores",
@@ -20605,12 +20604,12 @@
           },
           "weight": 16.5
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-22",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -20714,12 +20713,12 @@
           "weight": 12,
           "swappedFrom": "curl_de_biceps_mancuerna"
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-25",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -20808,12 +20807,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-27",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "adductores",
@@ -20915,12 +20914,12 @@
           },
           "weight": 16.5
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-05-29",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -21023,12 +21022,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-01",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -21108,12 +21107,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-03",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -21193,12 +21192,12 @@
           },
           "weight": 16.5
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-05",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -21291,12 +21290,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-08",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -21385,12 +21384,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-10",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -21479,12 +21478,12 @@
           },
           "weight": 18
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-12",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -21591,12 +21590,12 @@
           "weight": 12,
           "swappedFrom": "curl_de_biceps_mancuerna"
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-15",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -21685,12 +21684,12 @@
           },
           "weight": 14
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-17",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -21779,12 +21778,12 @@
           },
           "weight": 18
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-19",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -21889,12 +21888,12 @@
           },
           "weight": 12
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-22",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -21983,12 +21982,12 @@
           },
           "weight": 14
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-24",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -22077,12 +22076,12 @@
           },
           "weight": 18
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-26",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -22187,12 +22186,12 @@
           "weight": 14,
           "swappedFrom": "curl_de_biceps_mancuerna"
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-06-29",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -22281,12 +22280,12 @@
           },
           "weight": 14
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-01",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -22376,12 +22375,12 @@
           },
           "weight": 15
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-03",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -22471,12 +22470,12 @@
           },
           "weight": 54
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-06",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -22566,12 +22565,12 @@
           },
           "weight": 14
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-08",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -22660,12 +22659,12 @@
           },
           "weight": 15
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-10",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -22754,12 +22753,12 @@
           },
           "weight": 59
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-13",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -22851,12 +22850,12 @@
           },
           "weight": 14
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-15",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -22947,12 +22946,12 @@
           },
           "weight": 15
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-17",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -23041,12 +23040,12 @@
           },
           "weight": 59
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-20",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -23136,12 +23135,12 @@
           },
           "weight": 14
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-22",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -23230,12 +23229,12 @@
           },
           "weight": 15
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-07-24",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -23324,12 +23323,12 @@
           },
           "weight": 18
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-08-11",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -23419,12 +23418,12 @@
           },
           "weight": 15
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-08-14",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -23513,12 +23512,12 @@
           },
           "weight": 18
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-08-17",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -23621,12 +23620,12 @@
           },
           "weight": 23
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-08-19",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -23715,12 +23714,12 @@
           },
           "weight": 15
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-08-21",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -23809,12 +23808,12 @@
           },
           "weight": 18
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-08-24",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -23917,12 +23916,12 @@
           },
           "weight": 23
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-08-26",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -24012,12 +24011,12 @@
           },
           "weight": 15
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-08-28",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -24119,12 +24118,12 @@
           },
           "weight": 23
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-08-31",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -24228,12 +24227,12 @@
           },
           "weight": 23
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-02",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -24323,12 +24322,12 @@
           },
           "weight": 15
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-04",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "curl_femoral_sentado",
@@ -24431,12 +24430,12 @@
           },
           "weight": 24.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-07",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -24541,12 +24540,12 @@
           "weight": 6.8,
           "swappedFrom": "triceps_polea"
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-09",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -24636,12 +24635,12 @@
           },
           "weight": 15
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-11",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -24745,12 +24744,12 @@
           },
           "weight": 24.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-14",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -24856,12 +24855,12 @@
           },
           "weight": 24.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-16",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -24951,12 +24950,12 @@
           },
           "weight": 16.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-18",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -25074,12 +25073,12 @@
           },
           "weight": 97
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-21",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -25183,12 +25182,12 @@
           },
           "weight": 24.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-23",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -25278,12 +25277,12 @@
           },
           "weight": 16.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-25",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -25401,12 +25400,12 @@
           },
           "weight": 97
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-09-30",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "zancadas_con_mancuernas",
@@ -25493,12 +25492,12 @@
           },
           "weight": 16.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-10-02",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -25632,12 +25631,12 @@
           "weight": 97,
           "skipped": true
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-10-05",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -25737,12 +25736,12 @@
           },
           "weight": 24.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-10-07",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_pierna_unilateral_polea",
@@ -25833,12 +25832,12 @@
           },
           "weight": 16.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-10-14",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_pierna_unilateral_polea",
@@ -25927,12 +25926,12 @@
           },
           "weight": 16.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-10-16",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -26039,12 +26038,12 @@
           },
           "weight": 6.8
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-10-19",
       "type": "DIA1",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_de_piernas",
@@ -26147,12 +26146,12 @@
           },
           "weight": 24.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-10-21",
       "type": "DIA2",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "prensa_pierna_unilateral_polea",
@@ -26241,12 +26240,12 @@
           },
           "weight": 16.25
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "date": "2026-10-24",
       "type": "DIA3",
-      "completed": true,
       "logs": [
         {
           "exercise_id": "extension_de_cuadriceps",
@@ -26350,7 +26349,116 @@
           },
           "weight": 6.8
         }
-      ]
+      ],
+      "completed": true
+    },
+    {
+      "date": "2026-10-25",
+      "type": "DIA1",
+      "logs": [
+        {
+          "exercise_id": "prensa_de_piernas",
+          "name": "Prensa de Piernas",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11,
+              11
+            ]
+          },
+          "weight": 240
+        },
+        {
+          "exercise_id": "press_banca_mancuernas",
+          "name": "Press de Banca con Mancuernas",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              10,
+              8
+            ]
+          },
+          "weight": 30
+        },
+        {
+          "exercise_id": "hammer_row_prono",
+          "name": "Hammer Row Prono",
+          "series": 4,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11,
+              10
+            ]
+          },
+          "weight": 32.5
+        },
+        {
+          "exercise_id": "curl_femoral_sentado",
+          "name": "Curl Femoral Sentado",
+          "series": 3,
+          "reps": {
+            "expected": 10,
+            "actual": [
+              10,
+              10,
+              10
+            ]
+          },
+          "weight": 97
+        },
+        {
+          "exercise_id": "elevaciones_laterales_con_mancuernas",
+          "name": "Elevaciones Laterales con Mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11
+            ]
+          },
+          "weight": 14
+        },
+        {
+          "exercise_id": "hammer_curl_mancuernas",
+          "name": "Hammer curl mancuernas",
+          "series": 3,
+          "reps": {
+            "expected": 11,
+            "actual": [
+              11,
+              11,
+              11
+            ]
+          },
+          "weight": 16
+        },
+        {
+          "exercise_id": "triceps_polea",
+          "name": "Tríceps en Polea",
+          "series": 3,
+          "reps": {
+            "expected": 12,
+            "actual": [
+              12,
+              12,
+              11
+            ]
+          },
+          "weight": 24.25
+        }
+      ],
+      "completed": true
     }
   ],
   "pendingSwaps": {}
