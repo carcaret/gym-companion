@@ -177,7 +177,9 @@
     },
     "prensa_pierna_unilateral_polea": {
       "id": "prensa_pierna_unilateral_polea",
-      "name": "Prensa pierna unilateral polea"
+      "name": "Prensa pierna unilateral polea",
+      "grupo": "piernas",
+      "secundarios": []
     },
     "press_banca_barra": {
       "id": "press_banca_barra",
