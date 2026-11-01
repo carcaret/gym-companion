@@ -100,11 +100,11 @@ Navegación cruzada sin importar app.js: `views/historial.js` despacha `new Cust
 
 ### `app.js` — orquestador (~159 líneas)
 
-Responsabilidades: `init()`, `navigateToTab(view)`, `showConflictModal()`, `setupSyncIndicator()`, `showApp()`, `getDefaultDB()`, `setupTabs()`. No contiene lógica de negocio ni builders HTML.
+Responsabilidades: `init()`, `navigateToTab(view)`, `showConflictModal()`, `setupSyncIndicator()`, `showApp()`, `setupTabs()`. No contiene lógica de negocio ni builders HTML.
 
 ### Flujo de arranque — `init()`
 
-1. `loadDB()` — cascada: localStorage → GitHub (primera instalación) → `db.json` → estructura vacía
+1. `loadDB()` — cascada: localStorage → GitHub (primera instalación) → estructura vacía (los datos viven en el repo privado `carcaret/gym-data`, no en este)
 2. `initDB(data)` — asigna `DB`, ordena history, guarda en localStorage
 3. Si `isSyncConfigured() && needsUpload=true`: sube a GitHub. Si no: `pullFromGitHubIfClean()` en background → si devuelve `true`, llama `renderHoy()`
 

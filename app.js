@@ -255,15 +255,6 @@ function resyncViewport() {
   window.scrollTo(0, Math.min(window.scrollY, max));
 }
 
-// ── Default DB (fetch local file) ──
-async function getDefaultDB() {
-  try {
-    const res = await fetch('./db.json');
-    if (res.ok) return await res.json();
-  } catch { }
-  return null;
-}
-
 // ── Init ──
 async function init() {
   if ('serviceWorker' in navigator) {
@@ -283,15 +274,11 @@ async function init() {
   setupSyncIndicator();
   setupBarTooltips();
 
-  // Cargar DB: local es fuente de verdad; sin local → GitHub → default
+  // Cargar DB: local es fuente de verdad; sin local → GitHub → vacía
   let { data, needsUpload } = await loadDB();
-  if (!data) {
-    data = await getDefaultDB();
-    needsUpload = false;
-  }
 
   if (!data) {
-    // Situación extrema — arrancar con estructura vacía
+    // Sin datos locales ni GitHub — arrancar con estructura vacía
     data = { exercises: {}, routines: { DIA1: [], DIA2: [], DIA3: [] }, history: [], pendingSwaps: {} };
     needsUpload = false;
   }
