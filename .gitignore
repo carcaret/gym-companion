@@ -7,3 +7,5 @@ test-results/
 .aiplans/*
 !.aiplans/.gitkeep.superpowers/
 docs/superpowers/plans/
+# Worktrees de las sesiones de Claude Code (una por sesión en el NAS).
+.claude/worktrees/
